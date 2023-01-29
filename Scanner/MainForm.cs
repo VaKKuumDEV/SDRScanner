@@ -129,7 +129,7 @@ namespace Scanner
                 BeginInvoke(() =>
                 {
                     SpectrPlot.Plot.Clear();
-                    SpectrPlot.Plot.AddScatter(times, signalData.ToArray(), Color.Red);
+                    SpectrPlot.Plot.AddScatter(times, signalData.ToArray(), Color.Blue);
                     SpectrPlot.Refresh();
                 });
             }
