@@ -8,7 +8,6 @@ namespace Scanner
         private static RtlDevice? IO { get; set; } = null;
         private List<DeviceDisplay> DevicesList { get; } = new();
         private WorkingStatuses Status { get; set; } = WorkingStatuses.NOT_INIT;
-        private List<double[]> SignalBuffer { get; } = new();
         private int SignalTime { get; set; } = 0;
 
         public enum WorkingStatuses
@@ -75,7 +74,6 @@ namespace Scanner
         {
             Status = WorkingStatuses.STOPPED;
             IO?.Stop();
-            SignalBuffer.Clear();
 
             AdditionalPanel.Hide();
             ControlButton.Text = "Запуск";
@@ -107,31 +105,26 @@ namespace Scanner
 
         private unsafe void IO_SamplesAvailable(object sender, SamplesAvailableEventArgs e)
         {
-            double[] tgs = new double[e.Length];
-            for(int i = 0; i < e.Length; i++)
-            {
-                double real = e.Buffer[i].Real;
-                double imag = e.Buffer[i].Imag;
+            float* power = stackalloc float[e.Length];
+            Fourier.SpectrumPower(e.Buffer, power, e.Length);
 
-                tgs[i] = 1.0 / (1.0 + Math.Pow(imag / real, 2.0));
-            }
-
-            SignalBuffer.Add(tgs);
-            if(SignalBuffer.Count >= 8)
+            SignalTime--;
+            if(SignalTime <= 0)
             {
-                List<double> signalData = new();
-                for (int i = 0; i < SignalBuffer.Count; i++) signalData.AddRange(SignalBuffer[i]);
-                SignalBuffer.Clear();
-                double[] times = new double[signalData.Count];
-                for (int i = 0; i < times.Length; i++) times[i] = SignalTime + (i + 1);
-                SignalTime += times.Length;
+                List<double> fftPower = new();
+                for (int i = 0; i < e.Length; i++) fftPower.Add(power[i]);
+                double averagePower = fftPower.Average();
 
                 BeginInvoke(() =>
                 {
                     SpectrPlot.Plot.Clear();
-                    SpectrPlot.Plot.AddScatter(times, signalData.ToArray(), Color.Blue);
+                    SpectrPlot.Plot.AddSignal(fftPower.ToArray());
+                    SpectrPlot.Plot.AddHorizontalLine(averagePower, Color.Green);
                     SpectrPlot.Refresh();
+
+                    AveragePowerBox.Text = averagePower.ToString();
                 });
+                SignalTime = 200;
             }
         }
     }

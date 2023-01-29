@@ -32,6 +32,7 @@
             System.Windows.Forms.Label label2;
             System.Windows.Forms.Label label3;
             System.Windows.Forms.Label label4;
+            System.Windows.Forms.Label label5;
             this.ContentPanel = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.DevicesBox = new System.Windows.Forms.ComboBox();
@@ -40,12 +41,14 @@
             this.ControlButton = new System.Windows.Forms.Button();
             this.AdditionalPanel = new System.Windows.Forms.TableLayoutPanel();
             this.SamplerateBox = new System.Windows.Forms.NumericUpDown();
+            this.AveragePowerBox = new System.Windows.Forms.TextBox();
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.SpectrPlot = new ScottPlot.FormsPlot();
             label1 = new System.Windows.Forms.Label();
             label2 = new System.Windows.Forms.Label();
             label3 = new System.Windows.Forms.Label();
             label4 = new System.Windows.Forms.Label();
+            label5 = new System.Windows.Forms.Label();
             this.ContentPanel.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.FreqBox)).BeginInit();
@@ -98,6 +101,17 @@
             label4.TabIndex = 5;
             label4.Text = "Samplerate:";
             // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Dock = System.Windows.Forms.DockStyle.Top;
+            label5.Location = new System.Drawing.Point(3, 55);
+            label5.Name = "label5";
+            label5.Padding = new System.Windows.Forms.Padding(2);
+            label5.Size = new System.Drawing.Size(168, 23);
+            label5.TabIndex = 7;
+            label5.Text = "Средняя амплитуда:";
+            // 
             // ContentPanel
             // 
             this.ContentPanel.ColumnCount = 2;
@@ -140,7 +154,7 @@
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(174, 265);
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(174, 320);
             this.tableLayoutPanel2.TabIndex = 0;
             // 
             // DevicesBox
@@ -196,7 +210,7 @@
             // 
             this.ControlButton.AutoSize = true;
             this.ControlButton.Dock = System.Windows.Forms.DockStyle.Top;
-            this.ControlButton.Location = new System.Drawing.Point(3, 225);
+            this.ControlButton.Location = new System.Drawing.Point(3, 280);
             this.ControlButton.Name = "ControlButton";
             this.ControlButton.Padding = new System.Windows.Forms.Padding(4);
             this.ControlButton.Size = new System.Drawing.Size(168, 37);
@@ -209,16 +223,20 @@
             this.AdditionalPanel.AutoSize = true;
             this.AdditionalPanel.ColumnCount = 1;
             this.AdditionalPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.AdditionalPanel.Controls.Add(label5, 0, 2);
             this.AdditionalPanel.Controls.Add(label4, 0, 0);
             this.AdditionalPanel.Controls.Add(this.SamplerateBox, 0, 1);
+            this.AdditionalPanel.Controls.Add(this.AveragePowerBox, 0, 3);
             this.AdditionalPanel.Dock = System.Windows.Forms.DockStyle.Top;
             this.AdditionalPanel.Location = new System.Drawing.Point(0, 167);
             this.AdditionalPanel.Margin = new System.Windows.Forms.Padding(0);
             this.AdditionalPanel.Name = "AdditionalPanel";
-            this.AdditionalPanel.RowCount = 2;
+            this.AdditionalPanel.RowCount = 4;
             this.AdditionalPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.AdditionalPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.AdditionalPanel.Size = new System.Drawing.Size(174, 55);
+            this.AdditionalPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.AdditionalPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.AdditionalPanel.Size = new System.Drawing.Size(174, 110);
             this.AdditionalPanel.TabIndex = 7;
             // 
             // SamplerateBox
@@ -235,6 +253,15 @@
             this.SamplerateBox.Size = new System.Drawing.Size(168, 26);
             this.SamplerateBox.TabIndex = 6;
             this.SamplerateBox.ThousandsSeparator = true;
+            // 
+            // AveragePowerBox
+            // 
+            this.AveragePowerBox.Dock = System.Windows.Forms.DockStyle.Top;
+            this.AveragePowerBox.Location = new System.Drawing.Point(3, 81);
+            this.AveragePowerBox.Name = "AveragePowerBox";
+            this.AveragePowerBox.ReadOnly = true;
+            this.AveragePowerBox.Size = new System.Drawing.Size(168, 26);
+            this.AveragePowerBox.TabIndex = 8;
             // 
             // tableLayoutPanel3
             // 
@@ -298,5 +325,6 @@
         private Button ControlButton;
         private TableLayoutPanel AdditionalPanel;
         private NumericUpDown SamplerateBox;
+        private TextBox AveragePowerBox;
     }
 }
