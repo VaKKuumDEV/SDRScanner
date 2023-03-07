@@ -35,6 +35,7 @@
             this.OpenSignalButton = new System.Windows.Forms.Button();
             this.ContentPanel = new System.Windows.Forms.TableLayoutPanel();
             this.OpenSignalDialog = new System.Windows.Forms.OpenFileDialog();
+            this.HashLabel = new System.Windows.Forms.Label();
             tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             tableLayoutPanel1.SuspendLayout();
@@ -82,14 +83,15 @@
             tableLayoutPanel2.ColumnCount = 1;
             tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             tableLayoutPanel2.Controls.Add(this.OpenSignalButton, 0, 0);
+            tableLayoutPanel2.Controls.Add(this.HashLabel, 0, 1);
             tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Top;
             tableLayoutPanel2.Location = new System.Drawing.Point(403, 0);
             tableLayoutPanel2.Margin = new System.Windows.Forms.Padding(0);
             tableLayoutPanel2.Name = "tableLayoutPanel2";
-            tableLayoutPanel2.RowCount = 1;
+            tableLayoutPanel2.RowCount = 2;
             tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            tableLayoutPanel2.Size = new System.Drawing.Size(173, 35);
+            tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            tableLayoutPanel2.Size = new System.Drawing.Size(173, 62);
             tableLayoutPanel2.TabIndex = 1;
             // 
             // OpenSignalButton
@@ -125,6 +127,18 @@
             this.OpenSignalDialog.Title = "Выберите файл аудиозаписи";
             this.OpenSignalDialog.FileOk += new System.ComponentModel.CancelEventHandler(this.OpenSignalDialog_FileOk);
             // 
+            // HashLabel
+            // 
+            this.HashLabel.AutoSize = true;
+            this.HashLabel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.HashLabel.Location = new System.Drawing.Point(0, 35);
+            this.HashLabel.Margin = new System.Windows.Forms.Padding(0);
+            this.HashLabel.Name = "HashLabel";
+            this.HashLabel.Padding = new System.Windows.Forms.Padding(4);
+            this.HashLabel.Size = new System.Drawing.Size(173, 27);
+            this.HashLabel.TabIndex = 1;
+            this.HashLabel.Text = "label1";
+            // 
             // NeuroForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 19F);
@@ -153,5 +167,6 @@
         private ScottPlot.FormsPlot PreparedSignalPlot;
         private Button OpenSignalButton;
         private OpenFileDialog OpenSignalDialog;
+        private Label HashLabel;
     }
 }

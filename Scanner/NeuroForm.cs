@@ -43,6 +43,10 @@ namespace Scanner
                     (double[] audio, int sampleRate) = AudioUtils.ReadAudioFile(new(OpenSignalDialog.FileName));
                     (double[] power, double[] freqs) = AudioUtils.MakeFFT(audio, sampleRate);
                     (double[] preparedPower, double[] preparedFreqs) = AudioUtils.PrepareAudioData(power, freqs);
+                    int[] hashInts = AudioUtils.GetAudioHash(preparedPower, preparedFreqs);
+
+                    string hash = "";
+                    for (int i = 0; i < hashInts.Length; i++) hash += hashInts[i].ToString("00");
 
                     BeginInvoke(() =>
                     {
@@ -54,6 +58,8 @@ namespace Scanner
 
                         SignalPlot.Refresh();
                         PreparedSignalPlot.Refresh();
+
+                        HashLabel.Text = hash;
                     });
                 }
                 catch (Exception ex)
