@@ -44,8 +44,7 @@ namespace Scanner.Audio
 
         public static (double[] power, double[] freqs) PrepareAudioData(double[] power, double[] freqs)
         {
-            double minPower = power.Min();
-            List<double> newPower = new List<double>(power).ConvertAll(item => item - minPower);
+            List<double> newPower = new List<double>(power);
 
             SortedDictionary<double, double> powerFreqs = new();
             for(int i = 0; i < freqs.Length - 1; i++)
@@ -64,12 +63,10 @@ namespace Scanner.Audio
                 }
 
                 //double squaredFreq = Math.Sqrt(freqPowers.ConvertAll(item => Math.Pow(item, 2d)).Sum() / (freqPowers.Count * (freqPowers.Count - 1)));
-                double squaredFreq = freqPowers.Average();
-                powerFreqs[freq] = squaredFreq;
+                double averagedFreq = freqPowers.Average();
+                powerFreqs[freq] = averagedFreq;
             }
 
-            minPower = powerFreqs.Values.Min();
-            powerFreqs = new(powerFreqs.ToDictionary(item => item.Key, item => item.Value - minPower));
             return (powerFreqs.Values.ToArray(), powerFreqs.Keys.ToArray());
         }
 
@@ -87,6 +84,15 @@ namespace Scanner.Audio
             for (int i = 1; i < freqs[^1] + 1; i++) newPowerData[i] = 0;
 
             for(int i = 0; i < freqs.Length; i++) newPowerData[freqs[i]] = powers[i];
+            for(int i = 0; i < newPowerData.Keys.Count; i += HASH_RATE)
+            {
+                int rangeCount = (newPowerData.Keys.Count - i < HASH_RATE) ? newPowerData.Keys.Count - i : HASH_RATE;
+                List<double> sampleData = newPowerData.Values.ToList().GetRange(i, rangeCount);
+
+                int maxIndex = 0;
+                for (int j = 0; j < sampleData.Count; j++) if (sampleData[j] > sampleData[maxIndex]) maxIndex = j;
+                hash.Add(maxIndex);
+            }
 
             return hash.ToArray();
         }

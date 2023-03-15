@@ -19,11 +19,11 @@ namespace Scanner
 
             SignalPlot.Plot.Title("БПФ без фильтрации");
             SignalPlot.Plot.XLabel("Частота (Гц)");
-            SignalPlot.Plot.YLabel("Мощность (дБ)");
+            SignalPlot.Plot.YLabel("Амплитуда (дБ)");
 
             PreparedSignalPlot.Plot.Title("БПФ с фильтром");
             PreparedSignalPlot.Plot.XLabel("Частота (Гц)");
-            PreparedSignalPlot.Plot.YLabel("Мощность (дБ)");
+            PreparedSignalPlot.Plot.YLabel("Амплитуда (дБ)");
         }
 
         private void OpenSignalButton_Click(object sender, EventArgs e)
