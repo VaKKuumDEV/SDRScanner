@@ -28,289 +28,268 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.Label label1;
-            System.Windows.Forms.Label label2;
-            System.Windows.Forms.Label label3;
-            System.Windows.Forms.Label label4;
-            System.Windows.Forms.Label label5;
-            this.ContentPanel = new System.Windows.Forms.TableLayoutPanel();
-            this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
-            this.DevicesBox = new System.Windows.Forms.ComboBox();
-            this.FreqBox = new System.Windows.Forms.NumericUpDown();
-            this.GainBox = new System.Windows.Forms.ComboBox();
-            this.ControlButton = new System.Windows.Forms.Button();
-            this.AdditionalPanel = new System.Windows.Forms.TableLayoutPanel();
-            this.SamplerateBox = new System.Windows.Forms.NumericUpDown();
-            this.AveragePowerBox = new System.Windows.Forms.TextBox();
-            this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
-            this.SpectrPlot = new ScottPlot.FormsPlot();
-            label1 = new System.Windows.Forms.Label();
-            label2 = new System.Windows.Forms.Label();
-            label3 = new System.Windows.Forms.Label();
-            label4 = new System.Windows.Forms.Label();
-            label5 = new System.Windows.Forms.Label();
-            this.ContentPanel.SuspendLayout();
-            this.tableLayoutPanel2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.FreqBox)).BeginInit();
-            this.AdditionalPanel.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.SamplerateBox)).BeginInit();
-            this.tableLayoutPanel3.SuspendLayout();
-            this.SuspendLayout();
+            Label label1;
+            Label label2;
+            Label label3;
+            Label label4;
+            Label label5;
+            ContentPanel = new TableLayoutPanel();
+            tableLayoutPanel2 = new TableLayoutPanel();
+            DevicesBox = new ComboBox();
+            FreqBox = new NumericUpDown();
+            GainBox = new ComboBox();
+            ControlButton = new Button();
+            AdditionalPanel = new TableLayoutPanel();
+            SamplerateBox = new NumericUpDown();
+            AveragePowerBox = new TextBox();
+            tableLayoutPanel3 = new TableLayoutPanel();
+            SpectrPlot = new ScottPlot.FormsPlot();
+            label1 = new Label();
+            label2 = new Label();
+            label3 = new Label();
+            label4 = new Label();
+            label5 = new Label();
+            ContentPanel.SuspendLayout();
+            tableLayoutPanel2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)FreqBox).BeginInit();
+            AdditionalPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)SamplerateBox).BeginInit();
+            tableLayoutPanel3.SuspendLayout();
+            SuspendLayout();
             // 
             // label1
             // 
             label1.AutoSize = true;
-            label1.Dock = System.Windows.Forms.DockStyle.Top;
-            label1.Location = new System.Drawing.Point(3, 0);
+            label1.Dock = DockStyle.Top;
+            label1.Location = new Point(3, 0);
             label1.Name = "label1";
-            label1.Padding = new System.Windows.Forms.Padding(2);
-            label1.Size = new System.Drawing.Size(168, 23);
+            label1.Padding = new Padding(2);
+            label1.Size = new Size(168, 26);
             label1.TabIndex = 0;
             label1.Text = "Устройство:";
             // 
             // label2
             // 
             label2.AutoSize = true;
-            label2.Dock = System.Windows.Forms.DockStyle.Top;
-            label2.Location = new System.Drawing.Point(3, 56);
+            label2.Dock = DockStyle.Top;
+            label2.Location = new Point(3, 60);
             label2.Name = "label2";
-            label2.Padding = new System.Windows.Forms.Padding(2);
-            label2.Size = new System.Drawing.Size(168, 23);
+            label2.Padding = new Padding(2);
+            label2.Size = new Size(168, 26);
             label2.TabIndex = 2;
             label2.Text = "Рабочая частота:";
             // 
             // label3
             // 
             label3.AutoSize = true;
-            label3.Dock = System.Windows.Forms.DockStyle.Top;
-            label3.Location = new System.Drawing.Point(3, 111);
+            label3.Dock = DockStyle.Top;
+            label3.Location = new Point(3, 122);
             label3.Name = "label3";
-            label3.Padding = new System.Windows.Forms.Padding(2);
-            label3.Size = new System.Drawing.Size(168, 23);
+            label3.Padding = new Padding(2);
+            label3.Size = new Size(168, 26);
             label3.TabIndex = 4;
             label3.Text = "Усиление:";
             // 
             // label4
             // 
             label4.AutoSize = true;
-            label4.Dock = System.Windows.Forms.DockStyle.Top;
-            label4.Location = new System.Drawing.Point(3, 0);
+            label4.Dock = DockStyle.Top;
+            label4.Location = new Point(3, 0);
             label4.Name = "label4";
-            label4.Padding = new System.Windows.Forms.Padding(2);
-            label4.Size = new System.Drawing.Size(168, 23);
+            label4.Padding = new Padding(2);
+            label4.Size = new Size(168, 26);
             label4.TabIndex = 5;
             label4.Text = "Samplerate:";
             // 
             // label5
             // 
             label5.AutoSize = true;
-            label5.Dock = System.Windows.Forms.DockStyle.Top;
-            label5.Location = new System.Drawing.Point(3, 55);
+            label5.Dock = DockStyle.Top;
+            label5.Location = new Point(3, 62);
             label5.Name = "label5";
-            label5.Padding = new System.Windows.Forms.Padding(2);
-            label5.Size = new System.Drawing.Size(168, 23);
+            label5.Padding = new Padding(2);
+            label5.Size = new Size(168, 48);
             label5.TabIndex = 7;
             label5.Text = "Средняя амплитуда:";
             // 
             // ContentPanel
             // 
-            this.ContentPanel.ColumnCount = 2;
-            this.ContentPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 70F));
-            this.ContentPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
-            this.ContentPanel.Controls.Add(this.tableLayoutPanel2, 1, 0);
-            this.ContentPanel.Controls.Add(this.tableLayoutPanel3, 0, 0);
-            this.ContentPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ContentPanel.Location = new System.Drawing.Point(2, 2);
-            this.ContentPanel.Margin = new System.Windows.Forms.Padding(0);
-            this.ContentPanel.Name = "ContentPanel";
-            this.ContentPanel.RowCount = 1;
-            this.ContentPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.ContentPanel.Size = new System.Drawing.Size(580, 457);
-            this.ContentPanel.TabIndex = 0;
+            ContentPanel.ColumnCount = 2;
+            ContentPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 70F));
+            ContentPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30F));
+            ContentPanel.Controls.Add(tableLayoutPanel2, 1, 0);
+            ContentPanel.Controls.Add(tableLayoutPanel3, 0, 0);
+            ContentPanel.Dock = DockStyle.Fill;
+            ContentPanel.Location = new Point(2, 2);
+            ContentPanel.Margin = new Padding(0);
+            ContentPanel.Name = "ContentPanel";
+            ContentPanel.RowCount = 1;
+            ContentPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            ContentPanel.Size = new Size(580, 457);
+            ContentPanel.TabIndex = 0;
             // 
             // tableLayoutPanel2
             // 
-            this.tableLayoutPanel2.AutoSize = true;
-            this.tableLayoutPanel2.ColumnCount = 1;
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel2.Controls.Add(label3, 0, 4);
-            this.tableLayoutPanel2.Controls.Add(label2, 0, 2);
-            this.tableLayoutPanel2.Controls.Add(label1, 0, 0);
-            this.tableLayoutPanel2.Controls.Add(this.DevicesBox, 0, 1);
-            this.tableLayoutPanel2.Controls.Add(this.FreqBox, 0, 3);
-            this.tableLayoutPanel2.Controls.Add(this.GainBox, 0, 5);
-            this.tableLayoutPanel2.Controls.Add(this.ControlButton, 0, 7);
-            this.tableLayoutPanel2.Controls.Add(this.AdditionalPanel, 0, 6);
-            this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Top;
-            this.tableLayoutPanel2.Location = new System.Drawing.Point(406, 0);
-            this.tableLayoutPanel2.Margin = new System.Windows.Forms.Padding(0);
-            this.tableLayoutPanel2.Name = "tableLayoutPanel2";
-            this.tableLayoutPanel2.RowCount = 8;
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(174, 320);
-            this.tableLayoutPanel2.TabIndex = 0;
+            tableLayoutPanel2.AutoSize = true;
+            tableLayoutPanel2.ColumnCount = 1;
+            tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tableLayoutPanel2.Controls.Add(label3, 0, 4);
+            tableLayoutPanel2.Controls.Add(label2, 0, 2);
+            tableLayoutPanel2.Controls.Add(label1, 0, 0);
+            tableLayoutPanel2.Controls.Add(DevicesBox, 0, 1);
+            tableLayoutPanel2.Controls.Add(FreqBox, 0, 3);
+            tableLayoutPanel2.Controls.Add(GainBox, 0, 5);
+            tableLayoutPanel2.Controls.Add(ControlButton, 0, 7);
+            tableLayoutPanel2.Controls.Add(AdditionalPanel, 0, 6);
+            tableLayoutPanel2.Dock = DockStyle.Top;
+            tableLayoutPanel2.Location = new Point(406, 0);
+            tableLayoutPanel2.Margin = new Padding(0);
+            tableLayoutPanel2.Name = "tableLayoutPanel2";
+            tableLayoutPanel2.RowCount = 8;
+            tableLayoutPanel2.RowStyles.Add(new RowStyle());
+            tableLayoutPanel2.RowStyles.Add(new RowStyle());
+            tableLayoutPanel2.RowStyles.Add(new RowStyle());
+            tableLayoutPanel2.RowStyles.Add(new RowStyle());
+            tableLayoutPanel2.RowStyles.Add(new RowStyle());
+            tableLayoutPanel2.RowStyles.Add(new RowStyle());
+            tableLayoutPanel2.RowStyles.Add(new RowStyle());
+            tableLayoutPanel2.RowStyles.Add(new RowStyle());
+            tableLayoutPanel2.Size = new Size(174, 374);
+            tableLayoutPanel2.TabIndex = 0;
             // 
             // DevicesBox
             // 
-            this.DevicesBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.DevicesBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.DevicesBox.Dock = System.Windows.Forms.DockStyle.Top;
-            this.DevicesBox.FormattingEnabled = true;
-            this.DevicesBox.Location = new System.Drawing.Point(3, 26);
-            this.DevicesBox.Name = "DevicesBox";
-            this.DevicesBox.Size = new System.Drawing.Size(168, 27);
-            this.DevicesBox.TabIndex = 1;
+            DevicesBox.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+            DevicesBox.AutoCompleteSource = AutoCompleteSource.ListItems;
+            DevicesBox.Dock = DockStyle.Top;
+            DevicesBox.FormattingEnabled = true;
+            DevicesBox.Location = new Point(3, 29);
+            DevicesBox.Name = "DevicesBox";
+            DevicesBox.Size = new Size(168, 30);
+            DevicesBox.TabIndex = 1;
             // 
             // FreqBox
             // 
-            this.FreqBox.Dock = System.Windows.Forms.DockStyle.Top;
-            this.FreqBox.Increment = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-            this.FreqBox.Location = new System.Drawing.Point(3, 82);
-            this.FreqBox.Maximum = new decimal(new int[] {
-            1600000000,
-            0,
-            0,
-            0});
-            this.FreqBox.Minimum = new decimal(new int[] {
-            100000000,
-            0,
-            0,
-            0});
-            this.FreqBox.Name = "FreqBox";
-            this.FreqBox.Size = new System.Drawing.Size(168, 26);
-            this.FreqBox.TabIndex = 3;
-            this.FreqBox.ThousandsSeparator = true;
-            this.FreqBox.Value = new decimal(new int[] {
-            100000000,
-            0,
-            0,
-            0});
+            FreqBox.Dock = DockStyle.Top;
+            FreqBox.Increment = new decimal(new int[] { 1000, 0, 0, 0 });
+            FreqBox.Location = new Point(3, 89);
+            FreqBox.Maximum = new decimal(new int[] { 1600000000, 0, 0, 0 });
+            FreqBox.Minimum = new decimal(new int[] { 100000000, 0, 0, 0 });
+            FreqBox.Name = "FreqBox";
+            FreqBox.Size = new Size(168, 30);
+            FreqBox.TabIndex = 3;
+            FreqBox.ThousandsSeparator = true;
+            FreqBox.Value = new decimal(new int[] { 100000000, 0, 0, 0 });
             // 
             // GainBox
             // 
-            this.GainBox.Dock = System.Windows.Forms.DockStyle.Top;
-            this.GainBox.FormattingEnabled = true;
-            this.GainBox.Location = new System.Drawing.Point(3, 137);
-            this.GainBox.Name = "GainBox";
-            this.GainBox.Size = new System.Drawing.Size(168, 27);
-            this.GainBox.TabIndex = 5;
+            GainBox.Dock = DockStyle.Top;
+            GainBox.FormattingEnabled = true;
+            GainBox.Location = new Point(3, 151);
+            GainBox.Name = "GainBox";
+            GainBox.Size = new Size(168, 30);
+            GainBox.TabIndex = 5;
             // 
             // ControlButton
             // 
-            this.ControlButton.AutoSize = true;
-            this.ControlButton.Dock = System.Windows.Forms.DockStyle.Top;
-            this.ControlButton.Location = new System.Drawing.Point(3, 280);
-            this.ControlButton.Name = "ControlButton";
-            this.ControlButton.Padding = new System.Windows.Forms.Padding(4);
-            this.ControlButton.Size = new System.Drawing.Size(168, 37);
-            this.ControlButton.TabIndex = 6;
-            this.ControlButton.Text = "Запуск";
-            this.ControlButton.UseVisualStyleBackColor = true;
+            ControlButton.AutoSize = true;
+            ControlButton.Dock = DockStyle.Top;
+            ControlButton.Location = new Point(3, 331);
+            ControlButton.Name = "ControlButton";
+            ControlButton.Padding = new Padding(4);
+            ControlButton.Size = new Size(168, 40);
+            ControlButton.TabIndex = 6;
+            ControlButton.Text = "Запуск";
+            ControlButton.UseVisualStyleBackColor = true;
             // 
             // AdditionalPanel
             // 
-            this.AdditionalPanel.AutoSize = true;
-            this.AdditionalPanel.ColumnCount = 1;
-            this.AdditionalPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.AdditionalPanel.Controls.Add(label5, 0, 2);
-            this.AdditionalPanel.Controls.Add(label4, 0, 0);
-            this.AdditionalPanel.Controls.Add(this.SamplerateBox, 0, 1);
-            this.AdditionalPanel.Controls.Add(this.AveragePowerBox, 0, 3);
-            this.AdditionalPanel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.AdditionalPanel.Location = new System.Drawing.Point(0, 167);
-            this.AdditionalPanel.Margin = new System.Windows.Forms.Padding(0);
-            this.AdditionalPanel.Name = "AdditionalPanel";
-            this.AdditionalPanel.RowCount = 4;
-            this.AdditionalPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.AdditionalPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.AdditionalPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.AdditionalPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.AdditionalPanel.Size = new System.Drawing.Size(174, 110);
-            this.AdditionalPanel.TabIndex = 7;
+            AdditionalPanel.AutoSize = true;
+            AdditionalPanel.ColumnCount = 1;
+            AdditionalPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            AdditionalPanel.Controls.Add(label5, 0, 2);
+            AdditionalPanel.Controls.Add(label4, 0, 0);
+            AdditionalPanel.Controls.Add(SamplerateBox, 0, 1);
+            AdditionalPanel.Controls.Add(AveragePowerBox, 0, 3);
+            AdditionalPanel.Dock = DockStyle.Top;
+            AdditionalPanel.Location = new Point(0, 182);
+            AdditionalPanel.Margin = new Padding(0);
+            AdditionalPanel.Name = "AdditionalPanel";
+            AdditionalPanel.RowCount = 4;
+            AdditionalPanel.RowStyles.Add(new RowStyle());
+            AdditionalPanel.RowStyles.Add(new RowStyle());
+            AdditionalPanel.RowStyles.Add(new RowStyle());
+            AdditionalPanel.RowStyles.Add(new RowStyle());
+            AdditionalPanel.Size = new Size(174, 146);
+            AdditionalPanel.TabIndex = 7;
             // 
             // SamplerateBox
             // 
-            this.SamplerateBox.Dock = System.Windows.Forms.DockStyle.Top;
-            this.SamplerateBox.Location = new System.Drawing.Point(3, 26);
-            this.SamplerateBox.Maximum = new decimal(new int[] {
-            1600000000,
-            0,
-            0,
-            0});
-            this.SamplerateBox.Name = "SamplerateBox";
-            this.SamplerateBox.ReadOnly = true;
-            this.SamplerateBox.Size = new System.Drawing.Size(168, 26);
-            this.SamplerateBox.TabIndex = 6;
-            this.SamplerateBox.ThousandsSeparator = true;
+            SamplerateBox.Dock = DockStyle.Top;
+            SamplerateBox.Location = new Point(3, 29);
+            SamplerateBox.Maximum = new decimal(new int[] { 1600000000, 0, 0, 0 });
+            SamplerateBox.Name = "SamplerateBox";
+            SamplerateBox.ReadOnly = true;
+            SamplerateBox.Size = new Size(168, 30);
+            SamplerateBox.TabIndex = 6;
+            SamplerateBox.ThousandsSeparator = true;
             // 
             // AveragePowerBox
             // 
-            this.AveragePowerBox.Dock = System.Windows.Forms.DockStyle.Top;
-            this.AveragePowerBox.Location = new System.Drawing.Point(3, 81);
-            this.AveragePowerBox.Name = "AveragePowerBox";
-            this.AveragePowerBox.ReadOnly = true;
-            this.AveragePowerBox.Size = new System.Drawing.Size(168, 26);
-            this.AveragePowerBox.TabIndex = 8;
+            AveragePowerBox.Dock = DockStyle.Top;
+            AveragePowerBox.Location = new Point(3, 113);
+            AveragePowerBox.Name = "AveragePowerBox";
+            AveragePowerBox.ReadOnly = true;
+            AveragePowerBox.Size = new Size(168, 30);
+            AveragePowerBox.TabIndex = 8;
             // 
             // tableLayoutPanel3
             // 
-            this.tableLayoutPanel3.ColumnCount = 1;
-            this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel3.Controls.Add(this.SpectrPlot, 0, 0);
-            this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel3.Location = new System.Drawing.Point(0, 0);
-            this.tableLayoutPanel3.Margin = new System.Windows.Forms.Padding(0);
-            this.tableLayoutPanel3.Name = "tableLayoutPanel3";
-            this.tableLayoutPanel3.RowCount = 2;
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 40F));
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 60F));
-            this.tableLayoutPanel3.Size = new System.Drawing.Size(406, 457);
-            this.tableLayoutPanel3.TabIndex = 1;
+            tableLayoutPanel3.ColumnCount = 1;
+            tableLayoutPanel3.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tableLayoutPanel3.Controls.Add(SpectrPlot, 0, 0);
+            tableLayoutPanel3.Dock = DockStyle.Fill;
+            tableLayoutPanel3.Location = new Point(0, 0);
+            tableLayoutPanel3.Margin = new Padding(0);
+            tableLayoutPanel3.Name = "tableLayoutPanel3";
+            tableLayoutPanel3.RowCount = 2;
+            tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 40F));
+            tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 60F));
+            tableLayoutPanel3.Size = new Size(406, 457);
+            tableLayoutPanel3.TabIndex = 1;
             // 
             // SpectrPlot
             // 
-            this.SpectrPlot.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.SpectrPlot.Location = new System.Drawing.Point(0, 0);
-            this.SpectrPlot.Margin = new System.Windows.Forms.Padding(0);
-            this.SpectrPlot.Name = "SpectrPlot";
-            this.SpectrPlot.Padding = new System.Windows.Forms.Padding(2);
-            this.SpectrPlot.Size = new System.Drawing.Size(406, 182);
-            this.SpectrPlot.TabIndex = 0;
+            SpectrPlot.Dock = DockStyle.Fill;
+            SpectrPlot.Location = new Point(0, 0);
+            SpectrPlot.Margin = new Padding(0);
+            SpectrPlot.Name = "SpectrPlot";
+            SpectrPlot.Padding = new Padding(2);
+            SpectrPlot.Size = new Size(406, 182);
+            SpectrPlot.TabIndex = 0;
             // 
             // MainForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 19F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(584, 461);
-            this.Controls.Add(this.ContentPanel);
-            this.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.Margin = new System.Windows.Forms.Padding(4);
-            this.MinimumSize = new System.Drawing.Size(600, 500);
-            this.Name = "MainForm";
-            this.Padding = new System.Windows.Forms.Padding(2);
-            this.Text = "Scanner";
-            this.ContentPanel.ResumeLayout(false);
-            this.ContentPanel.PerformLayout();
-            this.tableLayoutPanel2.ResumeLayout(false);
-            this.tableLayoutPanel2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.FreqBox)).EndInit();
-            this.AdditionalPanel.ResumeLayout(false);
-            this.AdditionalPanel.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.SamplerateBox)).EndInit();
-            this.tableLayoutPanel3.ResumeLayout(false);
-            this.ResumeLayout(false);
-
+            AutoScaleDimensions = new SizeF(11F, 22F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(584, 461);
+            Controls.Add(ContentPanel);
+            Font = new Font("Times New Roman", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            Margin = new Padding(4);
+            MinimumSize = new Size(600, 500);
+            Name = "MainForm";
+            Padding = new Padding(2);
+            Text = "Scanner";
+            ContentPanel.ResumeLayout(false);
+            ContentPanel.PerformLayout();
+            tableLayoutPanel2.ResumeLayout(false);
+            tableLayoutPanel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)FreqBox).EndInit();
+            AdditionalPanel.ResumeLayout(false);
+            AdditionalPanel.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)SamplerateBox).EndInit();
+            tableLayoutPanel3.ResumeLayout(false);
+            ResumeLayout(false);
         }
 
         #endregion

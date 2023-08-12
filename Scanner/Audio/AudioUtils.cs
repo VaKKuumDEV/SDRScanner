@@ -1,4 +1,5 @@
-﻿using NAudio.Wave;
+﻿using NAudio.Midi;
+using NAudio.Wave;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,38 +14,46 @@ namespace Scanner.Audio
         public const int POINTS = 10;
         public const int HASH_RATE = 100;
 
-        public static (double[] audio, int sampleRate) ReadAudioFile(FileInfo file, double multiplier = 16__000)
+        public static (double[] audio, int sampleRate, int bytesPerSample, int totalTime) ReadAudioFile(FileInfo file, double multiplier = 16__000)
         {
             using var afr = new AudioFileReader(file.FullName);
             int sampleRate = afr.WaveFormat.SampleRate;
             int bytesPerSample = afr.WaveFormat.BitsPerSample / 8;
+            int totalTime = (int)afr.TotalTime.TotalSeconds;
             int sampleCount = (int)(afr.Length / bytesPerSample);
             int channelsCount = afr.WaveFormat.Channels;
             var audio = new List<double>(sampleCount);
             var buffer = new float[sampleRate * channelsCount];
             int samplesRead = 0;
             while ((samplesRead = afr.Read(buffer, 0, buffer.Length)) > 0) audio.AddRange(buffer.Take(samplesRead).Select(x => x * multiplier));
-            return (audio.ToArray(), sampleRate);
+            return (audio.ToArray(), sampleRate, bytesPerSample, totalTime);
         }
 
-        public static (double[] power, double[] freqs) MakeFFT(double[] audio, int sampleRate)
+        public static KeyValuePair<double[], double[]>[] MakeFFT(double[] audio, int sampleRate, int totalTime)
         {
-            if (!FftSharp.Transform.IsPowerOfTwo(audio.Length))
+            if (totalTime < 10) throw new Exception("Audio length must be more or equals then 10 second");
+            int samples = totalTime / 10;
+            int sampleLength = audio.Length / samples;
+            if (!FftSharp.Transform.IsPowerOfTwo(sampleLength)) sampleLength = (int)Math.Pow(2, Math.Floor(Math.Log2(sampleLength)));
+            samples = audio.Length / sampleLength;
+
+            List<KeyValuePair<double[], double[]>> data = new();
+            for(int i = 0; i < samples; i++)
             {
-                int correctLength = (int)Math.Pow(2, Math.Floor(Math.Log2(audio.Length)));
-                audio = new List<double>(audio).GetRange(0, correctLength).ToArray();
+                double[] sampleData = new FftSharp.Windows.Hanning().Apply(new List<double>(audio).GetRange(i * sampleLength, sampleLength).ToArray());
+                if (!FftSharp.Transform.IsPowerOfTwo(sampleData.Length)) continue;
+
+                double[] samplePower = FftSharp.Transform.FFTpower(sampleData);
+                double[] sampleFreqs = FftSharp.Transform.FFTfreq(sampleRate, samplePower);
+                data.Add(new(samplePower, sampleFreqs));
             }
 
-            double[] newAudio = new FftSharp.Windows.Hanning().Apply(audio);
-            double[] power = FftSharp.Transform.FFTpower(newAudio);
-            double[] freqs = FftSharp.Transform.FFTfreq(sampleRate, power);
-
-            return (power, freqs);
+            return data.ToArray();
         }
 
         public static (double[] power, double[] freqs) PrepareAudioData(double[] power, double[] freqs)
         {
-            List<double> newPower = new List<double>(power);
+            List<double> newPower = new(power);
 
             SortedDictionary<double, double> powerFreqs = new();
             for(int i = 0; i < freqs.Length - 1; i++)
@@ -68,13 +77,6 @@ namespace Scanner.Audio
             }
 
             return (powerFreqs.Values.ToArray(), powerFreqs.Keys.ToArray());
-        }
-
-        public static int[] GetAudioHash(double[] audio, int sampleRate)
-        {
-            (double[] powers, double[] freqs) = MakeFFT(audio, sampleRate);
-            (double[] newPowers, double[] newFreqs) = PrepareAudioData(powers, freqs);
-            return GetAudioHash(newPowers, newFreqs);
         }
 
         public static int[] GetAudioHash(double[] powers, double[] freqs)

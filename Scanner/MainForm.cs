@@ -30,12 +30,12 @@ namespace Scanner
             DevicesBox.SelectedIndexChanged += new((sender, args) =>
             {
                 int index = DevicesBox.SelectedIndex;
-                if(index != -1 && index < DevicesList.Count)
+                if (index != -1 && index < DevicesList.Count)
                 {
                     if (IO != null && IO.Index == index) return;
                     else if (IO != null && IO.Index != index)
                     {
-                        if(Status == WorkingStatuses.STARTED) Stop();
+                        if (Status == WorkingStatuses.STARTED) Stop();
                         IO.Dispose();
                         IO = null;
                     }
@@ -81,7 +81,7 @@ namespace Scanner
 
         private void Start()
         {
-            if(IO != null)
+            if (IO != null)
             {
                 SignalTime = 0;
                 uint freq = (uint)FreqBox.Value;
@@ -109,7 +109,7 @@ namespace Scanner
             Fourier.SpectrumPower(e.Buffer, power, e.Length);
 
             SignalTime--;
-            if(SignalTime <= 0)
+            if (SignalTime <= 0)
             {
                 List<double> fftPower = new();
                 for (int i = 0; i < e.Length; i++) fftPower.Add(power[i]);
