@@ -43,8 +43,10 @@ namespace Scanner.Audio
                 double[] sampleData = new FftSharp.Windows.Hanning().Apply(new List<double>(audio).GetRange(i * sampleLength, sampleLength).ToArray());
                 if (!FftSharp.Transform.IsPowerOfTwo(sampleData.Length)) continue;
 
-                double[] samplePower = FftSharp.Transform.FFTpower(sampleData);
-                double[] sampleFreqs = FftSharp.Transform.FFTfreq(sampleRate, samplePower);
+                System.Numerics.Complex[] spectrum = FftSharp.FFT.Forward(sampleData);
+
+                double[] samplePower = FftSharp.FFT.Power(spectrum);
+                double[] sampleFreqs = FftSharp.FFT.FrequencyScale(samplePower.Length, sampleRate);
                 data.Add(new(samplePower, sampleFreqs));
             }
 
@@ -97,6 +99,25 @@ namespace Scanner.Audio
             }
 
             return hash.ToArray();
+        }
+
+        public static IEnumerable<string> ChunkSplit(string str, int chunkSize)
+        {
+            return Enumerable.Range(0, (int)Math.Ceiling(str.Length / (float)chunkSize)).Select(i => str.Substring(i * chunkSize, Math.Min(str.Length - (i * chunkSize), chunkSize)));
+        }
+
+        public static double? CompareHashes(string firstHash, string secondHash)
+        {
+            if (firstHash.Length != secondHash.Length) throw new ArgumentException("Hashes must be have equal length");
+
+            List<int> firstInt = new List<string>(ChunkSplit(firstHash, 2)).ConvertAll(i => Convert.ToInt32(i));
+            List<int> secondInt = new List<string>(ChunkSplit(secondHash, 2)).ConvertAll(i => Convert.ToInt32(i));
+
+            List<int> diffs = new();
+            for (int i = 0; i < firstInt.Count; i++) diffs.Add(Math.Abs(firstInt[i] - secondInt[i]));
+
+            double percent = diffs.Average();
+            return percent;
         }
     }
 }
