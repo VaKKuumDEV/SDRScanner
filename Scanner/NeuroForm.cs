@@ -7,7 +7,7 @@ namespace Scanner
 {
     public partial class NeuroForm : Form
     {
-        struct SampleInfo
+        public struct SampleInfo
         {
             public double[] power;
             public double[] freqs;
@@ -18,9 +18,11 @@ namespace Scanner
 
         private List<SampleInfo>? SamplesData { get; set; } = null;
         private int? CurrentSelection { get; set; } = null;
+        private SignalsMap Map { get; }
 
         public NeuroForm()
         {
+            Map = new(new DirectoryInfo(Environment.CurrentDirectory + "/Samples.json").FullName);
             InitializeComponent();
 
             SignalPlot.Plot.Title("БПФ без фильтрации");
@@ -128,6 +130,21 @@ namespace Scanner
                 CurrentSelection++;
                 InitSelection();
             }
+        }
+
+        private void SignalsBaseButton_Click(object sender, EventArgs e)
+        {
+            SamplerForm form = new();
+            form.ShowDialog(this);
+
+            Map.Reload();
+        }
+
+        private void RecognizeButton_Click(object sender, EventArgs e)
+        {
+            if (CurrentSelection == null) return;
+
+            List<KeyValuePair<string, double>> percents = new();
         }
     }
 }

@@ -34,14 +34,14 @@ namespace Scanner.Audio
             if (totalTime < 10) throw new Exception("Audio length must be more or equals then 10 second");
             int samples = totalTime / 10;
             int sampleLength = audio.Length / samples;
-            if (!FftSharp.Transform.IsPowerOfTwo(sampleLength)) sampleLength = (int)Math.Pow(2, Math.Floor(Math.Log2(sampleLength)));
+            if (!IsPowerOfTwo(sampleLength)) sampleLength = (int)Math.Pow(2, Math.Floor(Math.Log2(sampleLength)));
             samples = audio.Length / sampleLength;
 
             List<KeyValuePair<double[], double[]>> data = new();
             for(int i = 0; i < samples; i++)
             {
                 double[] sampleData = new FftSharp.Windows.Hanning().Apply(new List<double>(audio).GetRange(i * sampleLength, sampleLength).ToArray());
-                if (!FftSharp.Transform.IsPowerOfTwo(sampleData.Length)) continue;
+                if (!IsPowerOfTwo(sampleData.Length)) continue;
 
                 System.Numerics.Complex[] spectrum = FftSharp.FFT.Forward(sampleData);
 
@@ -113,11 +113,17 @@ namespace Scanner.Audio
             List<int> firstInt = new List<string>(ChunkSplit(firstHash, 2)).ConvertAll(i => Convert.ToInt32(i));
             List<int> secondInt = new List<string>(ChunkSplit(secondHash, 2)).ConvertAll(i => Convert.ToInt32(i));
 
-            List<int> diffs = new();
-            for (int i = 0; i < firstInt.Count; i++) diffs.Add(Math.Abs(firstInt[i] - secondInt[i]));
+            List<double> diffs = new();
+            for (int i = 0; i < firstInt.Count; i++) diffs.Add(1 - (Math.Min(firstInt[i], secondInt[i]) / Math.Max(firstInt[i], secondInt[i])));
 
             double percent = diffs.Average();
+            //здесь фигня
             return percent;
+        }
+
+        public static bool IsPowerOfTwo(int x)
+        {
+            return ((x & (x - 1)) == 0) && (x > 0);
         }
     }
 }

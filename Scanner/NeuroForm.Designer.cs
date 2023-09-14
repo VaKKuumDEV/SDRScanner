@@ -36,13 +36,15 @@
             SignalPlot = new ScottPlot.FormsPlot();
             PreparedSignalPlot = new ScottPlot.FormsPlot();
             HashTextbox = new TextBox();
+            SignalsBaseButton = new Button();
             OpenSignalButton = new Button();
             HashListbox = new ListBox();
-            ContentPanel = new TableLayoutPanel();
-            OpenSignalDialog = new OpenFileDialog();
             ForwardButton = new Button();
             NextButton = new Button();
             ListingLabel = new Label();
+            ContentPanel = new TableLayoutPanel();
+            OpenSignalDialog = new OpenFileDialog();
+            RecognizeButton = new Button();
             tableLayoutPanel1 = new TableLayoutPanel();
             tableLayoutPanel3 = new TableLayoutPanel();
             label1 = new Label();
@@ -51,8 +53,8 @@
             tableLayoutPanel1.SuspendLayout();
             tableLayoutPanel3.SuspendLayout();
             tableLayoutPanel2.SuspendLayout();
-            ContentPanel.SuspendLayout();
             tableLayoutPanel4.SuspendLayout();
+            ContentPanel.SuspendLayout();
             SuspendLayout();
             // 
             // tableLayoutPanel1
@@ -133,19 +135,35 @@
             // 
             tableLayoutPanel2.ColumnCount = 1;
             tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tableLayoutPanel2.Controls.Add(RecognizeButton, 0, 2);
+            tableLayoutPanel2.Controls.Add(SignalsBaseButton, 0, 1);
             tableLayoutPanel2.Controls.Add(OpenSignalButton, 0, 0);
-            tableLayoutPanel2.Controls.Add(HashListbox, 0, 1);
-            tableLayoutPanel2.Controls.Add(tableLayoutPanel4, 0, 2);
+            tableLayoutPanel2.Controls.Add(HashListbox, 0, 3);
+            tableLayoutPanel2.Controls.Add(tableLayoutPanel4, 0, 4);
             tableLayoutPanel2.Dock = DockStyle.Fill;
             tableLayoutPanel2.Location = new Point(541, 0);
             tableLayoutPanel2.Margin = new Padding(0);
             tableLayoutPanel2.Name = "tableLayoutPanel2";
-            tableLayoutPanel2.RowCount = 3;
+            tableLayoutPanel2.RowCount = 5;
+            tableLayoutPanel2.RowStyles.Add(new RowStyle());
+            tableLayoutPanel2.RowStyles.Add(new RowStyle());
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
             tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
             tableLayoutPanel2.Size = new Size(233, 453);
             tableLayoutPanel2.TabIndex = 1;
+            // 
+            // SignalsBaseButton
+            // 
+            SignalsBaseButton.AutoSize = true;
+            SignalsBaseButton.Dock = DockStyle.Top;
+            SignalsBaseButton.Location = new Point(3, 41);
+            SignalsBaseButton.Name = "SignalsBaseButton";
+            SignalsBaseButton.Size = new Size(227, 32);
+            SignalsBaseButton.TabIndex = 3;
+            SignalsBaseButton.Text = "База сигналов";
+            SignalsBaseButton.UseVisualStyleBackColor = true;
+            SignalsBaseButton.Click += SignalsBaseButton_Click;
             // 
             // OpenSignalButton
             // 
@@ -164,31 +182,10 @@
             HashListbox.Dock = DockStyle.Fill;
             HashListbox.FormattingEnabled = true;
             HashListbox.ItemHeight = 22;
-            HashListbox.Location = new Point(3, 41);
+            HashListbox.Location = new Point(3, 117);
             HashListbox.Name = "HashListbox";
-            HashListbox.Size = new Size(227, 367);
+            HashListbox.Size = new Size(227, 291);
             HashListbox.TabIndex = 1;
-            // 
-            // ContentPanel
-            // 
-            ContentPanel.ColumnCount = 2;
-            ContentPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 70F));
-            ContentPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30F));
-            ContentPanel.Controls.Add(tableLayoutPanel1, 0, 0);
-            ContentPanel.Controls.Add(tableLayoutPanel2, 1, 0);
-            ContentPanel.Dock = DockStyle.Fill;
-            ContentPanel.Location = new Point(4, 4);
-            ContentPanel.Margin = new Padding(0);
-            ContentPanel.Name = "ContentPanel";
-            ContentPanel.RowCount = 1;
-            ContentPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            ContentPanel.Size = new Size(774, 453);
-            ContentPanel.TabIndex = 0;
-            // 
-            // OpenSignalDialog
-            // 
-            OpenSignalDialog.Title = "Выберите файл аудиозаписи";
-            OpenSignalDialog.FileOk += OpenSignalDialog_FileOk;
             // 
             // tableLayoutPanel4
             // 
@@ -246,6 +243,39 @@
             ListingLabel.Text = "0/0";
             ListingLabel.TextAlign = ContentAlignment.MiddleCenter;
             // 
+            // ContentPanel
+            // 
+            ContentPanel.ColumnCount = 2;
+            ContentPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 70F));
+            ContentPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30F));
+            ContentPanel.Controls.Add(tableLayoutPanel1, 0, 0);
+            ContentPanel.Controls.Add(tableLayoutPanel2, 1, 0);
+            ContentPanel.Dock = DockStyle.Fill;
+            ContentPanel.Location = new Point(4, 4);
+            ContentPanel.Margin = new Padding(0);
+            ContentPanel.Name = "ContentPanel";
+            ContentPanel.RowCount = 1;
+            ContentPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            ContentPanel.Size = new Size(774, 453);
+            ContentPanel.TabIndex = 0;
+            // 
+            // OpenSignalDialog
+            // 
+            OpenSignalDialog.Title = "Выберите файл аудиозаписи";
+            OpenSignalDialog.FileOk += OpenSignalDialog_FileOk;
+            // 
+            // RecognizeButton
+            // 
+            RecognizeButton.AutoSize = true;
+            RecognizeButton.Dock = DockStyle.Top;
+            RecognizeButton.Location = new Point(3, 79);
+            RecognizeButton.Name = "RecognizeButton";
+            RecognizeButton.Size = new Size(227, 32);
+            RecognizeButton.TabIndex = 4;
+            RecognizeButton.Text = "Распознать";
+            RecognizeButton.UseVisualStyleBackColor = true;
+            RecognizeButton.Click += RecognizeButton_Click;
+            // 
             // NeuroForm
             // 
             AutoScaleDimensions = new SizeF(11F, 22F);
@@ -264,9 +294,9 @@
             tableLayoutPanel3.PerformLayout();
             tableLayoutPanel2.ResumeLayout(false);
             tableLayoutPanel2.PerformLayout();
-            ContentPanel.ResumeLayout(false);
             tableLayoutPanel4.ResumeLayout(false);
             tableLayoutPanel4.PerformLayout();
+            ContentPanel.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -282,5 +312,7 @@
         private Button ForwardButton;
         private Button NextButton;
         private Label ListingLabel;
+        private Button SignalsBaseButton;
+        private Button RecognizeButton;
     }
 }
