@@ -1,10 +1,6 @@
-﻿using NAudio.Midi;
+﻿using Microsoft.VisualBasic;
 using NAudio.Wave;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Numerics;
 
 namespace Scanner.Audio
 {
@@ -122,13 +118,24 @@ namespace Scanner.Audio
             double sumSqr2 = secondInt.Sum(y => Math.Pow(y - avg2, 2.0));
 
             double correl = sum1 / Math.Sqrt(sumSqr1 * sumSqr2);
-            //здесь фигня
             return correl;
         }
 
         public static bool IsPowerOfTwo(int x)
         {
             return ((x & (x - 1)) == 0) && (x > 0);
+        }
+
+        public unsafe static void WriteToWav(string filename, MemoryStream iStream, MemoryStream qStream)
+        {
+            FileInfo file = new(Environment.CurrentDirectory + "/" + filename + ".wav");
+
+            RawSourceWaveStream iComponent = new(iStream, new WaveFormat(44100, 16, 1));
+            RawSourceWaveStream qComponent = new(qStream, new WaveFormat(44100, 16, 1));
+
+            MultiplexingWaveProvider waveProvider = new(new IWaveProvider[] { iComponent, qComponent }, 2);
+
+            WaveFileWriter.CreateWaveFile(file.FullName, waveProvider);
         }
     }
 }

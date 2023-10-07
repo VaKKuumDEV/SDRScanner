@@ -1,5 +1,7 @@
 using SDRSharp.RTLSDR;
 using SDRSharp.Radio;
+using Scanner.Audio;
+using System.Numerics;
 
 namespace Scanner
 {
@@ -9,6 +11,7 @@ namespace Scanner
         private List<DeviceDisplay> DevicesList { get; } = new();
         private WorkingStatuses Status { get; set; } = WorkingStatuses.NOT_INIT;
         private DateTime SignalTime { get; set; } = DateTime.Now;
+        private StreamPlayer Player { get; set; }
 
         public enum WorkingStatuses
         {
@@ -54,6 +57,24 @@ namespace Scanner
                 if (Status == WorkingStatuses.STARTED) Stop();
                 else if (Status == WorkingStatuses.STOPPED) Start();
             });
+
+            Player = new();
+            Player.PlayAsync();
+            Random rnd = new();
+
+            Thread thread = new(new ThreadStart(() =>
+            {
+                while (!IsDisposed)
+                {
+                    var freq = 0.01 * rnd.Next(10);
+                    for (int i = 0; i < 1000; i++)
+                    {
+                        var v = (short)(Math.Sin(freq * i * Math.PI * 2) * short.MaxValue);
+                        Player.Write(v);
+                    }
+                }
+            }));
+            thread.Start();
 
             LoadDevicesList();
         }
