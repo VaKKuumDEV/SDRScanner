@@ -9,7 +9,7 @@ namespace Scanner
         static void Main()
         {
             ApplicationConfiguration.Initialize();
-            Application.Run(new NeuroForm());
+            Application.Run(new MainForm());
         }
     }
 }

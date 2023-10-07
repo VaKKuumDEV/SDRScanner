@@ -143,8 +143,71 @@ namespace Scanner
         private void RecognizeButton_Click(object sender, EventArgs e)
         {
             if (CurrentSelection == null) return;
+            if (SamplesData == null) return;
+            SampleInfo info = SamplesData[CurrentSelection.Value];
 
             List<KeyValuePair<string, double>> percents = new();
+            foreach (var kv in Map.Map)
+            {
+                foreach (var valHash in kv.Value)
+                {
+                    double? percent = AudioUtils.CompareHashes(info.hash, valHash);
+                    if (percent != null) percents.Add(new(kv.Key, percent.Value));
+                }
+            }
+
+            if (percents.Count > 0)
+            {
+                percents.Sort((a, b) => a.Value > b.Value ? -1 : 1);
+                KeyValuePair<string, double> maxPercentPair = percents.First();
+
+                MessageBox.Show("Сигнал " + maxPercentPair.Key + ": " + maxPercentPair.Value);
+            }
+            else
+            {
+                MessageBox.Show("Для данного сигнала  нет совпадений", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void RecognizeAllButton_Click(object sender, EventArgs e)
+        {
+            if (CurrentSelection == null) return;
+            if (SamplesData == null) return;
+
+            Dictionary<string, int> counts = new();
+            foreach(SampleInfo info in SamplesData)
+            {
+                List<KeyValuePair<string, double>> percents = new();
+                foreach (var kv in Map.Map)
+                {
+                    foreach (var valHash in kv.Value)
+                    {
+                        double? percent = AudioUtils.CompareHashes(info.hash, valHash);
+                        if (percent != null) percents.Add(new(kv.Key, percent.Value));
+                    }
+                }
+
+                if(percents.Count > 0)
+                {
+                    percents.Sort((a, b) => a.Value > b.Value ? -1 : 1);
+                    KeyValuePair<string, double> maxPercent = percents.First();
+
+                    if (!counts.ContainsKey(maxPercent.Key)) counts[maxPercent.Key] = 1;
+                    counts[maxPercent.Key]++;
+                }
+            }
+
+            if(counts.Keys.Count > 0)
+            {
+                var countsList = counts.ToList();
+                countsList.Sort((a, b) => a.Value > b.Value ? -1 : 1);
+                var maximum = countsList.First();
+                MessageBox.Show("Сигнал " + maximum.Key + ": " + maximum.Value);
+            }
+            else
+            {
+                MessageBox.Show("Для данного сигнала  нет совпадений", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }

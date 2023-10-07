@@ -31,8 +31,8 @@ namespace Scanner.Audio
 
         public static KeyValuePair<double[], double[]>[] MakeFFT(double[] audio, int sampleRate, int totalTime)
         {
-            if (totalTime < 10) throw new Exception("Audio length must be more or equals then 10 second");
-            int samples = totalTime / 10;
+            if (totalTime < 3) throw new Exception("Audio length must be more or equals then 3 second");
+            int samples = totalTime / 3;
             int sampleLength = audio.Length / samples;
             if (!IsPowerOfTwo(sampleLength)) sampleLength = (int)Math.Pow(2, Math.Floor(Math.Log2(sampleLength)));
             samples = audio.Length / sampleLength;
@@ -108,17 +108,22 @@ namespace Scanner.Audio
 
         public static double? CompareHashes(string firstHash, string secondHash)
         {
-            if (firstHash.Length != secondHash.Length) throw new ArgumentException("Hashes must be have equal length");
+            if (firstHash.Length != secondHash.Length) return null;
 
             List<int> firstInt = new List<string>(ChunkSplit(firstHash, 2)).ConvertAll(i => Convert.ToInt32(i));
             List<int> secondInt = new List<string>(ChunkSplit(secondHash, 2)).ConvertAll(i => Convert.ToInt32(i));
 
-            List<double> diffs = new();
-            for (int i = 0; i < firstInt.Count; i++) diffs.Add(1 - (Math.Min(firstInt[i], secondInt[i]) / Math.Max(firstInt[i], secondInt[i])));
+            double avg1 = firstInt.Average();
+            double avg2 = secondInt.Average();
 
-            double percent = diffs.Average();
+            double sum1 = firstInt.Zip(secondInt, (x1, y1) => (x1 - avg1) * (y1 - avg2)).Sum();
+
+            double sumSqr1 = firstInt.Sum(x => Math.Pow(x - avg1, 2.0));
+            double sumSqr2 = secondInt.Sum(y => Math.Pow(y - avg2, 2.0));
+
+            double correl = sum1 / Math.Sqrt(sumSqr1 * sumSqr2);
             //здесь фигня
-            return percent;
+            return correl;
         }
 
         public static bool IsPowerOfTwo(int x)

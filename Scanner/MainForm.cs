@@ -8,7 +8,7 @@ namespace Scanner
         private static RtlDevice? IO { get; set; } = null;
         private List<DeviceDisplay> DevicesList { get; } = new();
         private WorkingStatuses Status { get; set; } = WorkingStatuses.NOT_INIT;
-        private int SignalTime { get; set; } = 0;
+        private DateTime SignalTime { get; set; } = DateTime.Now;
 
         public enum WorkingStatuses
         {
@@ -83,7 +83,7 @@ namespace Scanner
         {
             if (IO != null)
             {
-                SignalTime = 0;
+                SignalTime = DateTime.Now;
                 uint freq = (uint)FreqBox.Value;
                 int gain = 0;
 
@@ -108,8 +108,7 @@ namespace Scanner
             float* power = stackalloc float[e.Length];
             Fourier.SpectrumPower(e.Buffer, power, e.Length);
 
-            SignalTime--;
-            if (SignalTime <= 0)
+            if ((DateTime.Now - SignalTime).TotalSeconds >= 1)
             {
                 List<double> fftPower = new();
                 for (int i = 0; i < e.Length; i++) fftPower.Add(power[i]);
@@ -124,7 +123,7 @@ namespace Scanner
 
                     AveragePowerBox.Text = averagePower.ToString();
                 });
-                SignalTime = 200;
+                SignalTime = DateTime.Now;
             }
         }
     }
