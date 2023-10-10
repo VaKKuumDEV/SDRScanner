@@ -65,9 +65,10 @@ namespace Scanner.Audio
                 double freq = powerFreqs.Keys.ToArray()[i];
                 int fromIndex = new List<double>(freqs).FindIndex(item => item >= (freq - 0.5));
                 int toIndex = new List<double>(freqs).FindIndex(item => item >= (freq + 0.5));
-                if (fromIndex == -1 || toIndex == -1) break;
+                if (fromIndex == -1) break;
+                if (toIndex == -1) toIndex = freqs.Length - 1;
 
-                List<double> freqPowers = newPower.GetRange(fromIndex, toIndex - fromIndex);
+                List<double> freqPowers = newPower.GetRange(fromIndex, Math.Max(1, toIndex - fromIndex));
                 double averagedFreq = freqPowers.Average();
                 powerFreqs[freq] = averagedFreq;
             }
