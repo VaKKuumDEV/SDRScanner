@@ -28,7 +28,7 @@ namespace Scanner.Audio
         public static KeyValuePair<double[], double[]>[] MakeFFT(double[] audio, int sampleRate, int totalTime)
         {
             if (totalTime < 3) throw new Exception("Audio length must be more or equals then 3 second");
-            int samples = totalTime / 3;
+            int samples = totalTime / 3; //время одного сэмпла сигнала
             int sampleLength = audio.Length / samples;
             if (!IsPowerOfTwo(sampleLength)) sampleLength = (int)Math.Pow(2, Math.Floor(Math.Log2(sampleLength)));
             samples = audio.Length / sampleLength;
@@ -63,13 +63,11 @@ namespace Scanner.Audio
             for(int i = 0; i < powerFreqs.Keys.Count; i++)
             {
                 double freq = powerFreqs.Keys.ToArray()[i];
-                List<double> freqPowers = new();
-                for(int j = 0; j < freqs.Length; j++)
-                {
-                    if (freqs[j] >= (freq - 0.5) && freqs[j] <= (freq + 0.5)) freqPowers.Add(newPower[j]);
-                }
+                int fromIndex = new List<double>(freqs).FindIndex(item => item >= (freq - 0.5));
+                int toIndex = new List<double>(freqs).FindIndex(item => item >= (freq + 0.5));
+                if (fromIndex == -1 || toIndex == -1) break;
 
-                //double squaredFreq = Math.Sqrt(freqPowers.ConvertAll(item => Math.Pow(item, 2d)).Sum() / (freqPowers.Count * (freqPowers.Count - 1)));
+                List<double> freqPowers = newPower.GetRange(fromIndex, toIndex - fromIndex);
                 double averagedFreq = freqPowers.Average();
                 powerFreqs[freq] = averagedFreq;
             }
