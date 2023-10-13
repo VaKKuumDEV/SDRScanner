@@ -1,15 +1,5 @@
-﻿using FftSharp;
-using Scanner.Audio;
-using System;
-using System.Collections.Generic;
+﻿using Scanner.Audio;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using static Scanner.NeuroForm;
 
 namespace Scanner
 {
@@ -48,19 +38,26 @@ namespace Scanner
                 {
                     FileInfo file = new(fileName);
                     (double[] audio, int sampleRate, int bytesPerSample, int totalTime) = AudioUtils.ReadAudioFile(new(fileName));
-                    var samplesData = AudioUtils.MakeFFT(audio, sampleRate, totalTime);
+                    KeyValuePair<double[], double[]>[] samplesData = AudioUtils.MakeFFT(audio, sampleRate, totalTime);
+                    Task[] hashTasks = new Task[samplesData.Length];
 
-                    List<string> samplesList = new();
+                    List<string> samplesList = new(new string[samplesData.Length]);
                     for (int sample = 0; sample < samplesData.Length; sample++)
                     {
-                        (double[] preparedPower, double[] preparedFreqs) = AudioUtils.PrepareAudioData(samplesData[sample].Key, samplesData[sample].Value);
-                        int[] hashInts = AudioUtils.GetAudioHash(preparedPower, preparedFreqs);
+                        hashTasks[sample] = new TaskFactory().StartNew((sampleObjectData) =>
+                        {
+                            var sampleData = ((NeuroForm.SampleData?)sampleObjectData) ?? throw new ArgumentNullException(nameof(sampleObjectData));
 
-                        string hash = "";
-                        for (int i = 0; i < hashInts.Length; i++) hash += hashInts[i].ToString("00");
-                        samplesList.Add(hash);
+                            (double[] preparedPower, double[] preparedFreqs) = AudioUtils.PrepareAudioData(sampleData.data.Key, sampleData.data.Value);
+                            int[] hashInts = AudioUtils.GetAudioHash(preparedPower, preparedFreqs);
+
+                            string hash = "";
+                            for (int i = 0; i < hashInts.Length; i++) hash += hashInts[i].ToString("00");
+                            samplesList[sampleData.index] = hash;
+                        }, new NeuroForm.SampleData { data = samplesData[sample], index = sample });
                     }
 
+                    Task.WaitAll(hashTasks);
                     Map.AddSamples(Path.GetFileNameWithoutExtension(file.Name), samplesList);
                 }
 

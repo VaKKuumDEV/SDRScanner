@@ -16,6 +16,12 @@ namespace Scanner
             public string hash;
         };
 
+        public struct SampleData
+        {
+            public KeyValuePair<double[], double[]> data;
+            public int index;
+        }
+
         private List<SampleInfo>? SamplesData { get; set; } = null;
         private int? CurrentSelection { get; set; } = null;
         private SignalsMap Map { get; }
@@ -25,11 +31,11 @@ namespace Scanner
             Map = new(new DirectoryInfo(Environment.CurrentDirectory + "/Samples.json").FullName);
             InitializeComponent();
 
-            SignalPlot.Plot.Title("БПФ без фильтрации");
+            SignalPlot.Plot.Title("БПФ без преобразования");
             SignalPlot.Plot.XLabel("Частота (Гц)");
             SignalPlot.Plot.YLabel("Амплитуда (дБ)");
 
-            PreparedSignalPlot.Plot.Title("БПФ с фильтром");
+            PreparedSignalPlot.Plot.Title("БПФ с преобразованием");
             PreparedSignalPlot.Plot.XLabel("Частота (Гц)");
             PreparedSignalPlot.Plot.YLabel("Амплитуда (дБ)");
         }
@@ -45,11 +51,6 @@ namespace Scanner
             Cursor = Cursors.WaitCursor;
 
             CurrentSelection = null;
-            BeginInvoke(() =>
-            {
-                HashListbox.Items.Clear();
-            });
-
             await Task.Run(() =>
             {
                 try
@@ -57,22 +58,34 @@ namespace Scanner
                     (double[] audio, int sampleRate, int bytesPerSample, int totalTime) = AudioUtils.ReadAudioFile(new(OpenSignalDialog.FileName));
                     var samplesData = AudioUtils.MakeFFT(audio, sampleRate, totalTime);
 
-                    SamplesData = new();
+                    SamplesData = new(new SampleInfo[samplesData.Length]);
+                    BeginInvoke(() =>
+                    {
+                        PrintCorrectSamples();
+                    });
+
+                    Task[] hashTasks = new Task[samplesData.Length];
                     for (int sample = 0; sample < samplesData.Length; sample++)
                     {
-                        (double[] preparedPower, double[] preparedFreqs) = AudioUtils.PrepareAudioData(samplesData[sample].Key, samplesData[sample].Value);
-                        int[] hashInts = AudioUtils.GetAudioHash(preparedPower, preparedFreqs);
-
-                        string hash = "";
-                        for (int i = 0; i < hashInts.Length; i++) hash += hashInts[i].ToString("00");
-                        SamplesData.Add(new() { power = samplesData[sample].Key, freqs = samplesData[sample].Value, preparedPower = preparedPower, preparedFreqs = preparedFreqs, hash = hash });
-
-                        BeginInvoke(() =>
+                        hashTasks[sample] = new TaskFactory().StartNew((sampleObjectData) =>
                         {
-                            HashListbox.Items.Add("Sample " + sample + ": " + hash);
-                        });
+                            var sampleData = ((SampleData?)sampleObjectData) ?? throw new ArgumentNullException(nameof(sampleObjectData));
+
+                            (double[] preparedPower, double[] preparedFreqs) = AudioUtils.PrepareAudioData(sampleData.data.Key, sampleData.data.Value);
+                            int[] hashInts = AudioUtils.GetAudioHash(preparedPower, preparedFreqs);
+
+                            string hash = "";
+                            for (int i = 0; i < hashInts.Length; i++) hash += hashInts[i].ToString("00");
+                            SamplesData[sampleData.index] = new() { power = sampleData.data.Key, freqs = sampleData.data.Value, preparedPower = preparedPower, preparedFreqs = preparedFreqs, hash = hash };
+
+                            BeginInvoke(() =>
+                            {
+                                PrintCorrectSamples();
+                            });
+                        }, new SampleData { data = samplesData[sample], index = sample });
                     }
 
+                    Task.WaitAll(hashTasks);
                     if (SamplesData.Count > 0)
                     {
                         CurrentSelection = 0;
@@ -112,6 +125,16 @@ namespace Scanner
                 ListingLabel.Text = (CurrentSelection.Value + 1) + "/" + SamplesData.Count;
                 HashTextbox.Text = kv.hash;
             });
+        }
+
+        private void PrintCorrectSamples()
+        {
+            HashListbox.Items.Clear();
+            if (SamplesData == null) return;
+            for (int i = 0; i < SamplesData.Count; i++)
+            {
+                HashListbox.Items.Add("Sample " + i + ": " + SamplesData[i].hash);
+            }
         }
 
         private void ForwardButton_Click(object sender, EventArgs e)
@@ -175,7 +198,7 @@ namespace Scanner
             if (SamplesData == null) return;
 
             Dictionary<string, int> counts = new();
-            foreach(SampleInfo info in SamplesData)
+            foreach (SampleInfo info in SamplesData)
             {
                 List<KeyValuePair<string, double>> percents = new();
                 foreach (var kv in Map.Map)
@@ -187,7 +210,7 @@ namespace Scanner
                     }
                 }
 
-                if(percents.Count > 0)
+                if (percents.Count > 0)
                 {
                     percents.Sort((a, b) => a.Value > b.Value ? -1 : 1);
                     KeyValuePair<string, double> maxPercent = percents.First();
@@ -197,7 +220,7 @@ namespace Scanner
                 }
             }
 
-            if(counts.Keys.Count > 0)
+            if (counts.Keys.Count > 0)
             {
                 var countsList = counts.ToList();
                 countsList.Sort((a, b) => a.Value > b.Value ? -1 : 1);
