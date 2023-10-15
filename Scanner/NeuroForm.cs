@@ -61,6 +61,7 @@ namespace Scanner
                     SamplesData = new(new SampleInfo[samplesData.Length]);
                     BeginInvoke(() =>
                     {
+                        FreqBox.Text = "SR: " + sampleRate + "Hz";
                         PrintCorrectSamples();
                     });
 
@@ -133,7 +134,7 @@ namespace Scanner
             if (SamplesData == null) return;
             for (int i = 0; i < SamplesData.Count; i++)
             {
-                HashListbox.Items.Add("Sample " + i + ": " + SamplesData[i].hash);
+                HashListbox.Items.Add("Sample " + i.ToString("00") + ": " + SamplesData[i].hash);
             }
         }
 
@@ -175,7 +176,7 @@ namespace Scanner
                 foreach (var valHash in kv.Value)
                 {
                     double? percent = AudioUtils.CompareHashes(info.hash, valHash);
-                    if (percent != null) percents.Add(new(kv.Key, percent.Value));
+                    if (percent != null) percents.Add(new(kv.Key, Math.Abs(percent.Value)));
                 }
             }
 
@@ -206,7 +207,7 @@ namespace Scanner
                     foreach (var valHash in kv.Value)
                     {
                         double? percent = AudioUtils.CompareHashes(info.hash, valHash);
-                        if (percent != null) percents.Add(new(kv.Key, percent.Value));
+                        if (percent != null) percents.Add(new(kv.Key, Math.Abs(percent.Value)));
                     }
                 }
 
@@ -216,7 +217,7 @@ namespace Scanner
                     KeyValuePair<string, double> maxPercent = percents.First();
 
                     if (!counts.ContainsKey(maxPercent.Key)) counts[maxPercent.Key] = 1;
-                    counts[maxPercent.Key]++;
+                    else counts[maxPercent.Key]++;
                 }
             }
 

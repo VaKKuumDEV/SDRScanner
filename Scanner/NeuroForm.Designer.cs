@@ -36,6 +36,7 @@
             SignalPlot = new ScottPlot.FormsPlot();
             PreparedSignalPlot = new ScottPlot.FormsPlot();
             HashTextbox = new TextBox();
+            RecognizeAllButton = new Button();
             RecognizeButton = new Button();
             SignalsBaseButton = new Button();
             OpenSignalButton = new Button();
@@ -45,7 +46,7 @@
             ListingLabel = new Label();
             ContentPanel = new TableLayoutPanel();
             OpenSignalDialog = new OpenFileDialog();
-            RecognizeAllButton = new Button();
+            FreqBox = new TextBox();
             tableLayoutPanel1 = new TableLayoutPanel();
             tableLayoutPanel3 = new TableLayoutPanel();
             label1 = new Label();
@@ -140,13 +141,15 @@
             tableLayoutPanel2.Controls.Add(RecognizeButton, 0, 2);
             tableLayoutPanel2.Controls.Add(SignalsBaseButton, 0, 1);
             tableLayoutPanel2.Controls.Add(OpenSignalButton, 0, 0);
-            tableLayoutPanel2.Controls.Add(HashListbox, 0, 4);
-            tableLayoutPanel2.Controls.Add(tableLayoutPanel4, 0, 5);
+            tableLayoutPanel2.Controls.Add(HashListbox, 0, 5);
+            tableLayoutPanel2.Controls.Add(tableLayoutPanel4, 0, 6);
+            tableLayoutPanel2.Controls.Add(FreqBox, 0, 4);
             tableLayoutPanel2.Dock = DockStyle.Fill;
             tableLayoutPanel2.Location = new Point(541, 0);
             tableLayoutPanel2.Margin = new Padding(0);
             tableLayoutPanel2.Name = "tableLayoutPanel2";
-            tableLayoutPanel2.RowCount = 6;
+            tableLayoutPanel2.RowCount = 7;
+            tableLayoutPanel2.RowStyles.Add(new RowStyle());
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
@@ -155,6 +158,18 @@
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
             tableLayoutPanel2.Size = new Size(233, 453);
             tableLayoutPanel2.TabIndex = 1;
+            // 
+            // RecognizeAllButton
+            // 
+            RecognizeAllButton.AutoSize = true;
+            RecognizeAllButton.Dock = DockStyle.Top;
+            RecognizeAllButton.Location = new Point(3, 117);
+            RecognizeAllButton.Name = "RecognizeAllButton";
+            RecognizeAllButton.Size = new Size(227, 32);
+            RecognizeAllButton.TabIndex = 5;
+            RecognizeAllButton.Text = "Распознать полностью";
+            RecognizeAllButton.UseVisualStyleBackColor = true;
+            RecognizeAllButton.Click += RecognizeAllButton_Click;
             // 
             // RecognizeButton
             // 
@@ -197,9 +212,9 @@
             HashListbox.Dock = DockStyle.Fill;
             HashListbox.FormattingEnabled = true;
             HashListbox.ItemHeight = 22;
-            HashListbox.Location = new Point(3, 155);
+            HashListbox.Location = new Point(3, 191);
             HashListbox.Name = "HashListbox";
-            HashListbox.Size = new Size(227, 253);
+            HashListbox.Size = new Size(227, 217);
             HashListbox.TabIndex = 1;
             // 
             // tableLayoutPanel4
@@ -279,17 +294,14 @@
             OpenSignalDialog.Title = "Выберите файл аудиозаписи";
             OpenSignalDialog.FileOk += OpenSignalDialog_FileOk;
             // 
-            // RecognizeAllButton
+            // FreqBox
             // 
-            RecognizeAllButton.AutoSize = true;
-            RecognizeAllButton.Dock = DockStyle.Top;
-            RecognizeAllButton.Location = new Point(3, 117);
-            RecognizeAllButton.Name = "RecognizeAllButton";
-            RecognizeAllButton.Size = new Size(227, 32);
-            RecognizeAllButton.TabIndex = 5;
-            RecognizeAllButton.Text = "Распознать полностью";
-            RecognizeAllButton.UseVisualStyleBackColor = true;
-            RecognizeAllButton.Click += RecognizeAllButton_Click;
+            FreqBox.Dock = DockStyle.Top;
+            FreqBox.Location = new Point(3, 155);
+            FreqBox.Name = "FreqBox";
+            FreqBox.ReadOnly = true;
+            FreqBox.Size = new Size(227, 30);
+            FreqBox.TabIndex = 6;
             // 
             // NeuroForm
             // 
@@ -330,5 +342,6 @@
         private Button SignalsBaseButton;
         private Button RecognizeButton;
         private Button RecognizeAllButton;
+        private TextBox FreqBox;
     }
 }

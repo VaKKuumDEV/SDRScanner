@@ -51,8 +51,6 @@ namespace Scanner.Audio
 
         public static (double[] power, double[] freqs) PrepareAudioData(double[] power, double[] freqs)
         {
-            List<double> newPower = new(power);
-
             SortedDictionary<double, double> powerFreqs = new();
             for (int i = 0; i < freqs.Length - 1; i++)
             {
@@ -63,12 +61,12 @@ namespace Scanner.Audio
             for (int i = 0; i < powerFreqs.Keys.Count; i++)
             {
                 double freq = powerFreqs.Keys.ToArray()[i];
-                int fromIndex = new List<double>(freqs).FindIndex(item => item >= (freq - 0.5));
-                int toIndex = new List<double>(freqs).FindIndex(item => item >= (freq + 0.5));
+                int fromIndex = new List<double>(freqs).FindIndex(item => item >= (freq - 0.5) && item <= (freq + 0.5));
+                int toIndex = new List<double>(freqs).FindLastIndex(item => item >= (freq - 0.5) && item <= (freq + 0.5));
                 if (fromIndex == -1) break;
                 if (toIndex == -1) toIndex = freqs.Length - 1;
 
-                List<double> freqPowers = newPower.GetRange(fromIndex, Math.Max(1, toIndex - fromIndex + 1));
+                List<double> freqPowers = new List<double>(power).GetRange(fromIndex, Math.Max(1, toIndex - fromIndex + 1));
                 double averagedFreq = freqPowers.Average();
                 powerFreqs[freq] = averagedFreq;
             }
