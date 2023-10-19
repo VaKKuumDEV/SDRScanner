@@ -146,5 +146,13 @@
     <Compile Include="SDRSharp.Radio\Vfo.cs" />
     <Compile Include="SDRSharp.Radio\WindowType.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="PortAudio.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="shark.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
