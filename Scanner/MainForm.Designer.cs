@@ -46,7 +46,6 @@
             tableLayoutPanel3 = new TableLayoutPanel();
             SpectrPlot = new ScottPlot.FormsPlot();
             SignalPlot = new ScottPlot.FormsPlot();
-            AudioDevicesBox = new ComboBox();
             label1 = new Label();
             label2 = new Label();
             label3 = new Label();
@@ -65,7 +64,7 @@
             // 
             label1.AutoSize = true;
             label1.Dock = DockStyle.Top;
-            label1.Location = new Point(3, 62);
+            label1.Location = new Point(3, 76);
             label1.Name = "label1";
             label1.Padding = new Padding(2);
             label1.Size = new Size(198, 26);
@@ -76,7 +75,7 @@
             // 
             label2.AutoSize = true;
             label2.Dock = DockStyle.Top;
-            label2.Location = new Point(3, 124);
+            label2.Location = new Point(3, 138);
             label2.Name = "label2";
             label2.Padding = new Padding(2);
             label2.Size = new Size(198, 26);
@@ -87,7 +86,7 @@
             // 
             label3.AutoSize = true;
             label3.Dock = DockStyle.Top;
-            label3.Location = new Point(3, 186);
+            label3.Location = new Point(3, 200);
             label3.Name = "label3";
             label3.Padding = new Padding(2);
             label3.Size = new Size(198, 26);
@@ -116,6 +115,17 @@
             label5.TabIndex = 7;
             label5.Text = "Средняя амплитуда:";
             // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.Dock = DockStyle.Top;
+            label6.Location = new Point(3, 0);
+            label6.Name = "label6";
+            label6.Padding = new Padding(2);
+            label6.Size = new Size(198, 26);
+            label6.TabIndex = 8;
+            label6.Text = "Вывод:";
+            // 
             // ContentPanel
             // 
             ContentPanel.ColumnCount = 2;
@@ -137,7 +147,6 @@
             tableLayoutPanel2.AutoSize = true;
             tableLayoutPanel2.ColumnCount = 1;
             tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanel2.Controls.Add(AudioDevicesBox, 0, 1);
             tableLayoutPanel2.Controls.Add(label6, 0, 0);
             tableLayoutPanel2.Controls.Add(label3, 0, 7);
             tableLayoutPanel2.Controls.Add(label2, 0, 5);
@@ -153,6 +162,7 @@
             tableLayoutPanel2.Name = "tableLayoutPanel2";
             tableLayoutPanel2.RowCount = 11;
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
+            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F));
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
@@ -162,8 +172,7 @@
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
-            tableLayoutPanel2.RowStyles.Add(new RowStyle());
-            tableLayoutPanel2.Size = new Size(204, 418);
+            tableLayoutPanel2.Size = new Size(204, 432);
             tableLayoutPanel2.TabIndex = 0;
             // 
             // DevicesBox
@@ -172,7 +181,7 @@
             DevicesBox.AutoCompleteSource = AutoCompleteSource.ListItems;
             DevicesBox.Dock = DockStyle.Top;
             DevicesBox.FormattingEnabled = true;
-            DevicesBox.Location = new Point(3, 91);
+            DevicesBox.Location = new Point(3, 105);
             DevicesBox.Name = "DevicesBox";
             DevicesBox.Size = new Size(198, 30);
             DevicesBox.TabIndex = 3;
@@ -181,7 +190,7 @@
             // 
             FreqBox.Dock = DockStyle.Top;
             FreqBox.Increment = new decimal(new int[] { 1000, 0, 0, 0 });
-            FreqBox.Location = new Point(3, 153);
+            FreqBox.Location = new Point(3, 167);
             FreqBox.Maximum = new decimal(new int[] { 1600000, 0, 0, 0 });
             FreqBox.Minimum = new decimal(new int[] { 100000, 0, 0, 0 });
             FreqBox.Name = "FreqBox";
@@ -194,7 +203,7 @@
             // 
             GainBox.Dock = DockStyle.Top;
             GainBox.FormattingEnabled = true;
-            GainBox.Location = new Point(3, 215);
+            GainBox.Location = new Point(3, 229);
             GainBox.Name = "GainBox";
             GainBox.Size = new Size(198, 30);
             GainBox.TabIndex = 5;
@@ -203,7 +212,7 @@
             // 
             ControlButton.AutoSize = true;
             ControlButton.Dock = DockStyle.Top;
-            ControlButton.Location = new Point(3, 375);
+            ControlButton.Location = new Point(3, 389);
             ControlButton.Name = "ControlButton";
             ControlButton.Padding = new Padding(4);
             ControlButton.Size = new Size(198, 40);
@@ -221,7 +230,7 @@
             AdditionalPanel.Controls.Add(SamplerateBox, 0, 1);
             AdditionalPanel.Controls.Add(AveragePowerBox, 0, 3);
             AdditionalPanel.Dock = DockStyle.Top;
-            AdditionalPanel.Location = new Point(0, 248);
+            AdditionalPanel.Location = new Point(0, 262);
             AdditionalPanel.Margin = new Padding(0);
             AdditionalPanel.Name = "AdditionalPanel";
             AdditionalPanel.RowCount = 4;
@@ -289,28 +298,6 @@
             SignalPlot.Size = new Size(474, 229);
             SignalPlot.TabIndex = 1;
             // 
-            // label6
-            // 
-            label6.AutoSize = true;
-            label6.Dock = DockStyle.Top;
-            label6.Location = new Point(3, 0);
-            label6.Name = "label6";
-            label6.Padding = new Padding(2);
-            label6.Size = new Size(198, 26);
-            label6.TabIndex = 8;
-            label6.Text = "Вывод:";
-            // 
-            // AudioDevicesBox
-            // 
-            AudioDevicesBox.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
-            AudioDevicesBox.AutoCompleteSource = AutoCompleteSource.ListItems;
-            AudioDevicesBox.Dock = DockStyle.Top;
-            AudioDevicesBox.FormattingEnabled = true;
-            AudioDevicesBox.Location = new Point(3, 29);
-            AudioDevicesBox.Name = "AudioDevicesBox";
-            AudioDevicesBox.Size = new Size(198, 30);
-            AudioDevicesBox.TabIndex = 9;
-            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(11F, 22F);
@@ -324,6 +311,7 @@
             Padding = new Padding(2);
             Text = "Scanner";
             WindowState = FormWindowState.Maximized;
+            FormClosing += MainForm_FormClosing;
             ContentPanel.ResumeLayout(false);
             ContentPanel.PerformLayout();
             tableLayoutPanel2.ResumeLayout(false);
@@ -350,6 +338,5 @@
         private NumericUpDown SamplerateBox;
         private TextBox AveragePowerBox;
         private ScottPlot.FormsPlot SignalPlot;
-        private ComboBox AudioDevicesBox;
     }
 }

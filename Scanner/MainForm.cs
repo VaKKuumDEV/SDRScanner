@@ -4,6 +4,7 @@ using Scanner.Audio;
 using System.Numerics;
 using System.Media;
 using SDRSharp.Radio.PortAudio;
+using FftSharp;
 
 namespace Scanner
 {
@@ -15,7 +16,9 @@ namespace Scanner
         private WorkingStatuses Status { get; set; } = WorkingStatuses.NOT_INIT;
         private DateTime SignalTime { get; set; } = DateTime.Now;
         private List<double> FrequesList { get; set; } = new();
-        private WavePlayer? Player { get; set; }
+        private Queue<double> AudioBuffer { get; set; } = new();
+        private StreamPlayer? Player { get; set; } = null;
+        private BandwidthInfo? Bandwidth { get; set; } = null;
 
         public enum WorkingStatuses
         {
@@ -24,12 +27,20 @@ namespace Scanner
             STOPPED,
         };
 
+        public struct BandwidthInfo
+        {
+            public int FromIndex { get; set; }
+            public int ToIndex { get; set; }
+            public double Left { get; set; }
+            public double Right { get; set; }
+        };
+
         unsafe public MainForm()
         {
             InitializeComponent();
             AdditionalPanel.Hide();
 
-            SpectrPlot.Plot.Title("Осциллограмма");
+            SpectrPlot.Plot.Title("Спектр");
             SpectrPlot.Plot.XLabel("Частота (Гц)");
             SpectrPlot.Plot.YLabel("Мощность (дБ)");
             SpectrPlot.Refresh();
@@ -61,18 +72,12 @@ namespace Scanner
                 }
             });
 
-            AudioDevicesBox.SelectedIndexChanged += new((sender, args) =>
+            FreqBox.ValueChanged += new((sender, args) =>
             {
-                int index = AudioDevicesBox.SelectedIndex;
-                if (index != -1 && index < AudioDevices.Count)
+                if (Status == WorkingStatuses.STARTED)
                 {
-                    if (Player == null) return;
-
-                    AudioDevice device = AudioDevices[index];
-                    Player = new(device.Index, 44100, 100, (buffer, length) =>
-                    {
-                        
-                    });
+                    IO?.Stop();
+                    IO?.Start();
                 }
             });
 
@@ -83,7 +88,6 @@ namespace Scanner
             });
 
             LoadDevicesList();
-            LoadAudioDevicesList();
         }
 
         private void LoadDevicesList()
@@ -99,22 +103,11 @@ namespace Scanner
             if (DevicesList.Count > 0) DevicesBox.SelectedIndex = 0;
         }
 
-        private void LoadAudioDevicesList()
-        {
-            List<AudioDevice> devices = AudioDevice.GetDevices(DeviceDirection.Output);
-            AudioDevices.Clear();
-            AudioDevices.AddRange(devices);
-
-            AudioDevicesBox.Items.Clear();
-            foreach (AudioDevice device in AudioDevices) AudioDevicesBox.Items.Add("(#" + device.Index + ") " + device.Name);
-
-            if (AudioDevices.Count > 0) AudioDevicesBox.SelectedIndex = 0;
-        }
-
         private void Stop()
         {
             Status = WorkingStatuses.STOPPED;
             IO?.Stop();
+            Player?.Stop();
 
             AdditionalPanel.Hide();
             ControlButton.Text = "Запуск";
@@ -124,20 +117,34 @@ namespace Scanner
         {
             if (IO != null)
             {
-                SignalTime = DateTime.Now;
+                AudioBuffer.Clear();
+                Player = new(8192);
+                Player.PlayAsync();
+
                 uint freq = (uint)FreqBox.Value * 1000;
                 int gain = 0;
 
+                FrequesList = new(new double[8192]);
+                double fSampleRate = Convert.ToInt32(IO.Samplerate) / FrequesList.Count;
+                for (int i = 0; i < FrequesList.Count; i++) FrequesList[i] = freq - (IO.Samplerate / 2) + (i * fSampleRate);
+
+                int bandwidth = 100000;
+                int bandwidthIndexes = (int)Math.Floor(bandwidth / 2 / fSampleRate);
+                Bandwidth = new()
+                {
+                    FromIndex = FrequesList.Count / 2 - bandwidthIndexes,
+                    ToIndex = FrequesList.Count / 2 + bandwidthIndexes,
+                    Left = FrequesList[FrequesList.Count / 2] - (bandwidth / 2),
+                    Right = FrequesList[FrequesList.Count / 2] + (bandwidth / 2),
+                };
+
+                SignalTime = DateTime.Now;
                 if (GainBox.SelectedIndex != -1) gain = IO.SupportedGains[GainBox.SelectedIndex];
 
                 IO.Frequency = freq;
                 IO.Gain = gain;
                 IO.Start();
                 IO.UseTunerAGC = true;
-
-                FrequesList = new(new double[8192]);
-                double fSampleRate = IO.Samplerate / FrequesList.Count;
-                for (int i = 0; i < FrequesList.Count; i++) FrequesList[i] = IO.Frequency - (IO.Samplerate / 2) + (i * fSampleRate);
 
                 ControlButton.Text = "Остановить";
                 SamplerateBox.Value = IO.Samplerate;
@@ -151,44 +158,53 @@ namespace Scanner
 
         private unsafe void IO_SamplesAvailable(object sender, SamplesAvailableEventArgs e)
         {
-            float* power = stackalloc float[e.Length];
-            Fourier.InverseTransform(e.Buffer, e.Length);
-            Fourier.SpectrumPower(e.Buffer, power, e.Length);
+            //Fourier.InverseTransform(e.Buffer, e.Length);
+            Fourier.ForwardTransform(e.Buffer, e.Length, true);
 
-            float* audio = stackalloc float[e.Length];
-            FmDetector det = new()
+            float[] window = FilterBuilder.MakeWindow(WindowType.Hamming, e.Length);
+            fixed (float* src = window) Fourier.ApplyFFTWindow(e.Buffer, src, e.Length);
+
+            float[] audio = new float[e.Length];
+            fixed (float* src = audio) new AmDetector().Demodulate(e.Buffer, src, e.Length);
+
+            float[] power = new float[e.Length];
+            fixed (float* src = power) Fourier.SpectrumPower(e.Buffer, src, e.Length);
+
+            for (int i = Bandwidth.Value.FromIndex; i < Bandwidth.Value.ToIndex; i++)
             {
-                Mode = FmMode.Wide,
-                SampleRate = IO.Samplerate
-            };
-            det.Demodulate(e.Buffer, audio, e.Length);
+                var sh = (short)(power[i] * short.MaxValue);
+                Player.Write(sh);
+            }
 
-            if ((DateTime.Now - SignalTime).TotalMilliseconds >= 100)
+            if ((DateTime.Now - SignalTime).TotalMilliseconds >= 500)
             {
                 List<double> fftPower = new(new double[e.Length]);
                 for (int i = 0; i < e.Length; i++) fftPower[i] = power[i];
-
-                List<double> fftAudio = new(new double[e.Length]);
-                for (int i = 0; i < e.Length; i++) fftAudio[i] = audio[i];
-                double[] filtered = FftSharp.Filter.LowPass(fftAudio.ToArray(), IO.Samplerate, maxFrequency: 2000);
 
                 BeginInvoke(() =>
                 {
                     SpectrPlot.Plot.Clear();
                     SpectrPlot.Plot.AddSignalXY(FrequesList.ToArray(), fftPower.ToArray());
                     SpectrPlot.Plot.AddVerticalLine(FrequesList[FrequesList.Count / 2], Color.Red);
-                    SpectrPlot.Plot.SetAxisLimitsY(-130, 20);
+                    SpectrPlot.Plot.AddVerticalLine(Bandwidth.Value.Left, Color.Green);
+                    SpectrPlot.Plot.AddVerticalLine(Bandwidth.Value.Right, Color.Green);
+                    SpectrPlot.Plot.SetAxisLimitsY(-20, 100);
                     SpectrPlot.Refresh();
 
                     SignalPlot.Plot.Clear();
-                    SignalPlot.Plot.AddSignal(filtered);
-                    SignalPlot.Plot.SetAxisLimitsY(-1E-5, 1E-5);
+                    SignalPlot.Plot.AddSignal(audio);
+                    SignalPlot.Plot.SetAxisLimitsY(0, 1000);
                     SignalPlot.Refresh();
 
                     AveragePowerBox.Text = "NaN";
                 });
                 SignalTime = DateTime.Now;
             }
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Stop();
         }
     }
 }
