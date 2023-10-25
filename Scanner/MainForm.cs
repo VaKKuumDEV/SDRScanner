@@ -5,6 +5,8 @@ using System.Numerics;
 using System.Media;
 using SDRSharp.Radio.PortAudio;
 using FftSharp;
+using System.Linq;
+using NAudio.Wave;
 
 namespace Scanner
 {
@@ -16,9 +18,10 @@ namespace Scanner
         private WorkingStatuses Status { get; set; } = WorkingStatuses.NOT_INIT;
         private DateTime SignalTime { get; set; } = DateTime.Now;
         private List<double> FrequesList { get; set; } = new();
-        private Queue<double> AudioBuffer { get; set; } = new();
+        private List<System.Numerics.Complex> AudioBuffer { get; set; } = new();
         private StreamPlayer? Player { get; set; } = null;
         private BandwidthInfo? Bandwidth { get; set; } = null;
+        private int Iter { get; set; } = 0;
 
         public enum WorkingStatuses
         {
@@ -46,7 +49,7 @@ namespace Scanner
             SpectrPlot.Refresh();
 
             SignalPlot.Plot.Title("Сигнал");
-            SignalPlot.Plot.XLabel("Время (мс)");
+            SignalPlot.Plot.XLabel("Частота (Гц)");
             SignalPlot.Plot.YLabel("Амплитуда");
             SignalPlot.Refresh();
 
@@ -158,7 +161,6 @@ namespace Scanner
 
         private unsafe void IO_SamplesAvailable(object sender, SamplesAvailableEventArgs e)
         {
-            //Fourier.InverseTransform(e.Buffer, e.Length);
             Fourier.ForwardTransform(e.Buffer, e.Length, true);
 
             float[] window = FilterBuilder.MakeWindow(WindowType.Hamming, e.Length);
@@ -172,7 +174,7 @@ namespace Scanner
 
             for (int i = Bandwidth.Value.FromIndex; i < Bandwidth.Value.ToIndex; i++)
             {
-                var sh = (short)(power[i] * short.MaxValue);
+                var sh = (short)((audio[i] - 127) * 2 * 254);
                 Player.Write(sh);
             }
 
@@ -180,6 +182,9 @@ namespace Scanner
             {
                 List<double> fftPower = new(new double[e.Length]);
                 for (int i = 0; i < e.Length; i++) fftPower[i] = power[i];
+
+                List<double> fftAudio = new(new double[e.Length]);
+                for (int i = 0; i < e.Length; i++) fftAudio[i] = audio[i];
 
                 BeginInvoke(() =>
                 {
@@ -192,7 +197,7 @@ namespace Scanner
                     SpectrPlot.Refresh();
 
                     SignalPlot.Plot.Clear();
-                    SignalPlot.Plot.AddSignal(audio);
+                    SignalPlot.Plot.AddSignalXY(FrequesList.ToArray(), fftAudio.ToArray());
                     SignalPlot.Plot.SetAxisLimitsY(0, 1000);
                     SignalPlot.Refresh();
 
@@ -204,7 +209,7 @@ namespace Scanner
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Stop();
+            if (Status == WorkingStatuses.STARTED) Stop();
         }
     }
 }
