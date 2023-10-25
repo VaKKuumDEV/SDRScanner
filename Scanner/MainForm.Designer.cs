@@ -42,7 +42,7 @@
             ControlButton = new Button();
             AdditionalPanel = new TableLayoutPanel();
             SamplerateBox = new NumericUpDown();
-            AveragePowerBox = new TextBox();
+            HashBox = new TextBox();
             tableLayoutPanel3 = new TableLayoutPanel();
             SpectrPlot = new ScottPlot.FormsPlot();
             SignalPlot = new ScottPlot.FormsPlot();
@@ -113,7 +113,7 @@
             label5.Padding = new Padding(2);
             label5.Size = new Size(198, 26);
             label5.TabIndex = 7;
-            label5.Text = "Средняя амплитуда:";
+            label5.Text = "Хэш:";
             // 
             // label6
             // 
@@ -228,7 +228,7 @@
             AdditionalPanel.Controls.Add(label5, 0, 2);
             AdditionalPanel.Controls.Add(label4, 0, 0);
             AdditionalPanel.Controls.Add(SamplerateBox, 0, 1);
-            AdditionalPanel.Controls.Add(AveragePowerBox, 0, 3);
+            AdditionalPanel.Controls.Add(HashBox, 0, 3);
             AdditionalPanel.Dock = DockStyle.Top;
             AdditionalPanel.Location = new Point(0, 262);
             AdditionalPanel.Margin = new Padding(0);
@@ -254,14 +254,14 @@
             SamplerateBox.TabIndex = 6;
             SamplerateBox.ThousandsSeparator = true;
             // 
-            // AveragePowerBox
+            // HashBox
             // 
-            AveragePowerBox.Dock = DockStyle.Top;
-            AveragePowerBox.Location = new Point(3, 91);
-            AveragePowerBox.Name = "AveragePowerBox";
-            AveragePowerBox.ReadOnly = true;
-            AveragePowerBox.Size = new Size(198, 30);
-            AveragePowerBox.TabIndex = 8;
+            HashBox.Dock = DockStyle.Top;
+            HashBox.Location = new Point(3, 91);
+            HashBox.Name = "HashBox";
+            HashBox.ReadOnly = true;
+            HashBox.Size = new Size(198, 30);
+            HashBox.TabIndex = 8;
             // 
             // tableLayoutPanel3
             // 
@@ -336,7 +336,7 @@
         private Button ControlButton;
         private TableLayoutPanel AdditionalPanel;
         private NumericUpDown SamplerateBox;
-        private TextBox AveragePowerBox;
+        private TextBox HashBox;
         private ScottPlot.FormsPlot SignalPlot;
     }
 }

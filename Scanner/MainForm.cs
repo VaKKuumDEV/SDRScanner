@@ -7,6 +7,7 @@ using SDRSharp.Radio.PortAudio;
 using FftSharp;
 using System.Linq;
 using NAudio.Wave;
+using static Scanner.NeuroForm;
 
 namespace Scanner
 {
@@ -32,6 +33,7 @@ namespace Scanner
 
         public struct BandwidthInfo
         {
+            public int Samplerate { get; set; }
             public int FromIndex { get; set; }
             public int ToIndex { get; set; }
             public double Left { get; set; }
@@ -135,6 +137,7 @@ namespace Scanner
                 int bandwidthIndexes = (int)Math.Floor(bandwidth / 2 / fSampleRate);
                 Bandwidth = new()
                 {
+                    Samplerate = bandwidth,
                     FromIndex = FrequesList.Count / 2 - bandwidthIndexes,
                     ToIndex = FrequesList.Count / 2 + bandwidthIndexes,
                     Left = FrequesList[FrequesList.Count / 2] - (bandwidth / 2),
@@ -163,28 +166,31 @@ namespace Scanner
         {
             Fourier.ForwardTransform(e.Buffer, e.Length, true);
 
-            float[] window = FilterBuilder.MakeWindow(WindowType.Hamming, e.Length);
-            fixed (float* src = window) Fourier.ApplyFFTWindow(e.Buffer, src, e.Length);
-
             float[] audio = new float[e.Length];
             fixed (float* src = audio) new AmDetector().Demodulate(e.Buffer, src, e.Length);
 
             float[] power = new float[e.Length];
             fixed (float* src = power) Fourier.SpectrumPower(e.Buffer, src, e.Length);
 
-            for (int i = Bandwidth.Value.FromIndex; i < Bandwidth.Value.ToIndex; i++)
-            {
-                var sh = (short)((audio[i] - 127) * 2 * 254);
-                Player.Write(sh);
-            }
-
-            if ((DateTime.Now - SignalTime).TotalMilliseconds >= 500)
+            if ((DateTime.Now - SignalTime).TotalMilliseconds >= 300)
             {
                 List<double> fftPower = new(new double[e.Length]);
                 for (int i = 0; i < e.Length; i++) fftPower[i] = power[i];
 
                 List<double> fftAudio = new(new double[e.Length]);
                 for (int i = 0; i < e.Length; i++) fftAudio[i] = audio[i];
+
+                List<double> bandwidthSlice = fftPower.GetRange(Bandwidth.Value.FromIndex, Bandwidth.Value.ToIndex - Bandwidth.Value.FromIndex + 1);
+                List<double> bandwidthFreqSlice = FrequesList.GetRange(Bandwidth.Value.FromIndex, Bandwidth.Value.ToIndex - Bandwidth.Value.FromIndex + 1);
+
+                double freqStep = FFT.FrequencyResolution(e.Length, IO.Samplerate);
+                (double[] preparedPower, double[] preparedFreqs) = AudioUtils.PrepareAudioData(bandwidthSlice.ToArray(), bandwidthFreqSlice.ToArray(), freqStep);
+                int[] hashInts = AudioUtils.GetAudioHash(preparedPower, preparedFreqs, (int)freqStep * 100);
+                string hash = "";
+                for (int i = 0; i < hashInts.Length; i++) hash += hashInts[i].ToString("00");
+
+                double averagePower = fftPower.Average();
+                double averageBandwidthPower = bandwidthSlice.Average();
 
                 BeginInvoke(() =>
                 {
@@ -193,6 +199,8 @@ namespace Scanner
                     SpectrPlot.Plot.AddVerticalLine(FrequesList[FrequesList.Count / 2], Color.Red);
                     SpectrPlot.Plot.AddVerticalLine(Bandwidth.Value.Left, Color.Green);
                     SpectrPlot.Plot.AddVerticalLine(Bandwidth.Value.Right, Color.Green);
+                    SpectrPlot.Plot.AddHorizontalLine(averagePower, Color.Chocolate);
+                    SpectrPlot.Plot.AddHorizontalLine(averageBandwidthPower, Color.Black);
                     SpectrPlot.Plot.SetAxisLimitsY(-20, 100);
                     SpectrPlot.Refresh();
 
@@ -201,7 +209,7 @@ namespace Scanner
                     SignalPlot.Plot.SetAxisLimitsY(0, 1000);
                     SignalPlot.Refresh();
 
-                    AveragePowerBox.Text = "NaN";
+                    HashBox.Text = hash;
                 });
                 SignalTime = DateTime.Now;
             }

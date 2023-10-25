@@ -49,46 +49,59 @@ namespace Scanner.Audio
             return data.ToArray();
         }
 
-        public static (double[] power, double[] freqs) PrepareAudioData(double[] power, double[] freqs)
+        public static (double[] power, double[] freqs) PrepareAudioData(double[] power, double[] freqs, double step = 1)
         {
             SortedDictionary<double, double> powerFreqs = new();
-            for (int i = 0; i < freqs.Length - 1; i++)
+            if (step <= 1)
             {
-                double freq = Math.Floor(freqs[i]) + 1;
-                if (!powerFreqs.ContainsKey(freq)) powerFreqs[freq] = 0d;
+                for (int i = 0; i < freqs.Length - 1; i++)
+                {
+                    double freq = Math.Floor(freqs[i]) + 1;
+                    if (!powerFreqs.ContainsKey(freq)) powerFreqs[freq] = 0d;
+                }
+
+                for (int i = 0; i < powerFreqs.Keys.Count; i++)
+                {
+                    double freq = powerFreqs.Keys.ToArray()[i];
+                    int fromIndex = new List<double>(freqs).FindIndex(item => item >= (freq - (step / 2)) && item <= (freq + (step / 2)));
+                    int toIndex = new List<double>(freqs).FindLastIndex(item => item >= (freq - (step / 2)) && item <= (freq + (step / 2)));
+                    if (fromIndex == -1) fromIndex = 0;
+                    if (toIndex == -1) toIndex = 0;
+
+                    List<double> freqPowers = new List<double>(power).GetRange(fromIndex, Math.Max(1, toIndex - fromIndex + 1));
+                    double averagedFreq = freqPowers.Average();
+                    powerFreqs[freq] = averagedFreq;
+                }
             }
-
-            for (int i = 0; i < powerFreqs.Keys.Count; i++)
+            else
             {
-                double freq = powerFreqs.Keys.ToArray()[i];
-                int fromIndex = new List<double>(freqs).FindIndex(item => item >= (freq - 0.5) && item <= (freq + 0.5));
-                int toIndex = new List<double>(freqs).FindLastIndex(item => item >= (freq - 0.5) && item <= (freq + 0.5));
-                if (fromIndex == -1) break;
-                if (toIndex == -1) toIndex = freqs.Length - 1;
-
-                List<double> freqPowers = new List<double>(power).GetRange(fromIndex, Math.Max(1, toIndex - fromIndex + 1));
-                double averagedFreq = freqPowers.Average();
-                powerFreqs[freq] = averagedFreq;
+                for (int i = 0; i < power.Length; i++)
+                {
+                    powerFreqs[Math.Floor(freqs[i])] = power[i];
+                }
             }
 
             return (powerFreqs.Values.ToArray(), powerFreqs.Keys.ToArray());
         }
 
-        public static int[] GetAudioHash(double[] powers, double[] freqs)
+        public static int[] GetAudioHash(double[] powers, double[] freqs, int hashRate = HASH_RATE)
         {
             List<int> hash = new();
-            SortedDictionary<double, double> newPowerData = new();
-            for (int i = 1; i < freqs[^1] + 1; i++) newPowerData[i] = 0;
 
-            for(int i = 0; i < freqs.Length; i++) newPowerData[freqs[i]] = powers[i];
-            for(int i = 0; i < newPowerData.Keys.Count; i += HASH_RATE)
+            int leftFreq = (int)freqs[0];
+            int leftIndex = 0;
+            while((leftFreq + hashRate) <= freqs[^1])
             {
-                int rangeCount = (newPowerData.Keys.Count - i < HASH_RATE) ? newPowerData.Keys.Count - i : HASH_RATE;
-                List<double> sampleData = newPowerData.Values.ToList().GetRange(i, rangeCount);
+                int rightIndex = new List<double>(freqs).FindIndex(val => val > (leftFreq + hashRate));
+                if (rightIndex == -1) rightIndex = freqs.Length - 1;
 
-                int maxIndex = 0;
-                for (int j = 0; j < sampleData.Count; j++) if (sampleData[j] > sampleData[maxIndex]) maxIndex = j;
+                int maxIndex = leftIndex;
+                for (int i = leftIndex + 1; i < rightIndex; i++) if (powers[i] > powers[maxIndex]) maxIndex = i;
+                maxIndex -= leftIndex;
                 hash.Add(maxIndex);
+
+                leftIndex = rightIndex;
+                leftFreq += hashRate;
             }
 
             return hash.ToArray();
