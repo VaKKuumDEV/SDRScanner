@@ -133,7 +133,7 @@ namespace Scanner
                 double fSampleRate = Convert.ToInt32(IO.Samplerate) / FrequesList.Count;
                 for (int i = 0; i < FrequesList.Count; i++) FrequesList[i] = freq - (IO.Samplerate / 2) + (i * fSampleRate);
 
-                int bandwidth = 100000;
+                int bandwidth = (int)BandwidthBox.Value;
                 int bandwidthIndexes = (int)Math.Floor(bandwidth / 2 / fSampleRate);
                 Bandwidth = new()
                 {
@@ -172,23 +172,23 @@ namespace Scanner
             float[] power = new float[e.Length];
             fixed (float* src = power) Fourier.SpectrumPower(e.Buffer, src, e.Length);
 
+            List<double> fftPower = new(new double[e.Length]);
+            for (int i = 0; i < e.Length; i++) fftPower[i] = power[i];
+
+            List<double> fftAudio = new(new double[e.Length]);
+            for (int i = 0; i < e.Length; i++) fftAudio[i] = audio[i];
+
+            List<double> bandwidthSlice = fftPower.GetRange(Bandwidth.Value.FromIndex, Bandwidth.Value.ToIndex - Bandwidth.Value.FromIndex + 1);
+            List<double> bandwidthFreqSlice = FrequesList.GetRange(Bandwidth.Value.FromIndex, Bandwidth.Value.ToIndex - Bandwidth.Value.FromIndex + 1);
+
+            double freqStep = FFT.FrequencyResolution(e.Length, IO.Samplerate);
+            (double[] preparedPower, double[] preparedFreqs) = AudioUtils.PrepareAudioData(bandwidthSlice.ToArray(), bandwidthFreqSlice.ToArray(), freqStep);
+            int[] hashInts = AudioUtils.GetAudioHash(preparedPower, preparedFreqs, (int)freqStep * 100);
+            string hash = "";
+            for (int i = 0; i < hashInts.Length; i++) hash += hashInts[i].ToString("00");
+
             if ((DateTime.Now - SignalTime).TotalMilliseconds >= 300)
             {
-                List<double> fftPower = new(new double[e.Length]);
-                for (int i = 0; i < e.Length; i++) fftPower[i] = power[i];
-
-                List<double> fftAudio = new(new double[e.Length]);
-                for (int i = 0; i < e.Length; i++) fftAudio[i] = audio[i];
-
-                List<double> bandwidthSlice = fftPower.GetRange(Bandwidth.Value.FromIndex, Bandwidth.Value.ToIndex - Bandwidth.Value.FromIndex + 1);
-                List<double> bandwidthFreqSlice = FrequesList.GetRange(Bandwidth.Value.FromIndex, Bandwidth.Value.ToIndex - Bandwidth.Value.FromIndex + 1);
-
-                double freqStep = FFT.FrequencyResolution(e.Length, IO.Samplerate);
-                (double[] preparedPower, double[] preparedFreqs) = AudioUtils.PrepareAudioData(bandwidthSlice.ToArray(), bandwidthFreqSlice.ToArray(), freqStep);
-                int[] hashInts = AudioUtils.GetAudioHash(preparedPower, preparedFreqs, (int)freqStep * 100);
-                string hash = "";
-                for (int i = 0; i < hashInts.Length; i++) hash += hashInts[i].ToString("00");
-
                 double averagePower = fftPower.Average();
                 double averageBandwidthPower = bandwidthSlice.Average();
 

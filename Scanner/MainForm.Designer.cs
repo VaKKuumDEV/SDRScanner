@@ -46,6 +46,7 @@
             tableLayoutPanel3 = new TableLayoutPanel();
             SpectrPlot = new ScottPlot.FormsPlot();
             SignalPlot = new ScottPlot.FormsPlot();
+            BandwidthBox = new NumericUpDown();
             label1 = new Label();
             label2 = new Label();
             label3 = new Label();
@@ -58,13 +59,14 @@
             AdditionalPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)SamplerateBox).BeginInit();
             tableLayoutPanel3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)BandwidthBox).BeginInit();
             SuspendLayout();
             // 
             // label1
             // 
             label1.AutoSize = true;
             label1.Dock = DockStyle.Top;
-            label1.Location = new Point(3, 76);
+            label1.Location = new Point(3, 62);
             label1.Name = "label1";
             label1.Padding = new Padding(2);
             label1.Size = new Size(198, 26);
@@ -75,7 +77,7 @@
             // 
             label2.AutoSize = true;
             label2.Dock = DockStyle.Top;
-            label2.Location = new Point(3, 138);
+            label2.Location = new Point(3, 124);
             label2.Name = "label2";
             label2.Padding = new Padding(2);
             label2.Size = new Size(198, 26);
@@ -86,7 +88,7 @@
             // 
             label3.AutoSize = true;
             label3.Dock = DockStyle.Top;
-            label3.Location = new Point(3, 200);
+            label3.Location = new Point(3, 186);
             label3.Name = "label3";
             label3.Padding = new Padding(2);
             label3.Size = new Size(198, 26);
@@ -124,7 +126,7 @@
             label6.Padding = new Padding(2);
             label6.Size = new Size(198, 26);
             label6.TabIndex = 8;
-            label6.Text = "Вывод:";
+            label6.Text = "Ширина полосы:";
             // 
             // ContentPanel
             // 
@@ -156,13 +158,13 @@
             tableLayoutPanel2.Controls.Add(GainBox, 0, 8);
             tableLayoutPanel2.Controls.Add(ControlButton, 0, 10);
             tableLayoutPanel2.Controls.Add(AdditionalPanel, 0, 9);
+            tableLayoutPanel2.Controls.Add(BandwidthBox, 0, 1);
             tableLayoutPanel2.Dock = DockStyle.Top;
             tableLayoutPanel2.Location = new Point(474, 0);
             tableLayoutPanel2.Margin = new Padding(0);
             tableLayoutPanel2.Name = "tableLayoutPanel2";
             tableLayoutPanel2.RowCount = 11;
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
-            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F));
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
@@ -172,7 +174,8 @@
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
-            tableLayoutPanel2.Size = new Size(204, 432);
+            tableLayoutPanel2.RowStyles.Add(new RowStyle());
+            tableLayoutPanel2.Size = new Size(204, 418);
             tableLayoutPanel2.TabIndex = 0;
             // 
             // DevicesBox
@@ -181,7 +184,7 @@
             DevicesBox.AutoCompleteSource = AutoCompleteSource.ListItems;
             DevicesBox.Dock = DockStyle.Top;
             DevicesBox.FormattingEnabled = true;
-            DevicesBox.Location = new Point(3, 105);
+            DevicesBox.Location = new Point(3, 91);
             DevicesBox.Name = "DevicesBox";
             DevicesBox.Size = new Size(198, 30);
             DevicesBox.TabIndex = 3;
@@ -190,7 +193,7 @@
             // 
             FreqBox.Dock = DockStyle.Top;
             FreqBox.Increment = new decimal(new int[] { 1000, 0, 0, 0 });
-            FreqBox.Location = new Point(3, 167);
+            FreqBox.Location = new Point(3, 153);
             FreqBox.Maximum = new decimal(new int[] { 1600000, 0, 0, 0 });
             FreqBox.Minimum = new decimal(new int[] { 100000, 0, 0, 0 });
             FreqBox.Name = "FreqBox";
@@ -203,7 +206,7 @@
             // 
             GainBox.Dock = DockStyle.Top;
             GainBox.FormattingEnabled = true;
-            GainBox.Location = new Point(3, 229);
+            GainBox.Location = new Point(3, 215);
             GainBox.Name = "GainBox";
             GainBox.Size = new Size(198, 30);
             GainBox.TabIndex = 5;
@@ -212,7 +215,7 @@
             // 
             ControlButton.AutoSize = true;
             ControlButton.Dock = DockStyle.Top;
-            ControlButton.Location = new Point(3, 389);
+            ControlButton.Location = new Point(3, 375);
             ControlButton.Name = "ControlButton";
             ControlButton.Padding = new Padding(4);
             ControlButton.Size = new Size(198, 40);
@@ -230,7 +233,7 @@
             AdditionalPanel.Controls.Add(SamplerateBox, 0, 1);
             AdditionalPanel.Controls.Add(HashBox, 0, 3);
             AdditionalPanel.Dock = DockStyle.Top;
-            AdditionalPanel.Location = new Point(0, 262);
+            AdditionalPanel.Location = new Point(0, 248);
             AdditionalPanel.Margin = new Padding(0);
             AdditionalPanel.Name = "AdditionalPanel";
             AdditionalPanel.RowCount = 4;
@@ -298,6 +301,17 @@
             SignalPlot.Size = new Size(474, 229);
             SignalPlot.TabIndex = 1;
             // 
+            // BandwidthBox
+            // 
+            BandwidthBox.Dock = DockStyle.Top;
+            BandwidthBox.Location = new Point(3, 29);
+            BandwidthBox.Maximum = new decimal(new int[] { 1000000, 0, 0, 0 });
+            BandwidthBox.Minimum = new decimal(new int[] { 10000, 0, 0, 0 });
+            BandwidthBox.Name = "BandwidthBox";
+            BandwidthBox.Size = new Size(198, 30);
+            BandwidthBox.TabIndex = 9;
+            BandwidthBox.Value = new decimal(new int[] { 100000, 0, 0, 0 });
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(11F, 22F);
@@ -321,6 +335,7 @@
             AdditionalPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)SamplerateBox).EndInit();
             tableLayoutPanel3.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)BandwidthBox).EndInit();
             ResumeLayout(false);
         }
 
@@ -338,5 +353,6 @@
         private NumericUpDown SamplerateBox;
         private TextBox HashBox;
         private ScottPlot.FormsPlot SignalPlot;
+        private NumericUpDown BandwidthBox;
     }
 }
