@@ -8,6 +8,9 @@ using FftSharp;
 using System.Linq;
 using NAudio.Wave;
 using static Scanner.NeuroForm;
+using System.Diagnostics.Metrics;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace Scanner
 {
@@ -19,10 +22,11 @@ namespace Scanner
         private WorkingStatuses Status { get; set; } = WorkingStatuses.NOT_INIT;
         private DateTime SignalTime { get; set; } = DateTime.Now;
         private List<double> FrequesList { get; set; } = new();
-        private List<System.Numerics.Complex> AudioBuffer { get; set; } = new();
+        private List<string> AudioBuffer { get; set; } = new();
         private StreamPlayer? Player { get; set; } = null;
         private BandwidthInfo? Bandwidth { get; set; } = null;
         private int Iter { get; set; } = 0;
+        private SignalsMap Map { get; }
 
         public enum WorkingStatuses
         {
@@ -42,6 +46,7 @@ namespace Scanner
 
         unsafe public MainForm()
         {
+            Map = new(new DirectoryInfo(Environment.CurrentDirectory + "/Samples.json").FullName);
             InitializeComponent();
             AdditionalPanel.Hide();
 
@@ -178,19 +183,79 @@ namespace Scanner
             List<double> fftAudio = new(new double[e.Length]);
             for (int i = 0; i < e.Length; i++) fftAudio[i] = audio[i];
 
-            List<double> bandwidthSlice = fftPower.GetRange(Bandwidth.Value.FromIndex, Bandwidth.Value.ToIndex - Bandwidth.Value.FromIndex + 1);
-            List<double> bandwidthFreqSlice = FrequesList.GetRange(Bandwidth.Value.FromIndex, Bandwidth.Value.ToIndex - Bandwidth.Value.FromIndex + 1);
+            List<double> bandwidthSlice = fftPower.GetRange(Bandwidth.Value.FromIndex, Bandwidth.Value.ToIndex - Bandwidth.Value.FromIndex);
+            List<double> bandwidthFreqSlice = FrequesList.GetRange(Bandwidth.Value.FromIndex, Bandwidth.Value.ToIndex - Bandwidth.Value.FromIndex);
 
-            double freqStep = FFT.FrequencyResolution(e.Length, IO.Samplerate);
-            (double[] preparedPower, double[] preparedFreqs) = AudioUtils.PrepareAudioData(bandwidthSlice.ToArray(), bandwidthFreqSlice.ToArray(), freqStep);
-            int[] hashInts = AudioUtils.GetAudioHash(preparedPower, preparedFreqs, (int)freqStep * 100);
-            string hash = "";
-            for (int i = 0; i < hashInts.Length; i++) hash += hashInts[i].ToString("00");
+            double averagePower = fftPower.Average();
+            double averageBandwidthPower = bandwidthSlice.Average();
+            bool isPositiveSignal = averageBandwidthPower - averagePower >= 5;
 
-            if ((DateTime.Now - SignalTime).TotalMilliseconds >= 300)
+            double sliceOptimizedCore = bandwidthSlice.Max() * 0.5;
+            List<double> newSliced = bandwidthSlice.ConvertAll(item => item >= sliceOptimizedCore ? item : 0);
+
+            if (isPositiveSignal)
             {
-                double averagePower = fftPower.Average();
-                double averageBandwidthPower = bandwidthSlice.Average();
+                double freqStep = FFT.FrequencyResolution(e.Length, IO.Samplerate);
+                (double[] preparedPower, double[] preparedFreqs) = AudioUtils.PrepareAudioData(newSliced.ToArray(), bandwidthFreqSlice.ToArray(), freqStep);
+                int[] hashInts = AudioUtils.GetAudioHash(preparedPower, preparedFreqs, (int)freqStep * 100);
+
+                string hash = "";
+                for (int i = 0; i < hashInts.Length; i++) hash += hashInts[i].ToString("00");
+                AudioBuffer.Add(hash);
+            }
+
+            string? recognizedSignal = null;
+            if (AudioBuffer.Count >= 50)
+            {
+                Dictionary<string, double> counts = new();
+                foreach (string baseHash in AudioBuffer)
+                {
+                    List<KeyValuePair<string, double>> percents = new();
+                    foreach (var kv in Map.Map)
+                    {
+                        double percentSum = 0;
+                        int percentCount = 0;
+                        foreach (var valHash in kv.Value)
+                        {
+                            double? percent = AudioUtils.CompareHashes(baseHash, valHash);
+                            if (percent != null)
+                            {
+                                percentSum += Math.Abs(percent.Value);
+                                percentCount++;
+                            }
+                        }
+
+                        percents.Add(new(kv.Key, percentSum / percentCount));
+                    }
+
+                    if (percents.Count > 0)
+                    {
+                        percents.Sort((a, b) => a.Value > b.Value ? -1 : 1);
+                        KeyValuePair<string, double> maxPercent = percents.First();
+
+                        if (!counts.ContainsKey(maxPercent.Key)) counts[maxPercent.Key] = 1;
+                        else counts[maxPercent.Key]++;
+                    }
+                }
+
+                if (counts.Keys.Count > 0)
+                {
+                    var countsList = counts.ToList();
+                    countsList.Sort((a, b) => a.Value > b.Value ? -1 : 1);
+                    var maximumComparedSignal = countsList.First();
+                    recognizedSignal = maximumComparedSignal.Key;
+                }
+
+                AudioBuffer.Clear();
+                BeginInvoke(() =>
+                {
+                    SignalNameBox.Text = recognizedSignal ?? "";
+                });
+            }
+
+            if ((DateTime.Now - SignalTime).TotalMilliseconds >= 100)
+            {
+                double audioMax = fftAudio.Max();
 
                 BeginInvoke(() =>
                 {
@@ -200,16 +265,17 @@ namespace Scanner
                     SpectrPlot.Plot.AddVerticalLine(Bandwidth.Value.Left, Color.Green);
                     SpectrPlot.Plot.AddVerticalLine(Bandwidth.Value.Right, Color.Green);
                     SpectrPlot.Plot.AddHorizontalLine(averagePower, Color.Chocolate);
-                    SpectrPlot.Plot.AddHorizontalLine(averageBandwidthPower, Color.Black);
+                    SpectrPlot.Plot.AddHorizontalLine(sliceOptimizedCore, Color.Black);
                     SpectrPlot.Plot.SetAxisLimitsY(-20, 100);
                     SpectrPlot.Refresh();
 
                     SignalPlot.Plot.Clear();
                     SignalPlot.Plot.AddSignalXY(FrequesList.ToArray(), fftAudio.ToArray());
+                    SignalPlot.Plot.AddHorizontalLine(audioMax * 0.05, Color.Chocolate);
                     SignalPlot.Plot.SetAxisLimitsY(0, 1000);
                     SignalPlot.Refresh();
 
-                    HashBox.Text = hash;
+                    HashBox.Text = isPositiveSignal ? "Полезный" : "Шум";
                 });
                 SignalTime = DateTime.Now;
             }
@@ -218,6 +284,14 @@ namespace Scanner
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (Status == WorkingStatuses.STARTED) Stop();
+        }
+
+        private void DatabaseButton_Click(object sender, EventArgs e)
+        {
+            SamplerForm form = new();
+            form.ShowDialog(this);
+
+            Map.Reload();
         }
     }
 }
