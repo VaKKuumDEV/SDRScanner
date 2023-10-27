@@ -186,17 +186,18 @@ namespace Scanner
             List<double> bandwidthSlice = fftPower.GetRange(Bandwidth.Value.FromIndex, Bandwidth.Value.ToIndex - Bandwidth.Value.FromIndex);
             List<double> bandwidthFreqSlice = FrequesList.GetRange(Bandwidth.Value.FromIndex, Bandwidth.Value.ToIndex - Bandwidth.Value.FromIndex);
 
-            double averagePower = fftPower.Average();
-            double averageBandwidthPower = bandwidthSlice.Average();
+            //double averagePower = fftPower.Average();
+            double averagePower = bandwidthSlice.Average();
+            //double averageBandwidthPower = bandwidthSlice.Average();
+            double averageBandwidthPower = bandwidthSlice.Max() * 0.6;
             bool isPositiveSignal = averageBandwidthPower - averagePower >= 5;
 
-            double sliceOptimizedCore = bandwidthSlice.Max() * 0.5;
-            List<double> newSliced = bandwidthSlice.ConvertAll(item => item >= sliceOptimizedCore ? item : 0);
+            List<double> newBandwidthSlice = bandwidthSlice.ConvertAll(item => item >= averageBandwidthPower ? item : 0);
 
             if (isPositiveSignal)
             {
                 double freqStep = FFT.FrequencyResolution(e.Length, IO.Samplerate);
-                (double[] preparedPower, double[] preparedFreqs) = AudioUtils.PrepareAudioData(newSliced.ToArray(), bandwidthFreqSlice.ToArray(), freqStep);
+                (double[] preparedPower, double[] preparedFreqs) = AudioUtils.PrepareAudioData(newBandwidthSlice.ToArray(), bandwidthFreqSlice.ToArray(), freqStep);
                 int[] hashInts = AudioUtils.GetAudioHash(preparedPower, preparedFreqs, (int)freqStep * 100);
 
                 string hash = "";
@@ -207,40 +208,53 @@ namespace Scanner
             string? recognizedSignal = null;
             if (AudioBuffer.Count >= 50)
             {
-                Dictionary<string, double> counts = new();
-                foreach (string baseHash in AudioBuffer)
+                //string g = JsonConvert.SerializeObject(AudioBuffer, Formatting.Indented);
+
+                Dictionary<string, double> signalCounts = new();
+                foreach (var kv in Map.Map)
                 {
-                    List<KeyValuePair<string, double>> percents = new();
-                    foreach (var kv in Map.Map)
+                    int minLength = Math.Min(AudioBuffer.Count, kv.Value.Count);
+                    int maxLength = Math.Max(AudioBuffer.Count, kv.Value.Count);
+                    string[] minSlice, maxSlice;
+
+                    if (AudioBuffer.Count == minLength)
                     {
-                        double percentSum = 0;
-                        int percentCount = 0;
-                        foreach (var valHash in kv.Value)
+                        minSlice = AudioBuffer.ToArray();
+                        maxSlice = kv.Value.ToArray();
+                    }
+                    else
+                    {
+                        minSlice = kv.Value.ToArray();
+                        maxSlice = AudioBuffer.ToArray();
+                    }
+
+                    double maxAverageKorrel = -1;
+                    for (int i = 0; i < maxLength - minLength + 1; i++)
+                    {
+                        List<double> korrels = new();
+                        for (int j = 0; j < minLength; j++)
                         {
-                            double? percent = AudioUtils.CompareHashes(baseHash, valHash);
-                            if (percent != null)
-                            {
-                                percentSum += Math.Abs(percent.Value);
-                                percentCount++;
-                            }
+                            string hashLeft = maxSlice[i + j];
+                            string hashRight = minSlice[j];
+
+                            double? korrel = AudioUtils.CompareHashes(hashLeft, hashRight);
+                            //korrels.Add(korrel == null ? 0 : Math.Abs(korrel.Value));
+                            korrels.Add(korrel == null ? 0 : korrel.Value);
                         }
 
-                        percents.Add(new(kv.Key, percentSum / percentCount));
+                        if(korrels.Count > 0)
+                        {
+                            double averageKorrel = korrels.Average();
+                            if (averageKorrel > maxAverageKorrel) maxAverageKorrel = averageKorrel;
+                        }
                     }
 
-                    if (percents.Count > 0)
-                    {
-                        percents.Sort((a, b) => a.Value > b.Value ? -1 : 1);
-                        KeyValuePair<string, double> maxPercent = percents.First();
-
-                        if (!counts.ContainsKey(maxPercent.Key)) counts[maxPercent.Key] = 1;
-                        else counts[maxPercent.Key]++;
-                    }
+                    signalCounts[kv.Key] = maxAverageKorrel;
                 }
 
-                if (counts.Keys.Count > 0)
+                if (signalCounts.Keys.Count > 0)
                 {
-                    var countsList = counts.ToList();
+                    var countsList = signalCounts.ToList();
                     countsList.Sort((a, b) => a.Value > b.Value ? -1 : 1);
                     var maximumComparedSignal = countsList.First();
                     recognizedSignal = maximumComparedSignal.Key;
@@ -265,7 +279,7 @@ namespace Scanner
                     SpectrPlot.Plot.AddVerticalLine(Bandwidth.Value.Left, Color.Green);
                     SpectrPlot.Plot.AddVerticalLine(Bandwidth.Value.Right, Color.Green);
                     SpectrPlot.Plot.AddHorizontalLine(averagePower, Color.Chocolate);
-                    SpectrPlot.Plot.AddHorizontalLine(sliceOptimizedCore, Color.Black);
+                    SpectrPlot.Plot.AddHorizontalLine(averageBandwidthPower, Color.Black);
                     SpectrPlot.Plot.SetAxisLimitsY(-20, 100);
                     SpectrPlot.Refresh();
 

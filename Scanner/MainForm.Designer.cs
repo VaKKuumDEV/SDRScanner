@@ -316,7 +316,7 @@
             BandwidthBox.Name = "BandwidthBox";
             BandwidthBox.Size = new Size(228, 30);
             BandwidthBox.TabIndex = 9;
-            BandwidthBox.Value = new decimal(new int[] { 200000, 0, 0, 0 });
+            BandwidthBox.Value = new decimal(new int[] { 400000, 0, 0, 0 });
             // 
             // tableLayoutPanel3
             // 
