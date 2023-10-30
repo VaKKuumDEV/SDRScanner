@@ -239,6 +239,7 @@ namespace Scanner
 
                             double? korrel = AudioUtils.CompareHashes(hashLeft, hashRight);
                             //korrels.Add(korrel == null ? 0 : Math.Abs(korrel.Value));
+                            //korrels.Add(korrel == null || Math.Abs(korrel.Value) < 0.4 ? 0 : korrel.Value);
                             korrels.Add(korrel == null ? 0 : korrel.Value);
                         }
 
@@ -257,7 +258,7 @@ namespace Scanner
                     var countsList = signalCounts.ToList();
                     countsList.Sort((a, b) => a.Value > b.Value ? -1 : 1);
                     var maximumComparedSignal = countsList.First();
-                    recognizedSignal = maximumComparedSignal.Key;
+                    if (Math.Abs(maximumComparedSignal.Value) >= 0.4) recognizedSignal = maximumComparedSignal.Key;
                 }
 
                 AudioBuffer.Clear();
