@@ -175,7 +175,7 @@ namespace Scanner
             fixed (float* src = audio) new AmDetector().Demodulate(e.Buffer, src, e.Length);
 
             float[] power = new float[e.Length];
-            fixed (float* src = power) Fourier.SpectrumPower(e.Buffer, src, e.Length);
+            fixed (float* src = power) Fourier.SpectrumPower(e.Buffer, src, e.Length, IO.Gain);
 
             List<double> fftPower = new(new double[e.Length]);
             for (int i = 0; i < e.Length; i++) fftPower[i] = power[i];
@@ -206,7 +206,7 @@ namespace Scanner
             }
 
             string? recognizedSignal = null;
-            if (AudioBuffer.Count >= 50)
+            if (AudioBuffer.Count >= 100)
             {
                 //string g = JsonConvert.SerializeObject(AudioBuffer, Formatting.Indented);
 
@@ -243,7 +243,7 @@ namespace Scanner
                             korrels.Add(korrel == null ? 0 : korrel.Value);
                         }
 
-                        if(korrels.Count > 0)
+                        if (korrels.Count > 0)
                         {
                             double averageKorrel = korrels.Average();
                             if (averageKorrel > maxAverageKorrel) maxAverageKorrel = averageKorrel;
@@ -258,7 +258,7 @@ namespace Scanner
                     var countsList = signalCounts.ToList();
                     countsList.Sort((a, b) => a.Value > b.Value ? -1 : 1);
                     var maximumComparedSignal = countsList.First();
-                    if (Math.Abs(maximumComparedSignal.Value) >= 0.4) recognizedSignal = maximumComparedSignal.Key;
+                    if (Math.Abs(maximumComparedSignal.Value) >= 0.25) recognizedSignal = maximumComparedSignal.Key;
                 }
 
                 AudioBuffer.Clear();
