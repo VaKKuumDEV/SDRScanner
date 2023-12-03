@@ -10,6 +10,8 @@ namespace Scanner
     public partial class MainForm : Form
     {
         public const int RESOLUTION = 8192;
+        public const int BUFFER_LENGTH = 50;
+        public const double KORREL_DOPUSK = 0.5;
 
         private static RtlDevice? IO { get; set; } = null;
         private List<DeviceDisplay> DevicesList { get; } = new();
@@ -21,6 +23,8 @@ namespace Scanner
         private BandwidthInfo? Bandwidth { get; set; } = null;
         private int Iter { get; set; } = 0;
         private SignalsMap Map { get; }
+        private string? RecordingSignal { get; set; } = null;
+        private List<string> RecordingBuffer { get; set; } = new();
 
         public enum WorkingStatuses
         {
@@ -43,16 +47,12 @@ namespace Scanner
             Map = new(new DirectoryInfo(Environment.CurrentDirectory + "/Samples.json").FullName);
             InitializeComponent();
             AdditionalPanel.Hide();
+            StartSignalRecButton.Hide();
 
             SpectrPlot.Plot.Title("Спектр");
             SpectrPlot.Plot.XLabel("Частота (Гц)");
             SpectrPlot.Plot.YLabel("Мощность (дБ)");
             SpectrPlot.Refresh();
-
-            SignalPlot.Plot.Title("Сигнал");
-            SignalPlot.Plot.XLabel("Частота (Гц)");
-            SignalPlot.Plot.YLabel("Амплитуда");
-            SignalPlot.Refresh();
 
             DevicesBox.SelectedIndexChanged += new((sender, args) =>
             {
@@ -73,6 +73,7 @@ namespace Scanner
 
                     GainBox.Items.Clear();
                     foreach (int gain in IO.SupportedGains) GainBox.Items.Add(gain.ToString() + " дБ");
+                    if (GainBox.Items.Count > 0) GainBox.SelectedIndex = 0;
                 }
             });
 
@@ -112,6 +113,7 @@ namespace Scanner
             Status = WorkingStatuses.STOPPED;
             IO?.Stop();
 
+            StartSignalRecButton.Hide();
             AdditionalPanel.Hide();
             ControlButton.Text = "Запуск";
         }
@@ -152,6 +154,7 @@ namespace Scanner
                 SamplerateBox.Value = IO.Samplerate;
                 SpectrPlot.Plot.Clear();
                 AdditionalPanel.Show();
+                StartSignalRecButton.Show();
 
                 Status = WorkingStatuses.STARTED;
             }
@@ -171,13 +174,10 @@ namespace Scanner
             List<double> fftPower = new(new double[e.Length]);
             for (int i = 0; i < e.Length; i++) fftPower[i] = power[i];
 
-            List<double> fftAudio = new(new double[e.Length]);
-            for (int i = 0; i < e.Length; i++) fftAudio[i] = audio[i];
-
             List<double> bandwidthSlice = fftPower.GetRange(Bandwidth.Value.FromIndex, Bandwidth.Value.ToIndex - Bandwidth.Value.FromIndex);
             List<double> bandwidthFreqSlice = FrequesList.GetRange(Bandwidth.Value.FromIndex, Bandwidth.Value.ToIndex - Bandwidth.Value.FromIndex);
 
-            double averagePower = fftPower.Average() * 1.35;
+            double averagePower = fftPower.Average() * 1.5;
             int avPreCount = bandwidthSlice.Where(item => item >= averagePower).Count();
             double avPrePercent = ((double)avPreCount) / bandwidthSlice.Count;
             bool isPositiveSignal = avPrePercent >= 0.04;
@@ -193,14 +193,16 @@ namespace Scanner
                 string hash = "";
                 for (int i = 0; i < hashInts.Length; i++) hash += hashInts[i].ToString("00");
                 AudioBuffer.Add(hash);
+                if (RecordingSignal != null) RecordingBuffer.Add(hash);
             }
 
             string? recognizedSignal = null;
-            if (AudioBuffer.Count >= 50)
+            if (AudioBuffer.Count >= BUFFER_LENGTH)
             {
-                Dictionary<string, double> signalCounts = new();
+                Dictionary<string, KeyValuePair<int, double>> signalCounts = new();
                 foreach (var kv in Map.Map)
                 {
+                    if (kv.Value.Count == 0) continue;
                     int minLength = Math.Min(AudioBuffer.Count, kv.Value.Count);
                     int maxLength = Math.Max(AudioBuffer.Count, kv.Value.Count);
                     string[] minSlice, maxSlice;
@@ -216,7 +218,8 @@ namespace Scanner
                         maxSlice = AudioBuffer.ToArray();
                     }
 
-                    double maxAverageKorrel = -1;
+                    int maxKorrelsCount = 0;
+                    double avKorrel = 0;
                     for (int i = 0; i < maxLength - minLength + 1; i++)
                     {
                         List<double> korrels = new();
@@ -226,38 +229,38 @@ namespace Scanner
                             string hashRight = minSlice[j];
 
                             double? korrel = AudioUtils.CompareHashes(hashLeft, hashRight);
-                            korrels.Add(korrel == null ? 0 : korrel.Value);
+                            if (korrel != null && korrel.Value >= KORREL_DOPUSK) korrels.Add(korrel.Value);
                         }
 
-                        if (korrels.Count > 0)
+                        if (korrels.Count > maxKorrelsCount)
                         {
-                            double averageKorrel = korrels.Average();
-                            if (averageKorrel > maxAverageKorrel) maxAverageKorrel = averageKorrel;
+                            maxKorrelsCount = korrels.Count;
+                            avKorrel = korrels.Average();
                         }
                     }
 
-                    signalCounts[kv.Key] = maxAverageKorrel;
+                    signalCounts[kv.Key] = new(maxKorrelsCount, avKorrel);
                 }
 
                 if (signalCounts.Keys.Count > 0)
                 {
                     var countsList = signalCounts.ToList();
-                    countsList.Sort((a, b) => a.Value > b.Value ? -1 : 1);
+                    countsList.Sort((a, b) => a.Value.Key > b.Value.Key ? -1 : 1);
                     var maximumComparedSignal = countsList.First();
-                    if (Math.Abs(maximumComparedSignal.Value) >= 0.6) recognizedSignal = maximumComparedSignal.Key;
+
+                    double compPercent = ((double)maximumComparedSignal.Value.Key) / BUFFER_LENGTH;
+                    if (compPercent >= 0.1) recognizedSignal = maximumComparedSignal.Key;
                 }
 
                 AudioBuffer.Clear();
                 BeginInvoke(() =>
                 {
-                    SignalNameBox.Text = recognizedSignal ?? "";
+                    SignalNameBox.Text = recognizedSignal ?? "Не опознан";
                 });
             }
 
-            if ((DateTime.Now - SignalTime).TotalMilliseconds >= 300)
+            if ((DateTime.Now - SignalTime).TotalMilliseconds >= 200)
             {
-                double audioMax = fftAudio.Max();
-
                 BeginInvoke(() =>
                 {
                     SpectrPlot.Plot.Clear();
@@ -268,12 +271,6 @@ namespace Scanner
                     SpectrPlot.Plot.AddHorizontalLine(averagePower, Color.Chocolate);
                     SpectrPlot.Plot.SetAxisLimitsY(-20, 100);
                     SpectrPlot.Refresh();
-
-                    SignalPlot.Plot.Clear();
-                    SignalPlot.Plot.AddSignalXY(FrequesList.ToArray(), fftAudio.ToArray());
-                    SignalPlot.Plot.AddHorizontalLine(audioMax * 0.05, Color.Chocolate);
-                    SignalPlot.Plot.SetAxisLimitsY(0, 1000);
-                    SignalPlot.Refresh();
 
                     HashBox.Text = isPositiveSignal ? "Полезный" : "Шум";
                 });
@@ -292,6 +289,35 @@ namespace Scanner
             form.ShowDialog(this);
 
             Map.Reload();
+        }
+
+        private void StartSignalRecButton_Click(object sender, EventArgs e)
+        {
+            if (RecordingSignal == null)
+            {
+                SelectSignalForm form = new();
+                form.ShowDialog(this);
+
+                if (form.SelectedSignal != null)
+                {
+                    RecordingBuffer.Clear();
+                    RecordingSignal = form.SelectedSignal;
+                    StartSignalRecButton.Text = "Остановить запись";
+                }
+            }
+            else
+            {
+                if (RecordingSignal != null)
+                {
+                    if (!Map.Map.ContainsKey(RecordingSignal)) Map.Map[RecordingSignal] = new();
+                    Map.Map[RecordingSignal].AddRange(RecordingBuffer);
+                    Map.Save();
+                }
+
+                StartSignalRecButton.Text = "Записать в базу";
+                RecordingSignal = null;
+                RecordingBuffer.Clear();
+            }
         }
     }
 }
