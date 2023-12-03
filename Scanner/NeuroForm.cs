@@ -73,7 +73,7 @@ namespace Scanner
                             var sampleData = ((SampleData?)sampleObjectData) ?? throw new ArgumentNullException(nameof(sampleObjectData));
 
                             (double[] preparedPower, double[] preparedFreqs) = AudioUtils.PrepareAudioData(sampleData.data.Key, sampleData.data.Value);
-                            int[] hashInts = AudioUtils.GetAudioHash(preparedPower, preparedFreqs);
+                            int[] hashInts = AudioUtils.GetAudioHash(preparedPower);
 
                             string hash = "";
                             for (int i = 0; i < hashInts.Length; i++) hash += hashInts[i].ToString("00");

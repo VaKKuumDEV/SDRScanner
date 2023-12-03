@@ -84,24 +84,20 @@ namespace Scanner.Audio
             return (powerFreqs.Values.ToArray(), powerFreqs.Keys.ToArray());
         }
 
-        public static int[] GetAudioHash(double[] powers, double[] freqs, int hashRate = HASH_RATE)
+        public static int[] GetAudioHash(double[] powers, int hashRate = HASH_RATE)
         {
             List<int> hash = new();
 
-            int leftFreq = (int)freqs[0];
-            int leftIndex = 0;
-            while((leftFreq + hashRate) <= freqs[^1])
+            for(int leftIndex = 0; leftIndex < powers.Length; leftIndex += hashRate)
             {
-                int rightIndex = new List<double>(freqs).FindIndex(val => val > (leftFreq + hashRate));
-                if (rightIndex == -1) rightIndex = freqs.Length - 1;
+                int maxIndex = 0;
+                for(int i = 0; i < hashRate; i++)
+                {
+                    if (leftIndex + i >= powers.Length) break;
+                    if (powers[leftIndex + i] > powers[leftIndex + maxIndex]) maxIndex = i;
+                }
 
-                int maxIndex = leftIndex;
-                for (int i = leftIndex + 1; i < rightIndex; i++) if (powers[i] > powers[maxIndex]) maxIndex = i;
-                maxIndex -= leftIndex;
                 hash.Add(maxIndex);
-
-                leftIndex = rightIndex;
-                leftFreq += hashRate;
             }
 
             return hash.ToArray();

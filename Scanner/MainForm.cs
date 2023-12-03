@@ -1,21 +1,16 @@
 using SDRSharp.RTLSDR;
 using SDRSharp.Radio;
 using Scanner.Audio;
-using System.Numerics;
-using System.Media;
 using SDRSharp.Radio.PortAudio;
 using FftSharp;
-using System.Linq;
-using NAudio.Wave;
-using static Scanner.NeuroForm;
-using System.Diagnostics.Metrics;
-using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 
 namespace Scanner
 {
     public partial class MainForm : Form
     {
+        public const int RESOLUTION = 8192;
+
         private static RtlDevice? IO { get; set; } = null;
         private List<DeviceDisplay> DevicesList { get; } = new();
         private List<AudioDevice> AudioDevices { get; } = new();
@@ -23,7 +18,6 @@ namespace Scanner
         private DateTime SignalTime { get; set; } = DateTime.Now;
         private List<double> FrequesList { get; set; } = new();
         private List<string> AudioBuffer { get; set; } = new();
-        private StreamPlayer? Player { get; set; } = null;
         private BandwidthInfo? Bandwidth { get; set; } = null;
         private int Iter { get; set; } = 0;
         private SignalsMap Map { get; }
@@ -117,7 +111,6 @@ namespace Scanner
         {
             Status = WorkingStatuses.STOPPED;
             IO?.Stop();
-            Player?.Stop();
 
             AdditionalPanel.Hide();
             ControlButton.Text = "Запуск";
@@ -128,14 +121,12 @@ namespace Scanner
             if (IO != null)
             {
                 AudioBuffer.Clear();
-                Player = new(8192);
-                Player.PlayAsync();
 
                 uint freq = (uint)FreqBox.Value * 1000;
                 int gain = 0;
 
-                FrequesList = new(new double[8192]);
-                double fSampleRate = Convert.ToInt32(IO.Samplerate) / FrequesList.Count;
+                FrequesList = new(new double[RESOLUTION]);
+                double fSampleRate = FFT.FrequencyResolution(RESOLUTION, IO.Samplerate);
                 for (int i = 0; i < FrequesList.Count; i++) FrequesList[i] = freq - (IO.Samplerate / 2) + (i * fSampleRate);
 
                 int bandwidth = (int)BandwidthBox.Value;
@@ -186,19 +177,18 @@ namespace Scanner
             List<double> bandwidthSlice = fftPower.GetRange(Bandwidth.Value.FromIndex, Bandwidth.Value.ToIndex - Bandwidth.Value.FromIndex);
             List<double> bandwidthFreqSlice = FrequesList.GetRange(Bandwidth.Value.FromIndex, Bandwidth.Value.ToIndex - Bandwidth.Value.FromIndex);
 
-            //double averagePower = fftPower.Average();
-            double averagePower = bandwidthSlice.Average();
-            //double averageBandwidthPower = bandwidthSlice.Average();
-            double averageBandwidthPower = bandwidthSlice.Max() * 0.6;
-            bool isPositiveSignal = averageBandwidthPower - averagePower >= 5;
+            double averagePower = fftPower.Average() * 1.35;
+            int avPreCount = bandwidthSlice.Where(item => item >= averagePower).Count();
+            double avPrePercent = ((double)avPreCount) / bandwidthSlice.Count;
+            bool isPositiveSignal = avPrePercent >= 0.04;
 
-            List<double> newBandwidthSlice = bandwidthSlice.ConvertAll(item => item >= averageBandwidthPower ? item : 0);
+            List<double> newBandwidthSlice = bandwidthSlice.ConvertAll(item => item >= averagePower ? item : 0);
 
             if (isPositiveSignal)
             {
                 double freqStep = FFT.FrequencyResolution(e.Length, IO.Samplerate);
                 (double[] preparedPower, double[] preparedFreqs) = AudioUtils.PrepareAudioData(newBandwidthSlice.ToArray(), bandwidthFreqSlice.ToArray(), freqStep);
-                int[] hashInts = AudioUtils.GetAudioHash(preparedPower, preparedFreqs, (int)freqStep * 100);
+                int[] hashInts = AudioUtils.GetAudioHash(preparedPower);
 
                 string hash = "";
                 for (int i = 0; i < hashInts.Length; i++) hash += hashInts[i].ToString("00");
@@ -206,10 +196,8 @@ namespace Scanner
             }
 
             string? recognizedSignal = null;
-            if (AudioBuffer.Count >= 100)
+            if (AudioBuffer.Count >= 50)
             {
-                //string g = JsonConvert.SerializeObject(AudioBuffer, Formatting.Indented);
-
                 Dictionary<string, double> signalCounts = new();
                 foreach (var kv in Map.Map)
                 {
@@ -238,8 +226,6 @@ namespace Scanner
                             string hashRight = minSlice[j];
 
                             double? korrel = AudioUtils.CompareHashes(hashLeft, hashRight);
-                            //korrels.Add(korrel == null ? 0 : Math.Abs(korrel.Value));
-                            //korrels.Add(korrel == null || Math.Abs(korrel.Value) < 0.4 ? 0 : korrel.Value);
                             korrels.Add(korrel == null ? 0 : korrel.Value);
                         }
 
@@ -258,7 +244,7 @@ namespace Scanner
                     var countsList = signalCounts.ToList();
                     countsList.Sort((a, b) => a.Value > b.Value ? -1 : 1);
                     var maximumComparedSignal = countsList.First();
-                    if (Math.Abs(maximumComparedSignal.Value) >= 0.25) recognizedSignal = maximumComparedSignal.Key;
+                    if (Math.Abs(maximumComparedSignal.Value) >= 0.6) recognizedSignal = maximumComparedSignal.Key;
                 }
 
                 AudioBuffer.Clear();
@@ -268,7 +254,7 @@ namespace Scanner
                 });
             }
 
-            if ((DateTime.Now - SignalTime).TotalMilliseconds >= 100)
+            if ((DateTime.Now - SignalTime).TotalMilliseconds >= 300)
             {
                 double audioMax = fftAudio.Max();
 
@@ -280,7 +266,6 @@ namespace Scanner
                     SpectrPlot.Plot.AddVerticalLine(Bandwidth.Value.Left, Color.Green);
                     SpectrPlot.Plot.AddVerticalLine(Bandwidth.Value.Right, Color.Green);
                     SpectrPlot.Plot.AddHorizontalLine(averagePower, Color.Chocolate);
-                    SpectrPlot.Plot.AddHorizontalLine(averageBandwidthPower, Color.Black);
                     SpectrPlot.Plot.SetAxisLimitsY(-20, 100);
                     SpectrPlot.Refresh();
 
