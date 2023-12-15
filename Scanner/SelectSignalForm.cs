@@ -26,7 +26,17 @@ namespace Scanner
 
         private void AbbSignalButon_Click(object sender, EventArgs e)
         {
+            AddSignalForm form = new();
+            form.ShowDialog(this);
 
+            if(form.NewSignalName != null && !Map.Map.ContainsKey(form.NewSignalName))
+            {
+                Map.Map[form.NewSignalName] = new();
+                Map.Save();
+
+                SelectedSignal = form.NewSignalName;
+                Close();
+            }
         }
 
         private void SelectSignalForm_FormClosed(object sender, FormClosedEventArgs e)

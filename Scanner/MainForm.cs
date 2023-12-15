@@ -192,12 +192,13 @@ namespace Scanner
 
                 string hash = "";
                 for (int i = 0; i < hashInts.Length; i++) hash += hashInts[i].ToString("00");
-                AudioBuffer.Add(hash);
+
                 if (RecordingSignal != null) RecordingBuffer.Add(hash);
+                else AudioBuffer.Add(hash);
             }
 
             string? recognizedSignal = null;
-            if (AudioBuffer.Count >= BUFFER_LENGTH)
+            if (AudioBuffer.Count >= BUFFER_LENGTH && RecordingSignal == null)
             {
                 Dictionary<string, KeyValuePair<int, double>> signalCounts = new();
                 foreach (var kv in Map.Map)
@@ -245,11 +246,11 @@ namespace Scanner
                 if (signalCounts.Keys.Count > 0)
                 {
                     var countsList = signalCounts.ToList();
-                    countsList.Sort((a, b) => a.Value.Key > b.Value.Key ? -1 : 1);
+                    countsList.Sort((a, b) => a.Value.Key == b.Value.Key ? (a.Value.Value > b.Value.Value ? -1 : 1) : (a.Value.Key > b.Value.Key ? -1 : 1));
                     var maximumComparedSignal = countsList.First();
 
                     double compPercent = ((double)maximumComparedSignal.Value.Key) / BUFFER_LENGTH;
-                    if (compPercent >= 0.1) recognizedSignal = maximumComparedSignal.Key;
+                    if (compPercent > 0.2) recognizedSignal = maximumComparedSignal.Key;
                 }
 
                 AudioBuffer.Clear();
@@ -300,6 +301,7 @@ namespace Scanner
 
                 if (form.SelectedSignal != null)
                 {
+                    Map.Reload();
                     RecordingBuffer.Clear();
                     RecordingSignal = form.SelectedSignal;
                     StartSignalRecButton.Text = "Остановить запись";
@@ -309,6 +311,7 @@ namespace Scanner
             {
                 if (RecordingSignal != null)
                 {
+                    Map.Reload();
                     if (!Map.Map.ContainsKey(RecordingSignal)) Map.Map[RecordingSignal] = new();
                     Map.Map[RecordingSignal].AddRange(RecordingBuffer);
                     Map.Save();
