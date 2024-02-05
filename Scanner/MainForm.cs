@@ -218,11 +218,13 @@ namespace Scanner
 
                     int maxKorrelsCount = 0;
                     double avKorrel = 0;
-                    for (int i = 0; i < maxLength - minLength + 1; i++)
+                    for (int i = 0; i < maxLength - minLength + 1; i += minLength / 2)
                     {
                         List<double> korrels = new();
                         for (int j = 0; j < minLength; j++)
                         {
+                            if (i + j >= maxLength) break;
+
                             string hashLeft = maxSlice[i + j];
                             string hashRight = minSlice[j];
 
