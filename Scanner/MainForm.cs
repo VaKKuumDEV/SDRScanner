@@ -165,9 +165,6 @@ namespace Scanner
         {
             Fourier.ForwardTransform(e.Buffer, e.Length, true);
 
-            float[] audio = new float[e.Length];
-            fixed (float* src = audio) new AmDetector().Demodulate(e.Buffer, src, e.Length);
-
             float[] power = new float[e.Length];
             fixed (float* src = power) Fourier.SpectrumPower(e.Buffer, src, e.Length, IO.Gain);
 
@@ -260,7 +257,7 @@ namespace Scanner
                 });
             }
 
-            if ((DateTime.Now - SignalTime).TotalMilliseconds >= 200)
+            if ((DateTime.Now - SignalTime).TotalMilliseconds >= 300)
             {
                 BeginInvoke(() =>
                 {

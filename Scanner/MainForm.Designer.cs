@@ -58,6 +58,7 @@
             AdditionalPanel = new TableLayoutPanel();
             tableLayoutPanel3 = new TableLayoutPanel();
             SpectrPlot = new ScottPlot.FormsPlot();
+            SubPlot = new ScottPlot.FormsPlot();
             tableLayoutPanel1 = new TableLayoutPanel();
             label8 = new Label();
             tableLayoutPanel4 = new TableLayoutPanel();
@@ -481,13 +482,14 @@
             tableLayoutPanel3.ColumnCount = 1;
             tableLayoutPanel3.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             tableLayoutPanel3.Controls.Add(SpectrPlot, 0, 0);
+            tableLayoutPanel3.Controls.Add(SubPlot, 0, 1);
             tableLayoutPanel3.Dock = DockStyle.Fill;
             tableLayoutPanel3.Location = new Point(0, 0);
             tableLayoutPanel3.Margin = new Padding(0);
             tableLayoutPanel3.Name = "tableLayoutPanel3";
-            tableLayoutPanel3.RowCount = 1;
-            tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tableLayoutPanel3.RowCount = 2;
+            tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tableLayoutPanel3.Size = new Size(614, 649);
             tableLayoutPanel3.TabIndex = 1;
             // 
@@ -498,8 +500,17 @@
             SpectrPlot.Margin = new Padding(0);
             SpectrPlot.Name = "SpectrPlot";
             SpectrPlot.Padding = new Padding(2);
-            SpectrPlot.Size = new Size(614, 649);
+            SpectrPlot.Size = new Size(614, 324);
             SpectrPlot.TabIndex = 0;
+            // 
+            // SubPlot
+            // 
+            SubPlot.Dock = DockStyle.Fill;
+            SubPlot.Location = new Point(0, 324);
+            SubPlot.Margin = new Padding(0);
+            SubPlot.Name = "SubPlot";
+            SubPlot.Size = new Size(614, 325);
+            SubPlot.TabIndex = 1;
             // 
             // MainForm
             // 
@@ -563,5 +574,6 @@
         private TextBox SignalNameBox;
         private TextBox HashBox;
         private Button StartSignalRecButton;
+        private ScottPlot.FormsPlot SubPlot;
     }
 }

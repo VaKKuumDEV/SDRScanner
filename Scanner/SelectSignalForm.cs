@@ -1,13 +1,4 @@
 ﻿using Scanner.Audio;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace Scanner
 {
@@ -29,7 +20,7 @@ namespace Scanner
             AddSignalForm form = new();
             form.ShowDialog(this);
 
-            if(form.NewSignalName != null && !Map.Map.ContainsKey(form.NewSignalName))
+            if (form.NewSignalName != null && !Map.Map.ContainsKey(form.NewSignalName))
             {
                 Map.Map[form.NewSignalName] = new();
                 Map.Save();
