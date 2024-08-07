@@ -43,7 +43,7 @@
             Label label3;
             TableLayoutPanel tableLayoutPanel9;
             Label label4;
-            BandwidthBox = new NumericUpDown();
+            NoiseLevelBox = new NumericUpDown();
             DevicesBox = new ComboBox();
             FreqBox = new NumericUpDown();
             GainBox = new ComboBox();
@@ -74,7 +74,7 @@
             tableLayoutPanel9 = new TableLayoutPanel();
             label4 = new Label();
             tableLayoutPanel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)BandwidthBox).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)NoiseLevelBox).BeginInit();
             tableLayoutPanel4.SuspendLayout();
             tableLayoutPanel5.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)FreqBox).BeginInit();
@@ -95,7 +95,7 @@
             tableLayoutPanel1.AutoSize = true;
             tableLayoutPanel1.ColumnCount = 1;
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanel1.Controls.Add(BandwidthBox, 0, 1);
+            tableLayoutPanel1.Controls.Add(NoiseLevelBox, 0, 1);
             tableLayoutPanel1.Controls.Add(label8, 0, 0);
             tableLayoutPanel1.Dock = DockStyle.Top;
             tableLayoutPanel1.Location = new Point(0, 0);
@@ -107,16 +107,13 @@
             tableLayoutPanel1.Size = new Size(264, 62);
             tableLayoutPanel1.TabIndex = 11;
             // 
-            // BandwidthBox
+            // NoiseLevelBox
             // 
-            BandwidthBox.Dock = DockStyle.Top;
-            BandwidthBox.Location = new Point(3, 29);
-            BandwidthBox.Maximum = new decimal(new int[] { 1000000, 0, 0, 0 });
-            BandwidthBox.Minimum = new decimal(new int[] { 10000, 0, 0, 0 });
-            BandwidthBox.Name = "BandwidthBox";
-            BandwidthBox.Size = new Size(258, 30);
-            BandwidthBox.TabIndex = 10;
-            BandwidthBox.Value = new decimal(new int[] { 200000, 0, 0, 0 });
+            NoiseLevelBox.Dock = DockStyle.Top;
+            NoiseLevelBox.Location = new Point(3, 29);
+            NoiseLevelBox.Name = "NoiseLevelBox";
+            NoiseLevelBox.Size = new Size(258, 30);
+            NoiseLevelBox.TabIndex = 10;
             // 
             // label8
             // 
@@ -127,7 +124,7 @@
             label8.Padding = new Padding(2);
             label8.Size = new Size(258, 26);
             label8.TabIndex = 9;
-            label8.Text = "Ширина полосы:";
+            label8.Text = "Уровень шума (дБ):";
             // 
             // tableLayoutPanel4
             // 
@@ -493,6 +490,7 @@
             // 
             // SpectrPlot
             // 
+            SpectrPlot.DisplayScale = 1.25F;
             SpectrPlot.Dock = DockStyle.Fill;
             SpectrPlot.Location = new Point(0, 0);
             SpectrPlot.Margin = new Padding(0);
@@ -507,7 +505,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(882, 653);
             Controls.Add(ContentPanel);
-            Font = new Font("Times New Roman", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            Font = new Font("Times New Roman", 12F);
             Margin = new Padding(4);
             MinimumSize = new Size(800, 600);
             Name = "MainForm";
@@ -517,7 +515,7 @@
             FormClosing += MainForm_FormClosing;
             tableLayoutPanel1.ResumeLayout(false);
             tableLayoutPanel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)BandwidthBox).EndInit();
+            ((System.ComponentModel.ISupportInitialize)NoiseLevelBox).EndInit();
             tableLayoutPanel4.ResumeLayout(false);
             tableLayoutPanel4.PerformLayout();
             tableLayoutPanel5.ResumeLayout(false);
@@ -551,7 +549,7 @@
         private TableLayoutPanel tableLayoutPanel3;
         private ScottPlot.WinForms.FormsPlot SpectrPlot;
         private TableLayoutPanel tableLayoutPanel1;
-        private NumericUpDown BandwidthBox;
+        private NumericUpDown NoiseLevelBox;
         private ComboBox DevicesBox;
         private NumericUpDown FreqBox;
         private ComboBox GainBox;

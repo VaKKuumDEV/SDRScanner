@@ -148,52 +148,6 @@ namespace Scanner.Audio
             WaveFileWriter.CreateWaveFile(file.FullName, waveProvider);
         }
 
-        private static double DistanceToSegment(Point p, Point start, Point end)
-        {
-            var m1 = (end.Y - start.Y) / ((double)(end.X - start.X));
-            var c1 = start.Y - m1 * start.X;
-            double interPointX, interPointY;
-            if (m1 == 0)
-            {
-                interPointX = p.X;
-                interPointY = c1;
-
-            }
-            else
-            {
-                var m2 = -1 / m1;
-                var c2 = p.Y - m2 * p.X;
-                interPointX = (c1 - c2) / (m2 - m1);
-                interPointY = m2 * interPointX + c2;
-            }
-            return Math.Sqrt(Math.Pow(p.X - interPointX, 2) + Math.Pow(p.Y - interPointY, 2));
-        }
-
-        public static void DouglasPeucker(IList<Point> PointList, double epsilon, ref List<Point> filteredPoints)
-        {
-            var dmax = 0d;
-            int index = 0;
-            int length = PointList.Count;
-            for (int i = 1; i < length - 1; i++)
-            {
-                var d = DistanceToSegment(PointList[i], PointList[0], PointList[length - 1]);
-                if (d > dmax)
-                {
-                    index = i;
-                    dmax = d;
-                }
-            }
-
-            if (dmax > epsilon)
-            {
-                filteredPoints.Add(PointList[0]);
-                filteredPoints.Add(PointList[index]);
-                filteredPoints.Add(PointList[length - 1]);
-                DouglasPeucker(PointList.Take(index + 1).ToList(), epsilon, ref filteredPoints);
-                DouglasPeucker(PointList.Skip(index + 1).Take(PointList.Count - index - 1).ToList(), epsilon, ref filteredPoints);
-            }
-        }
-
         public unsafe static void SimpleAverage(float* values, float* averagedValues, int length, int k)
         {
             Queue<float> valuesQueue = [];

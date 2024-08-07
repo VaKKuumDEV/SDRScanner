@@ -19,11 +19,11 @@ namespace Scanner
         private DateTime SignalTime { get; set; } = DateTime.Now;
         private List<double> FrequesList { get; set; } = [];
         private List<string> AudioBuffer { get; set; } = [];
-        private BandwidthInfo? Bandwidth { get; set; } = null;
         private int Iter { get; set; } = 0;
         private SignalsMap Map { get; }
         private string? RecordingSignal { get; set; } = null;
         private List<string> RecordingBuffer { get; set; } = [];
+        public double NoiseLevel { get => Convert.ToDouble(NoiseLevelBox.Value); }
 
         public enum WorkingStatuses
         {
@@ -130,17 +130,6 @@ namespace Scanner
                 double fSampleRate = FFT.FrequencyResolution(RESOLUTION, IO.Samplerate);
                 for (int i = 0; i < FrequesList.Count; i++) FrequesList[i] = freq - (IO.Samplerate / 2) + (i * fSampleRate);
 
-                int bandwidth = (int)BandwidthBox.Value;
-                int bandwidthIndexes = (int)Math.Floor(bandwidth / 2 / fSampleRate);
-                Bandwidth = new()
-                {
-                    Samplerate = bandwidth,
-                    FromIndex = FrequesList.Count / 2 - bandwidthIndexes,
-                    ToIndex = FrequesList.Count / 2 + bandwidthIndexes,
-                    Left = FrequesList[FrequesList.Count / 2] - (bandwidth / 2),
-                    Right = FrequesList[FrequesList.Count / 2] + (bandwidth / 2),
-                };
-
                 SignalTime = DateTime.Now;
                 if (GainBox.SelectedIndex != -1) gain = IO.SupportedGains[GainBox.SelectedIndex];
 
@@ -170,22 +159,28 @@ namespace Scanner
             fixed (float* srcPower = power)
             {
                 Fourier.SpectrumPower(e.Buffer, srcPower, e.Length, IO.Gain);
-                fixed (float* averagedSrc = simpleAveraged) AudioUtils.SimpleAverage(srcPower, averagedSrc, e.Length, 100);
+                fixed (float* averagedSrc = simpleAveraged) AudioUtils.SimpleAverage(srcPower, averagedSrc, e.Length, 30);
             }
 
             bool isPositiveSignal = false;
             float average = simpleAveraged.Average();
 
-            if ((DateTime.Now - SignalTime).TotalMilliseconds >= 200)
+            if ((DateTime.Now - SignalTime).TotalMilliseconds >= 500)
             {
+                List<AudioUtils.Point> points = [];
+                for (int i = 0; i < simpleAveraged.Length; i++) points.Add(new(FrequesList[i], simpleAveraged[i]));
+                var filteredPoints = RamerDouglasPeucker.Reduce([.. points], 3);
+
                 BeginInvoke(() =>
                 {
                     SpectrPlot.Plot.Clear();
                     //SpectrPlot.Plot.Add.SignalXY(FrequesList.ToArray(), power);
                     SpectrPlot.Plot.Add.SignalXY(FrequesList.ToArray(), simpleAveraged);
+                    SpectrPlot.Plot.Add.SignalXY(filteredPoints.Select(p => p.X).ToArray(), filteredPoints.Select(p => p.Y).ToArray());
                     SpectrPlot.Plot.Add.VerticalLine(FrequesList[FrequesList.Count / 2], color: ScottPlot.Color.FromColor(Color.Red));
                     SpectrPlot.Plot.Add.HorizontalLine(average, color: ScottPlot.Color.FromColor(Color.Chocolate));
-                    SpectrPlot.Plot.Add.HorizontalLine(average + ((simpleAveraged.Max() - average) * 0.707f), color: ScottPlot.Color.FromColor(Color.Green));
+                    SpectrPlot.Plot.Add.HorizontalLine(average + (simpleAveraged.Max() - average) * 0.707f, color: ScottPlot.Color.FromColor(Color.Green));
+                    SpectrPlot.Plot.Add.HorizontalLine(NoiseLevel, color: ScottPlot.Color.FromColor(Color.LightBlue));
 
                     SpectrPlot.Plot.Axes.AutoScaleX();
                     SpectrPlot.Plot.Axes.SetLimitsY(20, 60);
@@ -195,8 +190,6 @@ namespace Scanner
                 });
                 SignalTime = DateTime.Now;
             }
-
-            string g = "";
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
