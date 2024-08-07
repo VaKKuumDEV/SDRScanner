@@ -33,8 +33,8 @@
             Label label1;
             TableLayoutPanel tableLayoutPanel2;
             TableLayoutPanel tableLayoutPanel4;
-            SignalPlot = new ScottPlot.FormsPlot();
-            PreparedSignalPlot = new ScottPlot.FormsPlot();
+            SignalPlot = new ScottPlot.WinForms.FormsPlot();
+            PreparedSignalPlot = new ScottPlot.WinForms.FormsPlot();
             HashTextbox = new TextBox();
             RecognizeAllButton = new Button();
             RecognizeButton = new Button();
@@ -330,8 +330,8 @@
         #endregion
 
         private TableLayoutPanel ContentPanel;
-        private ScottPlot.FormsPlot SignalPlot;
-        private ScottPlot.FormsPlot PreparedSignalPlot;
+        private ScottPlot.WinForms.FormsPlot SignalPlot;
+        private ScottPlot.WinForms.FormsPlot PreparedSignalPlot;
         private Button OpenSignalButton;
         private OpenFileDialog OpenSignalDialog;
         private ListBox HashListbox;

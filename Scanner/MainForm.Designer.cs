@@ -57,7 +57,7 @@
             tableLayoutPanel2 = new TableLayoutPanel();
             AdditionalPanel = new TableLayoutPanel();
             tableLayoutPanel3 = new TableLayoutPanel();
-            SpectrPlot = new ScottPlot.FormsPlot();
+            SpectrPlot = new ScottPlot.WinForms.FormsPlot();
             tableLayoutPanel1 = new TableLayoutPanel();
             label8 = new Label();
             tableLayoutPanel4 = new TableLayoutPanel();
@@ -549,7 +549,7 @@
         private TableLayoutPanel ContentPanel;
         private TableLayoutPanel tableLayoutPanel2;
         private TableLayoutPanel tableLayoutPanel3;
-        private ScottPlot.FormsPlot SpectrPlot;
+        private ScottPlot.WinForms.FormsPlot SpectrPlot;
         private TableLayoutPanel tableLayoutPanel1;
         private NumericUpDown BandwidthBox;
         private ComboBox DevicesBox;

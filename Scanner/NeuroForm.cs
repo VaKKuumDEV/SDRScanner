@@ -107,7 +107,7 @@ namespace Scanner
         {
             if (CurrentSelection == null || !CurrentSelection.HasValue) return;
             if (CurrentSelection.Value < 0) return;
-            if (SamplesData == null || !SamplesData.Any()) return;
+            if (SamplesData == null || SamplesData.Count == 0) return;
             if (CurrentSelection.Value >= SamplesData.Count) return;
 
             var kv = SamplesData[CurrentSelection.Value];
@@ -117,8 +117,8 @@ namespace Scanner
                 SignalPlot.Plot.Clear();
                 PreparedSignalPlot.Plot.Clear();
 
-                SignalPlot.Plot.AddSignalXY(kv.freqs, kv.power);
-                PreparedSignalPlot.Plot.AddSignalXY(kv.preparedFreqs, kv.preparedPower, Color.Green);
+                SignalPlot.Plot.Add.SignalXY(kv.freqs, kv.power);
+                PreparedSignalPlot.Plot.Add.SignalXY(kv.preparedFreqs, kv.preparedPower, color: ScottPlot.Color.FromColor(Color.Green));
 
                 SignalPlot.Refresh();
                 PreparedSignalPlot.Refresh();
@@ -170,7 +170,7 @@ namespace Scanner
             if (SamplesData == null) return;
             SampleInfo info = SamplesData[CurrentSelection.Value];
 
-            List<KeyValuePair<string, double>> percents = new();
+            List<KeyValuePair<string, double>> percents = [];
             foreach (var kv in Map.Map)
             {
                 foreach (var valHash in kv.Value)
@@ -198,10 +198,10 @@ namespace Scanner
             if (CurrentSelection == null) return;
             if (SamplesData == null) return;
 
-            Dictionary<string, int> counts = new();
+            Dictionary<string, int> counts = [];
             foreach (SampleInfo info in SamplesData)
             {
-                List<KeyValuePair<string, double>> percents = new();
+                List<KeyValuePair<string, double>> percents = [];
                 foreach (var kv in Map.Map)
                 {
                     foreach (var valHash in kv.Value)
@@ -216,8 +216,8 @@ namespace Scanner
                     percents.Sort((a, b) => a.Value > b.Value ? -1 : 1);
                     KeyValuePair<string, double> maxPercent = percents.First();
 
-                    if (!counts.ContainsKey(maxPercent.Key)) counts[maxPercent.Key] = 1;
-                    else counts[maxPercent.Key]++;
+                    if (!counts.TryGetValue(maxPercent.Key, out int value)) counts[maxPercent.Key] = 1;
+                    else counts[maxPercent.Key] = ++value;
                 }
             }
 

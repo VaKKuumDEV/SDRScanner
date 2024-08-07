@@ -3,7 +3,6 @@ using SDRSharp.Radio;
 using Scanner.Audio;
 using SDRSharp.Radio.PortAudio;
 using FftSharp;
-using Newtonsoft.Json;
 
 namespace Scanner
 {
@@ -14,17 +13,17 @@ namespace Scanner
         public const double KORREL_DOPUSK = 0.5;
 
         private static RtlDevice? IO { get; set; } = null;
-        private List<DeviceDisplay> DevicesList { get; } = new();
-        private List<AudioDevice> AudioDevices { get; } = new();
+        private List<DeviceDisplay> DevicesList { get; } = [];
+        private List<AudioDevice> AudioDevices { get; } = [];
         private WorkingStatuses Status { get; set; } = WorkingStatuses.NOT_INIT;
         private DateTime SignalTime { get; set; } = DateTime.Now;
-        private List<double> FrequesList { get; set; } = new();
-        private List<string> AudioBuffer { get; set; } = new();
+        private List<double> FrequesList { get; set; } = [];
+        private List<string> AudioBuffer { get; set; } = [];
         private BandwidthInfo? Bandwidth { get; set; } = null;
         private int Iter { get; set; } = 0;
         private SignalsMap Map { get; }
         private string? RecordingSignal { get; set; } = null;
-        private List<string> RecordingBuffer { get; set; } = new();
+        private List<string> RecordingBuffer { get; set; } = [];
 
         public enum WorkingStatuses
         {
@@ -163,6 +162,7 @@ namespace Scanner
 
         private unsafe void IO_SamplesAvailable(object sender, SamplesAvailableEventArgs e)
         {
+            if (IO == null) return;
             Fourier.ForwardTransform(e.Buffer, e.Length, true);
 
             float[] power = new float[e.Length];
@@ -171,8 +171,14 @@ namespace Scanner
             List<double> fftPower = new(new double[e.Length]);
             for (int i = 0; i < e.Length; i++) fftPower[i] = power[i];
 
-            List<double> bandwidthSlice = fftPower.GetRange(Bandwidth.Value.FromIndex, Bandwidth.Value.ToIndex - Bandwidth.Value.FromIndex);
-            List<double> bandwidthFreqSlice = FrequesList.GetRange(Bandwidth.Value.FromIndex, Bandwidth.Value.ToIndex - Bandwidth.Value.FromIndex);
+            List<double> bandwidthSlice = fftPower;
+            List<double> bandwidthFreqSlice = FrequesList;
+
+            if (Bandwidth != null)
+            {
+                bandwidthSlice = fftPower.GetRange(Bandwidth.Value.FromIndex, Bandwidth.Value.ToIndex - Bandwidth.Value.FromIndex);
+                bandwidthFreqSlice = FrequesList.GetRange(Bandwidth.Value.FromIndex, Bandwidth.Value.ToIndex - Bandwidth.Value.FromIndex);
+            }
 
             double averagePower = fftPower.Average() * 1.5;
             int avPreCount = bandwidthSlice.Where(item => item >= averagePower).Count();
@@ -184,7 +190,7 @@ namespace Scanner
             if (isPositiveSignal)
             {
                 double freqStep = FFT.FrequencyResolution(e.Length, IO.Samplerate);
-                (double[] preparedPower, double[] preparedFreqs) = AudioUtils.PrepareAudioData(newBandwidthSlice.ToArray(), bandwidthFreqSlice.ToArray(), freqStep);
+                (double[] preparedPower, double[] preparedFreqs) = AudioUtils.PrepareAudioData([.. newBandwidthSlice], [.. bandwidthFreqSlice], freqStep);
                 int[] hashInts = AudioUtils.GetAudioHash(preparedPower);
 
                 string hash = "";
@@ -197,7 +203,7 @@ namespace Scanner
             string? recognizedSignal = null;
             if (AudioBuffer.Count >= BUFFER_LENGTH && RecordingSignal == null)
             {
-                Dictionary<string, KeyValuePair<int, double>> signalCounts = new();
+                Dictionary<string, KeyValuePair<int, double>> signalCounts = [];
                 foreach (var kv in Map.Map)
                 {
                     if (kv.Value.Count == 0) continue;
@@ -207,20 +213,20 @@ namespace Scanner
 
                     if (AudioBuffer.Count == minLength)
                     {
-                        minSlice = AudioBuffer.ToArray();
-                        maxSlice = kv.Value.ToArray();
+                        minSlice = [..AudioBuffer];
+                        maxSlice = [..kv.Value];
                     }
                     else
                     {
-                        minSlice = kv.Value.ToArray();
-                        maxSlice = AudioBuffer.ToArray();
+                        minSlice = [..kv.Value];
+                        maxSlice = [..AudioBuffer];
                     }
 
                     int maxKorrelsCount = 0;
                     double avKorrel = 0;
                     for (int i = 0; i < maxLength - minLength + 1; i += minLength / 2)
                     {
-                        List<double> korrels = new();
+                        List<double> korrels = [];
                         for (int j = 0; j < minLength; j++)
                         {
                             if (i + j >= maxLength) break;
@@ -264,12 +270,16 @@ namespace Scanner
                 BeginInvoke(() =>
                 {
                     SpectrPlot.Plot.Clear();
-                    SpectrPlot.Plot.AddSignalXY(FrequesList.ToArray(), fftPower.ToArray());
-                    SpectrPlot.Plot.AddVerticalLine(FrequesList[FrequesList.Count / 2], Color.Red);
-                    SpectrPlot.Plot.AddVerticalLine(Bandwidth.Value.Left, Color.Green);
-                    SpectrPlot.Plot.AddVerticalLine(Bandwidth.Value.Right, Color.Green);
-                    SpectrPlot.Plot.AddHorizontalLine(averagePower, Color.Chocolate);
-                    SpectrPlot.Plot.SetAxisLimitsY(-20, 100);
+                    SpectrPlot.Plot.Add.SignalXY(FrequesList.ToArray(), fftPower.ToArray());
+                    SpectrPlot.Plot.Add.VerticalLine(FrequesList[FrequesList.Count / 2], color: ScottPlot.Color.FromColor(Color.Red));
+                    SpectrPlot.Plot.Add.HorizontalLine(averagePower, color: ScottPlot.Color.FromColor(Color.Chocolate));
+                    SpectrPlot.Plot.Axes.SetLimitsY(-20, 100);
+                    if (Bandwidth != null)
+                    {
+                        SpectrPlot.Plot.Add.VerticalLine(Bandwidth.Value.Left, color: ScottPlot.Color.FromColor(Color.Green));
+                        SpectrPlot.Plot.Add.VerticalLine(Bandwidth.Value.Right, color: ScottPlot.Color.FromColor(Color.Green));
+                    }
+
                     SpectrPlot.Refresh();
 
                     HashBox.Text = isPositiveSignal ? "Полезный" : "Шум";
@@ -311,7 +321,7 @@ namespace Scanner
                 if (RecordingSignal != null)
                 {
                     Map.Reload();
-                    if (!Map.Map.ContainsKey(RecordingSignal)) Map.Map[RecordingSignal] = new();
+                    if (!Map.Map.ContainsKey(RecordingSignal)) Map.Map[RecordingSignal] = [];
                     Map.Map[RecordingSignal].AddRange(RecordingBuffer);
                     Map.Save();
                 }
