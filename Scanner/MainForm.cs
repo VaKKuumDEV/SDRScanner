@@ -166,126 +166,37 @@ namespace Scanner
             Fourier.ForwardTransform(e.Buffer, e.Length, true);
 
             float[] power = new float[e.Length];
-            fixed (float* src = power) Fourier.SpectrumPower(e.Buffer, src, e.Length, IO.Gain);
-
-            List<double> fftPower = new(new double[e.Length]);
-            for (int i = 0; i < e.Length; i++) fftPower[i] = power[i];
-
-            List<double> bandwidthSlice = fftPower;
-            List<double> bandwidthFreqSlice = FrequesList;
-
-            if (Bandwidth != null)
+            float[] simpleAveraged = new float[e.Length];
+            fixed (float* srcPower = power)
             {
-                bandwidthSlice = fftPower.GetRange(Bandwidth.Value.FromIndex, Bandwidth.Value.ToIndex - Bandwidth.Value.FromIndex);
-                bandwidthFreqSlice = FrequesList.GetRange(Bandwidth.Value.FromIndex, Bandwidth.Value.ToIndex - Bandwidth.Value.FromIndex);
+                Fourier.SpectrumPower(e.Buffer, srcPower, e.Length, IO.Gain);
+                fixed (float* averagedSrc = simpleAveraged) AudioUtils.SimpleAverage(srcPower, averagedSrc, e.Length, 100);
             }
 
-            double averagePower = fftPower.Average() * 1.5;
-            int avPreCount = bandwidthSlice.Where(item => item >= averagePower).Count();
-            double avPrePercent = ((double)avPreCount) / bandwidthSlice.Count;
-            bool isPositiveSignal = avPrePercent >= 0.04;
+            bool isPositiveSignal = false;
+            float average = simpleAveraged.Average();
 
-            List<double> newBandwidthSlice = bandwidthSlice.ConvertAll(item => item >= averagePower ? item : 0);
-
-            if (isPositiveSignal)
-            {
-                double freqStep = FFT.FrequencyResolution(e.Length, IO.Samplerate);
-                (double[] preparedPower, double[] preparedFreqs) = AudioUtils.PrepareAudioData([.. newBandwidthSlice], [.. bandwidthFreqSlice], freqStep);
-                int[] hashInts = AudioUtils.GetAudioHash(preparedPower);
-
-                string hash = "";
-                for (int i = 0; i < hashInts.Length; i++) hash += hashInts[i].ToString("00");
-
-                if (RecordingSignal != null) RecordingBuffer.Add(hash);
-                else AudioBuffer.Add(hash);
-            }
-
-            string? recognizedSignal = null;
-            if (AudioBuffer.Count >= BUFFER_LENGTH && RecordingSignal == null)
-            {
-                Dictionary<string, KeyValuePair<int, double>> signalCounts = [];
-                foreach (var kv in Map.Map)
-                {
-                    if (kv.Value.Count == 0) continue;
-                    int minLength = Math.Min(AudioBuffer.Count, kv.Value.Count);
-                    int maxLength = Math.Max(AudioBuffer.Count, kv.Value.Count);
-                    string[] minSlice, maxSlice;
-
-                    if (AudioBuffer.Count == minLength)
-                    {
-                        minSlice = [..AudioBuffer];
-                        maxSlice = [..kv.Value];
-                    }
-                    else
-                    {
-                        minSlice = [..kv.Value];
-                        maxSlice = [..AudioBuffer];
-                    }
-
-                    int maxKorrelsCount = 0;
-                    double avKorrel = 0;
-                    for (int i = 0; i < maxLength - minLength + 1; i += minLength / 2)
-                    {
-                        List<double> korrels = [];
-                        for (int j = 0; j < minLength; j++)
-                        {
-                            if (i + j >= maxLength) break;
-
-                            string hashLeft = maxSlice[i + j];
-                            string hashRight = minSlice[j];
-
-                            double? korrel = AudioUtils.CompareHashes(hashLeft, hashRight);
-                            if (korrel != null && korrel.Value >= KORREL_DOPUSK) korrels.Add(korrel.Value);
-                        }
-
-                        if (korrels.Count > maxKorrelsCount)
-                        {
-                            maxKorrelsCount = korrels.Count;
-                            avKorrel = korrels.Average();
-                        }
-                    }
-
-                    signalCounts[kv.Key] = new(maxKorrelsCount, avKorrel);
-                }
-
-                if (signalCounts.Keys.Count > 0)
-                {
-                    var countsList = signalCounts.ToList();
-                    countsList.Sort((a, b) => a.Value.Key == b.Value.Key ? (a.Value.Value > b.Value.Value ? -1 : 1) : (a.Value.Key > b.Value.Key ? -1 : 1));
-                    var maximumComparedSignal = countsList.First();
-
-                    double compPercent = ((double)maximumComparedSignal.Value.Key) / BUFFER_LENGTH;
-                    if (compPercent > 0.2) recognizedSignal = maximumComparedSignal.Key;
-                }
-
-                AudioBuffer.Clear();
-                BeginInvoke(() =>
-                {
-                    SignalNameBox.Text = recognizedSignal ?? "Не опознан";
-                });
-            }
-
-            if ((DateTime.Now - SignalTime).TotalMilliseconds >= 300)
+            if ((DateTime.Now - SignalTime).TotalMilliseconds >= 200)
             {
                 BeginInvoke(() =>
                 {
                     SpectrPlot.Plot.Clear();
-                    SpectrPlot.Plot.Add.SignalXY(FrequesList.ToArray(), fftPower.ToArray());
+                    //SpectrPlot.Plot.Add.SignalXY(FrequesList.ToArray(), power);
+                    SpectrPlot.Plot.Add.SignalXY(FrequesList.ToArray(), simpleAveraged);
                     SpectrPlot.Plot.Add.VerticalLine(FrequesList[FrequesList.Count / 2], color: ScottPlot.Color.FromColor(Color.Red));
-                    SpectrPlot.Plot.Add.HorizontalLine(averagePower, color: ScottPlot.Color.FromColor(Color.Chocolate));
-                    SpectrPlot.Plot.Axes.SetLimitsY(-20, 100);
-                    if (Bandwidth != null)
-                    {
-                        SpectrPlot.Plot.Add.VerticalLine(Bandwidth.Value.Left, color: ScottPlot.Color.FromColor(Color.Green));
-                        SpectrPlot.Plot.Add.VerticalLine(Bandwidth.Value.Right, color: ScottPlot.Color.FromColor(Color.Green));
-                    }
+                    SpectrPlot.Plot.Add.HorizontalLine(average, color: ScottPlot.Color.FromColor(Color.Chocolate));
+                    SpectrPlot.Plot.Add.HorizontalLine(average + ((simpleAveraged.Max() - average) * 0.707f), color: ScottPlot.Color.FromColor(Color.Green));
 
+                    SpectrPlot.Plot.Axes.AutoScaleX();
+                    SpectrPlot.Plot.Axes.SetLimitsY(20, 60);
                     SpectrPlot.Refresh();
 
                     HashBox.Text = isPositiveSignal ? "Полезный" : "Шум";
                 });
                 SignalTime = DateTime.Now;
             }
+
+            string g = "";
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)

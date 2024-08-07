@@ -8,15 +8,10 @@ namespace Scanner.Audio
         public const int POINTS = 10;
         public const int HASH_RATE = 100;
 
-        public readonly struct Point
+        public readonly struct Point(double x, double y)
         {
-            public double X { get; }
-            public double Y { get; }
-            public Point(double x, double y)
-            {
-                X = x;
-                Y = y;
-            }
+            public double X { get; } = x;
+            public double Y { get; } = y;
         };
 
         public static (double[] audio, int sampleRate, int bytesPerSample, int totalTime) ReadAudioFile(FileInfo file, double multiplier = 16__000)
@@ -196,6 +191,20 @@ namespace Scanner.Audio
                 filteredPoints.Add(PointList[length - 1]);
                 DouglasPeucker(PointList.Take(index + 1).ToList(), epsilon, ref filteredPoints);
                 DouglasPeucker(PointList.Skip(index + 1).Take(PointList.Count - index - 1).ToList(), epsilon, ref filteredPoints);
+            }
+        }
+
+        public unsafe static void SimpleAverage(float* values, float* averagedValues, int length, int k)
+        {
+            Queue<float> valuesQueue = [];
+            for (int i = 0; i < length; i++)
+            {
+                valuesQueue.Enqueue(values[i]);
+
+                float average = valuesQueue.Sum() / k;
+                averagedValues[i] = average;
+
+                if (valuesQueue.Count == k) valuesQueue.Dequeue();
             }
         }
     }
