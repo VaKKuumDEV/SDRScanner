@@ -171,6 +171,26 @@ namespace Scanner
                 for (int i = 0; i < simpleAveraged.Length; i++) points.Add(new(FrequesList[i], simpleAveraged[i]));
                 var filteredPoints = RamerDouglasPeucker.Reduce([.. points], 3);
 
+                int offset = 0;
+                bool isLow = true;
+                while (offset < filteredPoints.Length - 1)
+                {
+                    if (isLow)
+                    {
+                        int index = AudioUtils.GetBottomPoint(filteredPoints.Skip(offset).ToList());
+                        for (int j = offset; j < offset + index; j++) filteredPoints[j].IsLow = false;
+                        offset += index;
+                        isLow = false;
+                    }
+                    else
+                    {
+                        int index = AudioUtils.GetTopPoint(filteredPoints.Skip(offset).ToList());
+                        for (int j = offset; j < offset + index; j++) filteredPoints[j].IsLow = true;
+                        offset += index;
+                        isLow = true;
+                    }
+                }
+
                 BeginInvoke(() =>
                 {
                     SpectrPlot.Plot.Clear();
@@ -179,8 +199,15 @@ namespace Scanner
                     SpectrPlot.Plot.Add.SignalXY(filteredPoints.Select(p => p.X).ToArray(), filteredPoints.Select(p => p.Y).ToArray());
                     SpectrPlot.Plot.Add.VerticalLine(FrequesList[FrequesList.Count / 2], color: ScottPlot.Color.FromColor(Color.Red));
                     SpectrPlot.Plot.Add.HorizontalLine(average, color: ScottPlot.Color.FromColor(Color.Chocolate));
-                    SpectrPlot.Plot.Add.HorizontalLine(average + (simpleAveraged.Max() - average) * 0.707f, color: ScottPlot.Color.FromColor(Color.Green));
                     SpectrPlot.Plot.Add.HorizontalLine(NoiseLevel, color: ScottPlot.Color.FromColor(Color.LightBlue));
+
+                    for (int i = 0; i < filteredPoints.Length; i++)
+                    {
+                        if (filteredPoints[i].IsLow)
+                        {
+                            SpectrPlot.Plot.Add.VerticalLine(filteredPoints[i].X, color: ScottPlot.Color.FromColor(Color.Green));
+                        }
+                    }
 
                     SpectrPlot.Plot.Axes.AutoScaleX();
                     SpectrPlot.Plot.Axes.SetLimitsY(20, 60);

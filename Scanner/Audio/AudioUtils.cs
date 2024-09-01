@@ -8,10 +8,16 @@ namespace Scanner.Audio
         public const int POINTS = 10;
         public const int HASH_RATE = 100;
 
-        public readonly struct Point(double x, double y)
+        public struct Point(double x, double y, bool isLow = true)
         {
             public double X { get; } = x;
             public double Y { get; } = y;
+            public bool IsLow { get; set; } = isLow;
+
+            public override readonly string ToString()
+            {
+                return $"{X}:{Y}:{IsLow}";
+            }
         };
 
         public static (double[] audio, int sampleRate, int bytesPerSample, int totalTime) ReadAudioFile(FileInfo file, double multiplier = 16__000)
@@ -160,6 +166,30 @@ namespace Scanner.Audio
 
                 if (valuesQueue.Count == k) valuesQueue.Dequeue();
             }
+        }
+
+        public static int GetBottomPoint(List<Point> points)
+        {
+            int minIndex = 0;
+            for (int i = 1; i < points.Count; i++)
+            {
+                if (points[minIndex].Y > points[i].Y) minIndex = i;
+                else break;
+            }
+
+            return minIndex;
+        }
+
+        public static int GetTopPoint(List<Point> points)
+        {
+            int maxIndex = 0;
+            for (int i = 1; i < points.Count; i++)
+            {
+                if (points[maxIndex].Y < points[i].Y) maxIndex = i;
+                else break;
+            }
+
+            return maxIndex;
         }
     }
 }
