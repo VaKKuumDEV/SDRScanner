@@ -104,7 +104,7 @@
             tableLayoutPanel1.RowCount = 2;
             tableLayoutPanel1.RowStyles.Add(new RowStyle());
             tableLayoutPanel1.RowStyles.Add(new RowStyle());
-            tableLayoutPanel1.Size = new Size(264, 62);
+            tableLayoutPanel1.Size = new Size(308, 62);
             tableLayoutPanel1.TabIndex = 11;
             // 
             // NoiseLevelBox
@@ -112,8 +112,9 @@
             NoiseLevelBox.Dock = DockStyle.Top;
             NoiseLevelBox.Location = new Point(3, 29);
             NoiseLevelBox.Name = "NoiseLevelBox";
-            NoiseLevelBox.Size = new Size(258, 30);
+            NoiseLevelBox.Size = new Size(302, 30);
             NoiseLevelBox.TabIndex = 10;
+            NoiseLevelBox.Value = new decimal(new int[] { 4, 0, 0, 0 });
             // 
             // label8
             // 
@@ -122,9 +123,9 @@
             label8.Location = new Point(3, 0);
             label8.Name = "label8";
             label8.Padding = new Padding(2);
-            label8.Size = new Size(258, 26);
+            label8.Size = new Size(302, 26);
             label8.TabIndex = 9;
-            label8.Text = "Уровень шума (дБ):";
+            label8.Text = "Коридор шума от среднего (дБ):";
             // 
             // tableLayoutPanel4
             // 
@@ -140,7 +141,7 @@
             tableLayoutPanel4.RowCount = 2;
             tableLayoutPanel4.RowStyles.Add(new RowStyle());
             tableLayoutPanel4.RowStyles.Add(new RowStyle());
-            tableLayoutPanel4.Size = new Size(264, 62);
+            tableLayoutPanel4.Size = new Size(308, 62);
             tableLayoutPanel4.TabIndex = 12;
             // 
             // DevicesBox
@@ -151,7 +152,7 @@
             DevicesBox.FormattingEnabled = true;
             DevicesBox.Location = new Point(3, 29);
             DevicesBox.Name = "DevicesBox";
-            DevicesBox.Size = new Size(258, 30);
+            DevicesBox.Size = new Size(302, 30);
             DevicesBox.TabIndex = 4;
             // 
             // label9
@@ -161,7 +162,7 @@
             label9.Location = new Point(3, 0);
             label9.Name = "label9";
             label9.Padding = new Padding(2);
-            label9.Size = new Size(258, 26);
+            label9.Size = new Size(302, 26);
             label9.TabIndex = 1;
             label9.Text = "Устройство:";
             // 
@@ -179,7 +180,7 @@
             tableLayoutPanel5.RowCount = 2;
             tableLayoutPanel5.RowStyles.Add(new RowStyle());
             tableLayoutPanel5.RowStyles.Add(new RowStyle());
-            tableLayoutPanel5.Size = new Size(264, 62);
+            tableLayoutPanel5.Size = new Size(308, 62);
             tableLayoutPanel5.TabIndex = 13;
             // 
             // FreqBox
@@ -190,7 +191,7 @@
             FreqBox.Maximum = new decimal(new int[] { 1600000, 0, 0, 0 });
             FreqBox.Minimum = new decimal(new int[] { 100000, 0, 0, 0 });
             FreqBox.Name = "FreqBox";
-            FreqBox.Size = new Size(258, 30);
+            FreqBox.Size = new Size(302, 30);
             FreqBox.TabIndex = 4;
             FreqBox.ThousandsSeparator = true;
             FreqBox.Value = new decimal(new int[] { 433950, 0, 0, 0 });
@@ -202,7 +203,7 @@
             label10.Location = new Point(3, 0);
             label10.Name = "label10";
             label10.Padding = new Padding(2);
-            label10.Size = new Size(258, 26);
+            label10.Size = new Size(302, 26);
             label10.TabIndex = 3;
             label10.Text = "Частота (кГц):";
             // 
@@ -220,7 +221,7 @@
             tableLayoutPanel6.RowCount = 2;
             tableLayoutPanel6.RowStyles.Add(new RowStyle());
             tableLayoutPanel6.RowStyles.Add(new RowStyle());
-            tableLayoutPanel6.Size = new Size(264, 62);
+            tableLayoutPanel6.Size = new Size(308, 62);
             tableLayoutPanel6.TabIndex = 14;
             // 
             // GainBox
@@ -229,7 +230,7 @@
             GainBox.FormattingEnabled = true;
             GainBox.Location = new Point(3, 29);
             GainBox.Name = "GainBox";
-            GainBox.Size = new Size(258, 30);
+            GainBox.Size = new Size(302, 30);
             GainBox.TabIndex = 6;
             // 
             // label1
@@ -239,7 +240,7 @@
             label1.Location = new Point(3, 0);
             label1.Name = "label1";
             label1.Padding = new Padding(2);
-            label1.Size = new Size(258, 26);
+            label1.Size = new Size(302, 26);
             label1.TabIndex = 5;
             label1.Text = "Усиление:";
             // 
@@ -259,7 +260,7 @@
             tableLayoutPanel10.RowStyles.Add(new RowStyle());
             tableLayoutPanel10.RowStyles.Add(new RowStyle());
             tableLayoutPanel10.RowStyles.Add(new RowStyle());
-            tableLayoutPanel10.Size = new Size(264, 138);
+            tableLayoutPanel10.Size = new Size(308, 138);
             tableLayoutPanel10.TabIndex = 18;
             // 
             // StartSignalRecButton
@@ -269,7 +270,7 @@
             StartSignalRecButton.Location = new Point(3, 95);
             StartSignalRecButton.Name = "StartSignalRecButton";
             StartSignalRecButton.Padding = new Padding(4);
-            StartSignalRecButton.Size = new Size(258, 40);
+            StartSignalRecButton.Size = new Size(302, 40);
             StartSignalRecButton.TabIndex = 12;
             StartSignalRecButton.Text = "Записать в базу";
             StartSignalRecButton.UseVisualStyleBackColor = true;
@@ -282,7 +283,7 @@
             DatabaseButton.Location = new Point(3, 49);
             DatabaseButton.Name = "DatabaseButton";
             DatabaseButton.Padding = new Padding(4);
-            DatabaseButton.Size = new Size(258, 40);
+            DatabaseButton.Size = new Size(302, 40);
             DatabaseButton.TabIndex = 11;
             DatabaseButton.Text = "База сигналов";
             DatabaseButton.UseVisualStyleBackColor = true;
@@ -295,7 +296,7 @@
             ControlButton.Location = new Point(3, 3);
             ControlButton.Name = "ControlButton";
             ControlButton.Padding = new Padding(4);
-            ControlButton.Size = new Size(258, 40);
+            ControlButton.Size = new Size(302, 40);
             ControlButton.TabIndex = 7;
             ControlButton.Text = "Запуск";
             ControlButton.UseVisualStyleBackColor = true;
@@ -314,7 +315,7 @@
             tableLayoutPanel7.RowCount = 2;
             tableLayoutPanel7.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tableLayoutPanel7.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel7.Size = new Size(264, 72);
+            tableLayoutPanel7.Size = new Size(308, 72);
             tableLayoutPanel7.TabIndex = 16;
             // 
             // SamplerateBox
@@ -324,7 +325,7 @@
             SamplerateBox.Maximum = new decimal(new int[] { 1600000000, 0, 0, 0 });
             SamplerateBox.Name = "SamplerateBox";
             SamplerateBox.ReadOnly = true;
-            SamplerateBox.Size = new Size(258, 30);
+            SamplerateBox.Size = new Size(302, 30);
             SamplerateBox.TabIndex = 7;
             SamplerateBox.ThousandsSeparator = true;
             // 
@@ -335,7 +336,7 @@
             label2.Location = new Point(3, 0);
             label2.Name = "label2";
             label2.Padding = new Padding(2);
-            label2.Size = new Size(258, 26);
+            label2.Size = new Size(302, 26);
             label2.TabIndex = 6;
             label2.Text = "Samplerate:";
             // 
@@ -353,7 +354,7 @@
             tableLayoutPanel8.RowCount = 2;
             tableLayoutPanel8.RowStyles.Add(new RowStyle());
             tableLayoutPanel8.RowStyles.Add(new RowStyle());
-            tableLayoutPanel8.Size = new Size(264, 62);
+            tableLayoutPanel8.Size = new Size(308, 62);
             tableLayoutPanel8.TabIndex = 17;
             // 
             // HashBox
@@ -362,7 +363,7 @@
             HashBox.Location = new Point(3, 29);
             HashBox.Name = "HashBox";
             HashBox.ReadOnly = true;
-            HashBox.Size = new Size(258, 30);
+            HashBox.Size = new Size(302, 30);
             HashBox.TabIndex = 9;
             // 
             // label3
@@ -372,7 +373,7 @@
             label3.Location = new Point(3, 0);
             label3.Name = "label3";
             label3.Padding = new Padding(2);
-            label3.Size = new Size(258, 26);
+            label3.Size = new Size(302, 26);
             label3.TabIndex = 8;
             label3.Text = "Сигнал:";
             // 
@@ -390,7 +391,7 @@
             tableLayoutPanel9.RowCount = 2;
             tableLayoutPanel9.RowStyles.Add(new RowStyle());
             tableLayoutPanel9.RowStyles.Add(new RowStyle());
-            tableLayoutPanel9.Size = new Size(264, 62);
+            tableLayoutPanel9.Size = new Size(308, 62);
             tableLayoutPanel9.TabIndex = 18;
             // 
             // SignalNameBox
@@ -399,7 +400,7 @@
             SignalNameBox.Location = new Point(3, 29);
             SignalNameBox.Name = "SignalNameBox";
             SignalNameBox.ReadOnly = true;
-            SignalNameBox.Size = new Size(258, 30);
+            SignalNameBox.Size = new Size(302, 30);
             SignalNameBox.TabIndex = 11;
             // 
             // label4
@@ -409,15 +410,15 @@
             label4.Location = new Point(3, 0);
             label4.Name = "label4";
             label4.Padding = new Padding(2);
-            label4.Size = new Size(258, 26);
+            label4.Size = new Size(302, 26);
             label4.TabIndex = 10;
             label4.Text = "Сигнал:";
             // 
             // ContentPanel
             // 
             ContentPanel.ColumnCount = 2;
-            ContentPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 70F));
-            ContentPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30F));
+            ContentPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 65F));
+            ContentPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35F));
             ContentPanel.Controls.Add(tableLayoutPanel2, 1, 0);
             ContentPanel.Controls.Add(tableLayoutPanel3, 0, 0);
             ContentPanel.Dock = DockStyle.Fill;
@@ -441,7 +442,7 @@
             tableLayoutPanel2.Controls.Add(tableLayoutPanel10, 0, 5);
             tableLayoutPanel2.Controls.Add(AdditionalPanel, 0, 4);
             tableLayoutPanel2.Dock = DockStyle.Fill;
-            tableLayoutPanel2.Location = new Point(614, 0);
+            tableLayoutPanel2.Location = new Point(570, 0);
             tableLayoutPanel2.Margin = new Padding(0);
             tableLayoutPanel2.Name = "tableLayoutPanel2";
             tableLayoutPanel2.RowCount = 6;
@@ -451,7 +452,7 @@
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
-            tableLayoutPanel2.Size = new Size(264, 649);
+            tableLayoutPanel2.Size = new Size(308, 649);
             tableLayoutPanel2.TabIndex = 0;
             // 
             // AdditionalPanel
@@ -470,7 +471,7 @@
             AdditionalPanel.RowStyles.Add(new RowStyle());
             AdditionalPanel.RowStyles.Add(new RowStyle());
             AdditionalPanel.RowStyles.Add(new RowStyle());
-            AdditionalPanel.Size = new Size(264, 196);
+            AdditionalPanel.Size = new Size(308, 196);
             AdditionalPanel.TabIndex = 19;
             // 
             // tableLayoutPanel3
@@ -485,7 +486,7 @@
             tableLayoutPanel3.RowCount = 1;
             tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            tableLayoutPanel3.Size = new Size(614, 649);
+            tableLayoutPanel3.Size = new Size(570, 649);
             tableLayoutPanel3.TabIndex = 1;
             // 
             // SpectrPlot
@@ -496,7 +497,7 @@
             SpectrPlot.Margin = new Padding(0);
             SpectrPlot.Name = "SpectrPlot";
             SpectrPlot.Padding = new Padding(2);
-            SpectrPlot.Size = new Size(614, 649);
+            SpectrPlot.Size = new Size(570, 649);
             SpectrPlot.TabIndex = 0;
             // 
             // MainForm

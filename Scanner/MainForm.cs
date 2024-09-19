@@ -191,6 +191,10 @@ namespace Scanner
                     }
                 }
 
+                List<AudioUtils.Point> highPoints = [];
+                for (int i = 0; i < filteredPoints.Length; i++) if (!filteredPoints[i].IsLow && (filteredPoints[i].Y - average >= NoiseLevel)) highPoints.Add(filteredPoints[i]);
+                if (highPoints.Count > 5) isPositiveSignal = true;
+
                 BeginInvoke(() =>
                 {
                     SpectrPlot.Plot.Clear();
@@ -198,22 +202,17 @@ namespace Scanner
                     SpectrPlot.Plot.Add.SignalXY(FrequesList.ToArray(), simpleAveraged);
                     SpectrPlot.Plot.Add.SignalXY(filteredPoints.Select(p => p.X).ToArray(), filteredPoints.Select(p => p.Y).ToArray());
                     SpectrPlot.Plot.Add.VerticalLine(FrequesList[FrequesList.Count / 2], color: ScottPlot.Color.FromColor(Color.Red));
-                    SpectrPlot.Plot.Add.HorizontalLine(average, color: ScottPlot.Color.FromColor(Color.Chocolate));
-                    SpectrPlot.Plot.Add.HorizontalLine(NoiseLevel, color: ScottPlot.Color.FromColor(Color.LightBlue));
 
-                    for (int i = 0; i < filteredPoints.Length; i++)
-                    {
-                        if (filteredPoints[i].IsLow)
-                        {
-                            SpectrPlot.Plot.Add.VerticalLine(filteredPoints[i].X, color: ScottPlot.Color.FromColor(Color.Green));
-                        }
-                    }
+                    SpectrPlot.Plot.Add.HorizontalLine(average, color: ScottPlot.Color.FromColor(Color.Chocolate));
+                    SpectrPlot.Plot.Add.HorizontalLine(average + NoiseLevel, color: ScottPlot.Color.FromColor(Color.LightBlue));
+                    SpectrPlot.Plot.Add.HorizontalLine(average - NoiseLevel, color: ScottPlot.Color.FromColor(Color.LightBlue));
 
                     SpectrPlot.Plot.Axes.AutoScaleX();
                     SpectrPlot.Plot.Axes.SetLimitsY(20, 60);
                     SpectrPlot.Refresh();
 
                     HashBox.Text = isPositiveSignal ? "Полезный" : "Шум";
+                    SignalNameBox.Text = highPoints.Count.ToString();
                 });
                 SignalTime = DateTime.Now;
             }
