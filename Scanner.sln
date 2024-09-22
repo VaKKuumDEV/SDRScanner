@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scanner", "Scanner\Scanner.csproj", "{3D2EBDB5-FEA1-45F4-B6D9-2B1D36B9D4D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scanner", "Scanner\Scanner.csproj", "{3D2EBDB5-FEA1-45F4-B6D9-2B1D36B9D4D9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SDRSharp.Radio", "SDRSharp.Radio\SDRSharp.Radio.csproj", "{A24DD927-34EF-4301-BDF3-42C872BC944E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScannerConsole", "ScannerConsole\ScannerConsole.csproj", "{DA0F9445-A809-44D4-9873-4D1B642AB9B0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,6 +33,14 @@ Global
 		{A24DD927-34EF-4301-BDF3-42C872BC944E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A24DD927-34EF-4301-BDF3-42C872BC944E}.Release|x86.ActiveCfg = Release|Any CPU
 		{A24DD927-34EF-4301-BDF3-42C872BC944E}.Release|x86.Build.0 = Release|Any CPU
+		{DA0F9445-A809-44D4-9873-4D1B642AB9B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA0F9445-A809-44D4-9873-4D1B642AB9B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA0F9445-A809-44D4-9873-4D1B642AB9B0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DA0F9445-A809-44D4-9873-4D1B642AB9B0}.Debug|x86.Build.0 = Debug|Any CPU
+		{DA0F9445-A809-44D4-9873-4D1B642AB9B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA0F9445-A809-44D4-9873-4D1B642AB9B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA0F9445-A809-44D4-9873-4D1B642AB9B0}.Release|x86.ActiveCfg = Release|Any CPU
+		{DA0F9445-A809-44D4-9873-4D1B642AB9B0}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
