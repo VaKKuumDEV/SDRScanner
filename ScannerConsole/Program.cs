@@ -1,5 +1,7 @@
-﻿using RtlSdrManager;
+﻿using FftSharp;
+using RtlSdrManager;
 using RtlSdrManager.Types;
+using System.Numerics;
 
 var manager = RtlSdrDeviceManager.Instance;
 
@@ -8,18 +10,14 @@ Console.WriteLine("Devices: " + string.Join(", ", manager.Devices.Select(d => "(
 
 manager.OpenManagedDevice(0, "my-rtl-sdr");
 manager["my-rtl-sdr"].CenterFrequency = new Frequency { MHz = 102 };
-manager["my-rtl-sdr"].SampleRate = new Frequency { MHz = 2 };
+manager["my-rtl-sdr"].SampleRate = new Frequency { MHz = 0.25 };
 manager["my-rtl-sdr"].TunerGainMode = TunerGainModes.AGC;
 manager["my-rtl-sdr"].AGCMode = AGCModes.Enabled;
 manager["my-rtl-sdr"].ResetDeviceBuffer();
 
-var samples = manager["my-rtl-sdr"].ReadSamples(256);
+var samples = manager["my-rtl-sdr"].ReadSamples(8192).Select(c => new System.Numerics.Complex(c.I, c.Q)).ToArray();
+var power = FFT.Power(samples);
 
-Console.WriteLine("Read samples: " + samples.Count);
-Console.WriteLine("Samples (first 20):");
-for (var i = 0; i < 20; i++)
-{
-    Console.WriteLine($"  {i + 1:00}: {samples[i]}");
-}
+Console.WriteLine("Average power: " + power.Average());
 
 manager.CloseAllManagedDevice();

@@ -3,6 +3,7 @@ using SDRSharp.Radio;
 using Scanner.Audio;
 using SDRSharp.Radio.PortAudio;
 using FftSharp;
+using System.Numerics;
 
 namespace Scanner
 {
