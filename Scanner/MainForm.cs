@@ -3,7 +3,6 @@ using SDRSharp.Radio;
 using Scanner.Audio;
 using SDRSharp.Radio.PortAudio;
 using FftSharp;
-using System.Numerics;
 
 namespace Scanner
 {
@@ -153,11 +152,7 @@ namespace Scanner
         private unsafe void IO_SamplesAvailable(object sender, SamplesAvailableEventArgs e)
         {
             if (IO == null) return;
-
-            List<SDRSharp.Radio.Complex> d = [];
-            for (int i = 0; i < e.Length; i++) d.Add(e.Buffer[i]);
-
-            Fourier.ForwardTransform(e.Buffer, e.Length, true);
+            Fourier.ForwardTransform(e.Buffer, e.Length);
 
             float[] power = new float[e.Length];
             float[] simpleAveraged = new float[e.Length];

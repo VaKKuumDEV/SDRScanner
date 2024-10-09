@@ -19,6 +19,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Radio\SDRSharp.Radio.csproj" />
+    <ProjectReference Include="..\RTLSDR\SDRSharp.RTLSDR.csproj" />
+    <ProjectReference Include="..\RTLTCP\SDRSharp.RTLTCP.csproj" />
     <ProjectReference Include="..\SDRSharp.Radio\SDRSharp.Radio.csproj">
       <Private>True</Private>
     </ProjectReference>
@@ -42,6 +45,12 @@
       <HintPath>SdrLibs\SDRSharp.RTLSDR.dll</HintPath>
       <Private>True</Private>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="TcpForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
