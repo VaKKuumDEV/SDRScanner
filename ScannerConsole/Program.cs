@@ -14,14 +14,11 @@ manager["my-rtl-sdr"].TunerGainMode = TunerGainModes.AGC;
 manager["my-rtl-sdr"].AGCMode = AGCModes.Enabled;
 manager["my-rtl-sdr"].ResetDeviceBuffer();
 
-while (true)
+manager["my-rtl-sdr"].StartReadSamplesAsync();
+manager["my-rtl-sdr"].SamplesAvailable += new((sender, args) =>
 {
-    var samples = manager["my-rtl-sdr"].ReadSamples(8192).Select(s => new System.Numerics.Complex(s.I, s.Q)).ToList();
-    File.AppendAllLines("output.txt", samples.Select(s => s.Real + ":" + s.Imaginary));
-
-    var power = FFT.Power([.. samples]);
-    Console.WriteLine(power.Average());
-}
+    var samples = manager["my-rtl-sdr"].GetSamplesFromAsyncBuffer(args.SampleCount);
+});
 
 Console.Read();
 manager.CloseAllManagedDevice();
