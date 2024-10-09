@@ -153,6 +153,10 @@ namespace Scanner
         private unsafe void IO_SamplesAvailable(object sender, SamplesAvailableEventArgs e)
         {
             if (IO == null) return;
+
+            List<SDRSharp.Radio.Complex> d = [];
+            for (int i = 0; i < e.Length; i++) d.Add(e.Buffer[i]);
+
             Fourier.ForwardTransform(e.Buffer, e.Length, true);
 
             float[] power = new float[e.Length];

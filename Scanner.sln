@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scanner", "Scanner\Scanner.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SDRSharp.Radio", "SDRSharp.Radio\SDRSharp.Radio.csproj", "{A24DD927-34EF-4301-BDF3-42C872BC944E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScannerConsole", "ScannerConsole\ScannerConsole.csproj", "{DA0F9445-A809-44D4-9873-4D1B642AB9B0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScannerConsole", "ScannerConsole\ScannerConsole.csproj", "{DA0F9445-A809-44D4-9873-4D1B642AB9B0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
