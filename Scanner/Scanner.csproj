@@ -25,11 +25,4 @@
     <ProjectReference Include="..\SDRSharp.RTLSDR\SDRSharp.RTLSDR.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="SDRSharp.RTLSDR">
-      <HintPath>SdrLibs\SDRSharp.RTLSDR.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-  </ItemGroup>
-
 </Project>

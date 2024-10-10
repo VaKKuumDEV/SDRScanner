@@ -15,12 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="SDRSharp.RTLSDR">
-      <HintPath>..\Scanner\SdrLibs\SDRSharp.RTLSDR.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="rtlsdr.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

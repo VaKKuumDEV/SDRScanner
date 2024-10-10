@@ -18,10 +18,6 @@ namespace Scanner
         private WorkingStatuses Status { get; set; } = WorkingStatuses.NOT_INIT;
         private DateTime SignalTime { get; set; } = DateTime.Now;
         private List<double> FrequesList { get; set; } = [];
-        private List<string> AudioBuffer { get; set; } = [];
-        private int Iter { get; set; } = 0;
-        private string? RecordingSignal { get; set; } = null;
-        private List<string> RecordingBuffer { get; set; } = [];
         public double NoiseLevel { get => Convert.ToDouble(NoiseLevelBox.Value); }
 
         public enum WorkingStatuses
@@ -117,8 +113,6 @@ namespace Scanner
         {
             if (IO != null)
             {
-                AudioBuffer.Clear();
-
                 uint freq = (uint)FreqBox.Value * 1000;
                 int gain = 0;
 
@@ -193,7 +187,6 @@ namespace Scanner
                 BeginInvoke(() =>
                 {
                     SpectrPlot.Plot.Clear();
-                    //SpectrPlot.Plot.Add.SignalXY(FrequesList.ToArray(), power);
                     SpectrPlot.Plot.Add.SignalXY(FrequesList.ToArray(), simpleAveraged);
                     SpectrPlot.Plot.Add.SignalXY(filteredPoints.Select(p => p.X).ToArray(), filteredPoints.Select(p => p.Y).ToArray());
                     SpectrPlot.Plot.Add.VerticalLine(FrequesList[FrequesList.Count / 2], color: ScottPlot.Color.FromColor(Color.Red));
