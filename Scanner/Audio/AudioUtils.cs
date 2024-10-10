@@ -18,111 +18,22 @@
             }
         };
 
-        public static KeyValuePair<double[], double[]>[] MakeFFT(double[] audio, int sampleRate, int totalTime)
+        public unsafe static void CumulativeSum(float* sequence, float* cumulativeSum, int length)
         {
-            if (totalTime < 3) throw new Exception("Audio length must be more or equals then 3 second");
-            int samples = totalTime / 3; //время одного сэмпла сигнала
-            int sampleLength = audio.Length / samples;
-            if (!IsPowerOfTwo(sampleLength)) sampleLength = (int)Math.Pow(2, Math.Floor(Math.Log2(sampleLength)));
-            samples = audio.Length / sampleLength;
-
-            List<KeyValuePair<double[], double[]>> data = new();
-            for(int i = 0; i < samples; i++)
+            float sum = 0;
+            for (int i = 0; i < length; i++)
             {
-                double[] sampleData = new FftSharp.Windows.Hanning().Apply(new List<double>(audio).GetRange(i * sampleLength, sampleLength).ToArray());
-                if (!IsPowerOfTwo(sampleData.Length)) continue;
-
-                System.Numerics.Complex[] spectrum = FftSharp.FFT.Forward(sampleData);
-
-                double[] samplePower = FftSharp.FFT.Power(spectrum);
-                double[] sampleFreqs = FftSharp.FFT.FrequencyScale(samplePower.Length, sampleRate);
-                data.Add(new(samplePower, sampleFreqs));
+                sum += sequence[i];
+                cumulativeSum[i] = sum;
             }
-
-            return data.ToArray();
         }
 
-        public static (double[] power, double[] freqs) PrepareAudioData(double[] power, double[] freqs, double step = 1)
+        public unsafe static void IntegratedSpectrum(float* cumulativeSum, int length)
         {
-            SortedDictionary<double, double> powerFreqs = new();
-            if (step <= 1)
+            for (int i = 0; i < length; i++)
             {
-                for (int i = 0; i < freqs.Length - 1; i++)
-                {
-                    double freq = Math.Floor(freqs[i]) + 1;
-                    if (!powerFreqs.ContainsKey(freq)) powerFreqs[freq] = 0d;
-                }
-
-                for (int i = 0; i < powerFreqs.Keys.Count; i++)
-                {
-                    double freq = powerFreqs.Keys.ToArray()[i];
-                    int fromIndex = new List<double>(freqs).FindIndex(item => item >= (freq - (step / 2)) && item <= (freq + (step / 2)));
-                    int toIndex = new List<double>(freqs).FindLastIndex(item => item >= (freq - (step / 2)) && item <= (freq + (step / 2)));
-                    if (fromIndex == -1) fromIndex = 0;
-                    if (toIndex == -1) toIndex = 0;
-
-                    List<double> freqPowers = new List<double>(power).GetRange(fromIndex, Math.Max(1, toIndex - fromIndex + 1));
-                    double averagedFreq = freqPowers.Average();
-                    powerFreqs[freq] = averagedFreq;
-                }
+                cumulativeSum[i] /= cumulativeSum[length - 1];
             }
-            else
-            {
-                for (int i = 0; i < power.Length; i++)
-                {
-                    powerFreqs[Math.Floor(freqs[i])] = power[i];
-                }
-            }
-
-            return (powerFreqs.Values.ToArray(), powerFreqs.Keys.ToArray());
-        }
-
-        public static int[] GetAudioHash(double[] powers, int hashRate = HASH_RATE)
-        {
-            List<int> hash = new();
-
-            for(int leftIndex = 0; leftIndex < powers.Length; leftIndex += hashRate)
-            {
-                int maxIndex = 0;
-                for(int i = 0; i < hashRate; i++)
-                {
-                    if (leftIndex + i >= powers.Length) break;
-                    if (powers[leftIndex + i] > powers[leftIndex + maxIndex]) maxIndex = i;
-                }
-
-                hash.Add(maxIndex);
-            }
-
-            return hash.ToArray();
-        }
-
-        public static IEnumerable<string> ChunkSplit(string str, int chunkSize)
-        {
-            return Enumerable.Range(0, (int)Math.Ceiling(str.Length / (float)chunkSize)).Select(i => str.Substring(i * chunkSize, Math.Min(str.Length - (i * chunkSize), chunkSize)));
-        }
-
-        public static double? CompareHashes(string firstHash, string secondHash)
-        {
-            if (firstHash.Length != secondHash.Length) return null;
-
-            List<int> firstInt = new List<string>(ChunkSplit(firstHash, 2)).ConvertAll(i => Convert.ToInt32(i));
-            List<int> secondInt = new List<string>(ChunkSplit(secondHash, 2)).ConvertAll(i => Convert.ToInt32(i));
-
-            double avg1 = firstInt.Average();
-            double avg2 = secondInt.Average();
-
-            double sum1 = firstInt.Zip(secondInt, (x1, y1) => (x1 - avg1) * (y1 - avg2)).Sum();
-
-            double sumSqr1 = firstInt.Sum(x => Math.Pow(x - avg1, 2.0));
-            double sumSqr2 = secondInt.Sum(y => Math.Pow(y - avg2, 2.0));
-
-            double correl = sum1 / Math.Sqrt(sumSqr1 * sumSqr2);
-            return correl;
-        }
-
-        public static bool IsPowerOfTwo(int x)
-        {
-            return ((x & (x - 1)) == 0) && (x > 0);
         }
 
         public unsafe static void SimpleAverage(float* values, float* averagedValues, int length, int k)

@@ -18,7 +18,6 @@ namespace Scanner
         private WorkingStatuses Status { get; set; } = WorkingStatuses.NOT_INIT;
         private DateTime SignalTime { get; set; } = DateTime.Now;
         private List<double> FrequesList { get; set; } = [];
-        public double NoiseLevel { get => Convert.ToDouble(NoiseLevelBox.Value); }
 
         public enum WorkingStatuses
         {
@@ -145,21 +144,30 @@ namespace Scanner
 
             float[] power = new float[e.Length];
             float[] simpleAveraged = new float[e.Length];
+            float[] cumSum = new float[e.Length];
             fixed (float* srcPower = power)
             {
                 Fourier.SpectrumPower(e.Buffer, srcPower, e.Length, IO.Gain);
-                fixed (float* averagedSrc = simpleAveraged) AudioUtils.SimpleAverage(srcPower, averagedSrc, e.Length, 30);
+                fixed (float* averagedSrc = simpleAveraged)
+                {
+                    AudioUtils.SimpleAverage(srcPower, averagedSrc, e.Length, 30);
+                    fixed (float* cumSrc = cumSum)
+                    {
+                        AudioUtils.CumulativeSum(averagedSrc, cumSrc, e.Length);
+                        AudioUtils.IntegratedSpectrum(cumSrc, e.Length);
+                    }
+                }
             }
 
-            bool isPositiveSignal = false;
-            float average = simpleAveraged.Average();
-
-            if ((DateTime.Now - SignalTime).TotalMilliseconds >= 500)
+            AudioUtils.Point[] points = new AudioUtils.Point[e.Length], filteredPoints;
+            for (int i = 0; i < simpleAveraged.Length; i++) points[i] = new(FrequesList[i], simpleAveraged[i]);
+            fixed (AudioUtils.Point* pointsSrc = points)
             {
-                List<AudioUtils.Point> points = [];
-                for (int i = 0; i < simpleAveraged.Length; i++) points.Add(new(FrequesList[i], simpleAveraged[i]));
-                var filteredPoints = RamerDouglasPeucker.Reduce([.. points], 3);
+                filteredPoints = RamerDouglasPeucker.Reduce(pointsSrc, 3, e.Length);
+            }
 
+            if ((DateTime.Now - SignalTime).TotalMilliseconds >= 100)
+            {
                 int offset = 0;
                 bool isLow = true;
                 while (offset < filteredPoints.Length - 1)
@@ -180,10 +188,6 @@ namespace Scanner
                     }
                 }
 
-                List<AudioUtils.Point> highPoints = [];
-                for (int i = 0; i < filteredPoints.Length; i++) if (!filteredPoints[i].IsLow && (filteredPoints[i].Y - average >= NoiseLevel)) highPoints.Add(filteredPoints[i]);
-                if (highPoints.Count > 5) isPositiveSignal = true;
-
                 BeginInvoke(() =>
                 {
                     SpectrPlot.Plot.Clear();
@@ -191,16 +195,16 @@ namespace Scanner
                     SpectrPlot.Plot.Add.SignalXY(filteredPoints.Select(p => p.X).ToArray(), filteredPoints.Select(p => p.Y).ToArray());
                     SpectrPlot.Plot.Add.VerticalLine(FrequesList[FrequesList.Count / 2], color: ScottPlot.Color.FromColor(Color.Red));
 
-                    SpectrPlot.Plot.Add.HorizontalLine(average, color: ScottPlot.Color.FromColor(Color.Chocolate));
-                    SpectrPlot.Plot.Add.HorizontalLine(average + NoiseLevel, color: ScottPlot.Color.FromColor(Color.LightBlue));
-                    SpectrPlot.Plot.Add.HorizontalLine(average - NoiseLevel, color: ScottPlot.Color.FromColor(Color.LightBlue));
-
                     SpectrPlot.Plot.Axes.AutoScaleX();
                     SpectrPlot.Plot.Axes.SetLimitsY(20, 60);
                     SpectrPlot.Refresh();
 
-                    HashBox.Text = isPositiveSignal ? "Полезный" : "Шум";
-                    SignalNameBox.Text = highPoints.Count.ToString();
+                    NoisePlot.Plot.Clear();
+                    NoisePlot.Plot.Add.SignalXY(FrequesList.ToArray(), cumSum);
+                    NoisePlot.Plot.Add.Line(new(FrequesList.First(), 0), new(FrequesList.Last(), 1));
+                    NoisePlot.Plot.Axes.SetLimitsX(FrequesList.First(), FrequesList.Last());
+                    NoisePlot.Plot.Axes.SetLimitsY(0, 1);
+                    NoisePlot.Refresh();
                 });
                 SignalTime = DateTime.Now;
             }

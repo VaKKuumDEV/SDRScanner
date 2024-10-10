@@ -19,15 +19,15 @@ namespace Scanner.Audio
         /// <param name="points">The points.</param>
         /// <param name="tolerance">The tolerance.</param>
         /// <returns></returns>
-        public static AudioUtils.Point[] Reduce(AudioUtils.Point[] points, double tolerance)
+        public unsafe static AudioUtils.Point[] Reduce(AudioUtils.Point* points, double tolerance, int length)
         {
-            if (points.Length < 3) return points;
-            if (double.IsInfinity(tolerance) || double.IsNaN(tolerance)) return points;
+            if (length < 3) return [];
+            if (double.IsInfinity(tolerance) || double.IsNaN(tolerance)) return [];
             tolerance *= tolerance;
-            if (tolerance <= float.Epsilon) return points;
+            if (tolerance <= float.Epsilon) return [];
 
             int firstIndex = 0;
-            int lastIndex = points.Length - 1;
+            int lastIndex = length - 1;
             List<int> indexesToKeep =
             [
                 // Add the first and last index to the keepers
@@ -41,19 +41,15 @@ namespace Scanner.Audio
                 lastIndex--;
             }
 
-            Reduce(points, firstIndex, lastIndex, tolerance, ref indexesToKeep);
+            Reduce(points, length, firstIndex, lastIndex, tolerance, ref indexesToKeep);
 
             int l = indexesToKeep.Count;
             AudioUtils.Point[] returnPoints = new AudioUtils.Point[l];
             indexesToKeep.Sort();
 
-            unsafe
+            fixed (AudioUtils.Point* result = returnPoints)
             {
-                fixed (AudioUtils.Point* ptr = points, result = returnPoints)
-                {
-                    for (int i = 0; i < l; ++i)
-                        *(result + i) = *(ptr + indexesToKeep[i]);
-                }
+                for (int i = 0; i < l; ++i) *(result + i) = *(points + indexesToKeep[i]);
             }
 
             return returnPoints;
@@ -67,35 +63,29 @@ namespace Scanner.Audio
         /// <param name="lastIndex">The last point's index.</param>
         /// <param name="tolerance">The tolerance.</param>
         /// <param name="indexesToKeep">The points' index to keep.</param>
-        private static void Reduce(AudioUtils.Point[] points, int firstIndex, int lastIndex, double tolerance, ref List<int> indexesToKeep)
+        private unsafe static void Reduce(AudioUtils.Point* points, int length, int firstIndex, int lastIndex, double tolerance, ref List<int> indexesToKeep)
         {
             double maxDistance = 0;
             int indexFarthest = 0;
 
-            unsafe
+            AudioUtils.Point point1 = *(points + firstIndex);
+            AudioUtils.Point point2 = *(points + lastIndex);
+            double distXY = point1.X * point2.Y - point2.X * point1.Y;
+            double distX = point2.X - point1.X;
+            double distY = point1.Y - point2.Y;
+            double bottom = distX * distX + distY * distY;
+
+            for (int i = firstIndex; i < lastIndex; i++)
             {
-                fixed (AudioUtils.Point* samples = points)
+                // Perpendicular Distance
+                AudioUtils.Point point = *(points + i);
+                double area = distXY + distX * point.Y + distY * point.X;
+                double distance = (area / bottom) * area;
+
+                if (distance > maxDistance)
                 {
-                    AudioUtils.Point point1 = *(samples + firstIndex);
-                    AudioUtils.Point point2 = *(samples + lastIndex);
-                    double distXY = point1.X * point2.Y - point2.X * point1.Y;
-                    double distX = point2.X - point1.X;
-                    double distY = point1.Y - point2.Y;
-                    double bottom = distX * distX + distY * distY;
-
-                    for (int i = firstIndex; i < lastIndex; i++)
-                    {
-                        // Perpendicular Distance
-                        AudioUtils.Point point = *(samples + i);
-                        double area = distXY + distX * point.Y + distY * point.X;
-                        double distance = (area / bottom) * area;
-
-                        if (distance > maxDistance)
-                        {
-                            maxDistance = distance;
-                            indexFarthest = i;
-                        }
-                    }
+                    maxDistance = distance;
+                    indexFarthest = i;
                 }
             }
 
@@ -103,8 +93,8 @@ namespace Scanner.Audio
             {
                 //Add the largest point that exceeds the tolerance
                 indexesToKeep.Add(indexFarthest);
-                Reduce(points, firstIndex, indexFarthest, tolerance, ref indexesToKeep);
-                Reduce(points, indexFarthest, lastIndex, tolerance, ref indexesToKeep);
+                Reduce(points, length, firstIndex, indexFarthest, tolerance, ref indexesToKeep);
+                Reduce(points, length, indexFarthest, lastIndex, tolerance, ref indexesToKeep);
             }
         }
     }

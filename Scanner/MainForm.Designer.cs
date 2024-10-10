@@ -28,8 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            TableLayoutPanel tableLayoutPanel1;
-            Label label8;
             TableLayoutPanel tableLayoutPanel4;
             Label label9;
             TableLayoutPanel tableLayoutPanel5;
@@ -39,25 +37,17 @@
             TableLayoutPanel tableLayoutPanel10;
             TableLayoutPanel tableLayoutPanel7;
             Label label2;
-            TableLayoutPanel tableLayoutPanel8;
-            Label label3;
-            TableLayoutPanel tableLayoutPanel9;
-            Label label4;
-            NoiseLevelBox = new NumericUpDown();
             DevicesBox = new ComboBox();
             FreqBox = new NumericUpDown();
             GainBox = new ComboBox();
             ControlButton = new Button();
             SamplerateBox = new NumericUpDown();
-            HashBox = new TextBox();
-            SignalNameBox = new TextBox();
             ContentPanel = new TableLayoutPanel();
             tableLayoutPanel2 = new TableLayoutPanel();
             AdditionalPanel = new TableLayoutPanel();
             tableLayoutPanel3 = new TableLayoutPanel();
+            NoisePlot = new ScottPlot.WinForms.FormsPlot();
             SpectrPlot = new ScottPlot.WinForms.FormsPlot();
-            tableLayoutPanel1 = new TableLayoutPanel();
-            label8 = new Label();
             tableLayoutPanel4 = new TableLayoutPanel();
             label9 = new Label();
             tableLayoutPanel5 = new TableLayoutPanel();
@@ -67,12 +57,6 @@
             tableLayoutPanel10 = new TableLayoutPanel();
             tableLayoutPanel7 = new TableLayoutPanel();
             label2 = new Label();
-            tableLayoutPanel8 = new TableLayoutPanel();
-            label3 = new Label();
-            tableLayoutPanel9 = new TableLayoutPanel();
-            label4 = new Label();
-            tableLayoutPanel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)NoiseLevelBox).BeginInit();
             tableLayoutPanel4.SuspendLayout();
             tableLayoutPanel5.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)FreqBox).BeginInit();
@@ -80,50 +64,11 @@
             tableLayoutPanel10.SuspendLayout();
             tableLayoutPanel7.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)SamplerateBox).BeginInit();
-            tableLayoutPanel8.SuspendLayout();
-            tableLayoutPanel9.SuspendLayout();
             ContentPanel.SuspendLayout();
             tableLayoutPanel2.SuspendLayout();
             AdditionalPanel.SuspendLayout();
             tableLayoutPanel3.SuspendLayout();
             SuspendLayout();
-            // 
-            // tableLayoutPanel1
-            // 
-            tableLayoutPanel1.AutoSize = true;
-            tableLayoutPanel1.ColumnCount = 1;
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanel1.Controls.Add(NoiseLevelBox, 0, 1);
-            tableLayoutPanel1.Controls.Add(label8, 0, 0);
-            tableLayoutPanel1.Dock = DockStyle.Top;
-            tableLayoutPanel1.Location = new Point(0, 0);
-            tableLayoutPanel1.Margin = new Padding(0);
-            tableLayoutPanel1.Name = "tableLayoutPanel1";
-            tableLayoutPanel1.RowCount = 2;
-            tableLayoutPanel1.RowStyles.Add(new RowStyle());
-            tableLayoutPanel1.RowStyles.Add(new RowStyle());
-            tableLayoutPanel1.Size = new Size(308, 62);
-            tableLayoutPanel1.TabIndex = 11;
-            // 
-            // NoiseLevelBox
-            // 
-            NoiseLevelBox.Dock = DockStyle.Top;
-            NoiseLevelBox.Location = new Point(3, 29);
-            NoiseLevelBox.Name = "NoiseLevelBox";
-            NoiseLevelBox.Size = new Size(302, 30);
-            NoiseLevelBox.TabIndex = 10;
-            NoiseLevelBox.Value = new decimal(new int[] { 4, 0, 0, 0 });
-            // 
-            // label8
-            // 
-            label8.AutoSize = true;
-            label8.Dock = DockStyle.Top;
-            label8.Location = new Point(3, 0);
-            label8.Name = "label8";
-            label8.Padding = new Padding(2);
-            label8.Size = new Size(302, 26);
-            label8.TabIndex = 9;
-            label8.Text = "Коридор шума от среднего (дБ):";
             // 
             // tableLayoutPanel4
             // 
@@ -133,7 +78,7 @@
             tableLayoutPanel4.Controls.Add(DevicesBox, 0, 1);
             tableLayoutPanel4.Controls.Add(label9, 0, 0);
             tableLayoutPanel4.Dock = DockStyle.Top;
-            tableLayoutPanel4.Location = new Point(0, 62);
+            tableLayoutPanel4.Location = new Point(0, 0);
             tableLayoutPanel4.Margin = new Padding(0);
             tableLayoutPanel4.Name = "tableLayoutPanel4";
             tableLayoutPanel4.RowCount = 2;
@@ -172,7 +117,7 @@
             tableLayoutPanel5.Controls.Add(FreqBox, 0, 1);
             tableLayoutPanel5.Controls.Add(label10, 0, 0);
             tableLayoutPanel5.Dock = DockStyle.Top;
-            tableLayoutPanel5.Location = new Point(0, 124);
+            tableLayoutPanel5.Location = new Point(0, 62);
             tableLayoutPanel5.Margin = new Padding(0);
             tableLayoutPanel5.Name = "tableLayoutPanel5";
             tableLayoutPanel5.RowCount = 2;
@@ -213,7 +158,7 @@
             tableLayoutPanel6.Controls.Add(GainBox, 0, 1);
             tableLayoutPanel6.Controls.Add(label1, 0, 0);
             tableLayoutPanel6.Dock = DockStyle.Top;
-            tableLayoutPanel6.Location = new Point(0, 186);
+            tableLayoutPanel6.Location = new Point(0, 124);
             tableLayoutPanel6.Margin = new Padding(0);
             tableLayoutPanel6.Name = "tableLayoutPanel6";
             tableLayoutPanel6.RowCount = 2;
@@ -249,7 +194,7 @@
             tableLayoutPanel10.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             tableLayoutPanel10.Controls.Add(ControlButton, 0, 0);
             tableLayoutPanel10.Dock = DockStyle.Top;
-            tableLayoutPanel10.Location = new Point(0, 444);
+            tableLayoutPanel10.Location = new Point(0, 258);
             tableLayoutPanel10.Margin = new Padding(0);
             tableLayoutPanel10.Name = "tableLayoutPanel10";
             tableLayoutPanel10.RowCount = 3;
@@ -310,80 +255,6 @@
             label2.TabIndex = 6;
             label2.Text = "Samplerate:";
             // 
-            // tableLayoutPanel8
-            // 
-            tableLayoutPanel8.AutoSize = true;
-            tableLayoutPanel8.ColumnCount = 1;
-            tableLayoutPanel8.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanel8.Controls.Add(HashBox, 0, 1);
-            tableLayoutPanel8.Controls.Add(label3, 0, 0);
-            tableLayoutPanel8.Dock = DockStyle.Top;
-            tableLayoutPanel8.Location = new Point(0, 72);
-            tableLayoutPanel8.Margin = new Padding(0);
-            tableLayoutPanel8.Name = "tableLayoutPanel8";
-            tableLayoutPanel8.RowCount = 2;
-            tableLayoutPanel8.RowStyles.Add(new RowStyle());
-            tableLayoutPanel8.RowStyles.Add(new RowStyle());
-            tableLayoutPanel8.Size = new Size(308, 62);
-            tableLayoutPanel8.TabIndex = 17;
-            // 
-            // HashBox
-            // 
-            HashBox.Dock = DockStyle.Top;
-            HashBox.Location = new Point(3, 29);
-            HashBox.Name = "HashBox";
-            HashBox.ReadOnly = true;
-            HashBox.Size = new Size(302, 30);
-            HashBox.TabIndex = 9;
-            // 
-            // label3
-            // 
-            label3.AutoSize = true;
-            label3.Dock = DockStyle.Top;
-            label3.Location = new Point(3, 0);
-            label3.Name = "label3";
-            label3.Padding = new Padding(2);
-            label3.Size = new Size(302, 26);
-            label3.TabIndex = 8;
-            label3.Text = "Сигнал:";
-            // 
-            // tableLayoutPanel9
-            // 
-            tableLayoutPanel9.AutoSize = true;
-            tableLayoutPanel9.ColumnCount = 1;
-            tableLayoutPanel9.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanel9.Controls.Add(SignalNameBox, 0, 1);
-            tableLayoutPanel9.Controls.Add(label4, 0, 0);
-            tableLayoutPanel9.Dock = DockStyle.Top;
-            tableLayoutPanel9.Location = new Point(0, 134);
-            tableLayoutPanel9.Margin = new Padding(0);
-            tableLayoutPanel9.Name = "tableLayoutPanel9";
-            tableLayoutPanel9.RowCount = 2;
-            tableLayoutPanel9.RowStyles.Add(new RowStyle());
-            tableLayoutPanel9.RowStyles.Add(new RowStyle());
-            tableLayoutPanel9.Size = new Size(308, 62);
-            tableLayoutPanel9.TabIndex = 18;
-            // 
-            // SignalNameBox
-            // 
-            SignalNameBox.Dock = DockStyle.Top;
-            SignalNameBox.Location = new Point(3, 29);
-            SignalNameBox.Name = "SignalNameBox";
-            SignalNameBox.ReadOnly = true;
-            SignalNameBox.Size = new Size(302, 30);
-            SignalNameBox.TabIndex = 11;
-            // 
-            // label4
-            // 
-            label4.AutoSize = true;
-            label4.Dock = DockStyle.Top;
-            label4.Location = new Point(3, 0);
-            label4.Name = "label4";
-            label4.Padding = new Padding(2);
-            label4.Size = new Size(302, 26);
-            label4.TabIndex = 10;
-            label4.Text = "Сигнал:";
-            // 
             // ContentPanel
             // 
             ContentPanel.ColumnCount = 2;
@@ -405,7 +276,6 @@
             tableLayoutPanel2.AutoSize = true;
             tableLayoutPanel2.ColumnCount = 1;
             tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanel2.Controls.Add(tableLayoutPanel1, 0, 0);
             tableLayoutPanel2.Controls.Add(tableLayoutPanel4, 0, 1);
             tableLayoutPanel2.Controls.Add(tableLayoutPanel5, 0, 2);
             tableLayoutPanel2.Controls.Add(tableLayoutPanel6, 0, 3);
@@ -430,34 +300,44 @@
             AdditionalPanel.AutoSize = true;
             AdditionalPanel.ColumnCount = 1;
             AdditionalPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            AdditionalPanel.Controls.Add(tableLayoutPanel9, 0, 2);
-            AdditionalPanel.Controls.Add(tableLayoutPanel8, 0, 1);
             AdditionalPanel.Controls.Add(tableLayoutPanel7, 0, 0);
             AdditionalPanel.Dock = DockStyle.Top;
-            AdditionalPanel.Location = new Point(0, 248);
+            AdditionalPanel.Location = new Point(0, 186);
             AdditionalPanel.Margin = new Padding(0);
             AdditionalPanel.Name = "AdditionalPanel";
             AdditionalPanel.RowCount = 3;
             AdditionalPanel.RowStyles.Add(new RowStyle());
             AdditionalPanel.RowStyles.Add(new RowStyle());
             AdditionalPanel.RowStyles.Add(new RowStyle());
-            AdditionalPanel.Size = new Size(308, 196);
+            AdditionalPanel.Size = new Size(308, 72);
             AdditionalPanel.TabIndex = 19;
             // 
             // tableLayoutPanel3
             // 
             tableLayoutPanel3.ColumnCount = 1;
             tableLayoutPanel3.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tableLayoutPanel3.Controls.Add(NoisePlot, 0, 1);
             tableLayoutPanel3.Controls.Add(SpectrPlot, 0, 0);
             tableLayoutPanel3.Dock = DockStyle.Fill;
             tableLayoutPanel3.Location = new Point(0, 0);
             tableLayoutPanel3.Margin = new Padding(0);
             tableLayoutPanel3.Name = "tableLayoutPanel3";
-            tableLayoutPanel3.RowCount = 1;
-            tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tableLayoutPanel3.RowCount = 2;
+            tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tableLayoutPanel3.Size = new Size(570, 649);
             tableLayoutPanel3.TabIndex = 1;
+            // 
+            // NoisePlot
+            // 
+            NoisePlot.DisplayScale = 1.25F;
+            NoisePlot.Dock = DockStyle.Fill;
+            NoisePlot.Location = new Point(0, 324);
+            NoisePlot.Margin = new Padding(0);
+            NoisePlot.Name = "NoisePlot";
+            NoisePlot.Padding = new Padding(2);
+            NoisePlot.Size = new Size(570, 325);
+            NoisePlot.TabIndex = 1;
             // 
             // SpectrPlot
             // 
@@ -467,7 +347,7 @@
             SpectrPlot.Margin = new Padding(0);
             SpectrPlot.Name = "SpectrPlot";
             SpectrPlot.Padding = new Padding(2);
-            SpectrPlot.Size = new Size(570, 649);
+            SpectrPlot.Size = new Size(570, 324);
             SpectrPlot.TabIndex = 0;
             // 
             // MainForm
@@ -484,9 +364,6 @@
             Text = "Scanner";
             WindowState = FormWindowState.Maximized;
             FormClosing += MainForm_FormClosing;
-            tableLayoutPanel1.ResumeLayout(false);
-            tableLayoutPanel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)NoiseLevelBox).EndInit();
             tableLayoutPanel4.ResumeLayout(false);
             tableLayoutPanel4.PerformLayout();
             tableLayoutPanel5.ResumeLayout(false);
@@ -499,10 +376,6 @@
             tableLayoutPanel7.ResumeLayout(false);
             tableLayoutPanel7.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)SamplerateBox).EndInit();
-            tableLayoutPanel8.ResumeLayout(false);
-            tableLayoutPanel8.PerformLayout();
-            tableLayoutPanel9.ResumeLayout(false);
-            tableLayoutPanel9.PerformLayout();
             ContentPanel.ResumeLayout(false);
             ContentPanel.PerformLayout();
             tableLayoutPanel2.ResumeLayout(false);
@@ -519,8 +392,6 @@
         private TableLayoutPanel tableLayoutPanel2;
         private TableLayoutPanel tableLayoutPanel3;
         private ScottPlot.WinForms.FormsPlot SpectrPlot;
-        private TableLayoutPanel tableLayoutPanel1;
-        private NumericUpDown NoiseLevelBox;
         private ComboBox DevicesBox;
         private NumericUpDown FreqBox;
         private ComboBox GainBox;
@@ -528,7 +399,6 @@
         private Button ControlButton;
         private TableLayoutPanel AdditionalPanel;
         private NumericUpDown SamplerateBox;
-        private TextBox SignalNameBox;
-        private TextBox HashBox;
+        private ScottPlot.WinForms.FormsPlot NoisePlot;
     }
 }
