@@ -13,31 +13,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Libs\**" />
-    <EmbeddedResource Remove="Libs\**" />
-    <None Remove="Libs\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Radio\SDRSharp.Radio.csproj" />
-    <ProjectReference Include="..\RTLSDR\SDRSharp.RTLSDR.csproj" />
-    <ProjectReference Include="..\RTLTCP\SDRSharp.RTLTCP.csproj" />
-    <ProjectReference Include="..\SDRSharp.Radio\SDRSharp.Radio.csproj">
-      <Private>True</Private>
-    </ProjectReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="SdrLibs\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="FftSharp" Version="2.1.0" />
-    <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="OpenTK" Version="4.8.2" />
-    <PackageReference Include="OpenTK.GLControl" Version="3.3.3" />
-    <PackageReference Include="ScottPlot.WinForms" Version="5.0.37" />
+    <PackageReference Include="OpenTK.GLControl" Version="4.0.1" />
+    <PackageReference Include="ScottPlot.WinForms" Version="5.0.39" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SDRSharp.Radio\SDRSharp.Radio.csproj" />
+    <ProjectReference Include="..\SDRSharp.RTLSDR\SDRSharp.RTLSDR.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,21 +30,6 @@
       <HintPath>SdrLibs\SDRSharp.RTLSDR.dll</HintPath>
       <Private>True</Private>
     </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="TcpForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="libusb-1.0.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="rtlsdr.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>

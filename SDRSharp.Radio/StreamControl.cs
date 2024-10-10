@@ -19,7 +19,7 @@ namespace SDRSharp.Radio
         private const int MaxDecimationFactor = 1024;
 
         private static readonly int _processorCount = Environment.ProcessorCount;
-        private static readonly int _minOutputSampleRate = Utils.GetIntSetting("minOutputSampleRate", 24000);
+        private static readonly int _minOutputSampleRate = 24000;
 
         private float* _dspOutPtr;
         private UnsafeBuffer _dspOutBuffer;

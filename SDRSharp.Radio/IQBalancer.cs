@@ -13,7 +13,7 @@ namespace SDRSharp.Radio
         private const float BaseIncrement = 0.001f;
         private const float PowerThreshold = 20.0f; // in dB
 
-        private int _maxAutomaticPasses = Utils.GetIntSetting("automaticIQBalancePasses", 10);
+        private int _maxAutomaticPasses = 10;
         private bool _autoBalanceIQ;
         private float _gain = 1.0f;
         private float _phase;

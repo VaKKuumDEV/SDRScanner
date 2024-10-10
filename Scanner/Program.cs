@@ -9,7 +9,7 @@ namespace Scanner
         static void Main()
         {
             ApplicationConfiguration.Initialize();
-            Application.Run(new TcpForm());
+            Application.Run(new MainForm());
         }
     }
 }

@@ -20,7 +20,6 @@ namespace Scanner
         private List<double> FrequesList { get; set; } = [];
         private List<string> AudioBuffer { get; set; } = [];
         private int Iter { get; set; } = 0;
-        private SignalsMap Map { get; }
         private string? RecordingSignal { get; set; } = null;
         private List<string> RecordingBuffer { get; set; } = [];
         public double NoiseLevel { get => Convert.ToDouble(NoiseLevelBox.Value); }
@@ -43,10 +42,8 @@ namespace Scanner
 
         unsafe public MainForm()
         {
-            Map = new(new DirectoryInfo(Environment.CurrentDirectory + "/Samples.json").FullName);
             InitializeComponent();
             AdditionalPanel.Hide();
-            StartSignalRecButton.Hide();
 
             SpectrPlot.Plot.Title("Спектр");
             SpectrPlot.Plot.XLabel("Частота (Гц)");
@@ -112,7 +109,6 @@ namespace Scanner
             Status = WorkingStatuses.STOPPED;
             IO?.Stop();
 
-            StartSignalRecButton.Hide();
             AdditionalPanel.Hide();
             ControlButton.Text = "Запуск";
         }
@@ -142,7 +138,6 @@ namespace Scanner
                 SamplerateBox.Value = IO.Samplerate;
                 SpectrPlot.Plot.Clear();
                 AdditionalPanel.Show();
-                StartSignalRecButton.Show();
 
                 Status = WorkingStatuses.STARTED;
             }
@@ -221,45 +216,6 @@ namespace Scanner
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (Status == WorkingStatuses.STARTED) Stop();
-        }
-
-        private void DatabaseButton_Click(object sender, EventArgs e)
-        {
-            SamplerForm form = new();
-            form.ShowDialog(this);
-
-            Map.Reload();
-        }
-
-        private void StartSignalRecButton_Click(object sender, EventArgs e)
-        {
-            if (RecordingSignal == null)
-            {
-                SelectSignalForm form = new();
-                form.ShowDialog(this);
-
-                if (form.SelectedSignal != null)
-                {
-                    Map.Reload();
-                    RecordingBuffer.Clear();
-                    RecordingSignal = form.SelectedSignal;
-                    StartSignalRecButton.Text = "Остановить запись";
-                }
-            }
-            else
-            {
-                if (RecordingSignal != null)
-                {
-                    Map.Reload();
-                    if (!Map.Map.ContainsKey(RecordingSignal)) Map.Map[RecordingSignal] = [];
-                    Map.Map[RecordingSignal].AddRange(RecordingBuffer);
-                    Map.Save();
-                }
-
-                StartSignalRecButton.Text = "Записать в базу";
-                RecordingSignal = null;
-                RecordingBuffer.Clear();
-            }
         }
     }
 }

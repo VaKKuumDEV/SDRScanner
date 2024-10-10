@@ -21,15 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="librtlsdr.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="libusb-1.0.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="libwinpthread-1.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="rtlsdr.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

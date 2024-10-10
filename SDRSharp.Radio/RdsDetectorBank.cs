@@ -55,7 +55,7 @@ namespace SDRSharp.Radio
         private const int CheckwordBitsCount = 10;
 
         private readonly RdsDumpGroups _dumpGroups;
-        private readonly bool _useFec = Utils.GetBooleanSetting("RdsUseFec");
+        private readonly bool _useFec = false;
         private readonly UInt16[] _blocks = new UInt16[4];
         private BlockSequence _sequence = BlockSequence.WaitBitSync;
         private UInt16 _syndrome;

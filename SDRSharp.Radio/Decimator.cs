@@ -490,7 +490,7 @@ namespace SDRSharp.Radio
         private readonly UnsafeBuffer _cicDecimatorsBuffer;
         private readonly CicDecimator* _cicDecimators;
         private readonly FirFilter[] _firFilters;
-        private static readonly double _minimumCICSampleRate = Utils.GetDoubleSetting("minimumCICSampleRate", 1500000);
+        private static readonly double _minimumCICSampleRate = 1500000;
 
 
         public FloatDecimator(int stageCount)

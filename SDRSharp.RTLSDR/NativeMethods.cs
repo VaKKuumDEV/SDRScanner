@@ -19,7 +19,7 @@ namespace SDRSharp.RTLSDR
 
     public class NativeMethods
     {
-        private const string LibRtlSdr = "rtlsdr";
+        private const string LibRtlSdr = "librtlsdr";
 
         [DllImport(LibRtlSdr, EntryPoint = "rtlsdr_get_device_count", CallingConvention = CallingConvention.Cdecl)]
         public static extern uint rtlsdr_get_device_count();

@@ -1,6 +1,4 @@
-﻿using NAudio.Wave;
-
-namespace Scanner.Audio
+﻿namespace Scanner.Audio
 {
     public static class AudioUtils
     {
@@ -19,21 +17,6 @@ namespace Scanner.Audio
                 return $"{X}:{Y}:{IsLow}";
             }
         };
-
-        public static (double[] audio, int sampleRate, int bytesPerSample, int totalTime) ReadAudioFile(FileInfo file, double multiplier = 16__000)
-        {
-            using var afr = new AudioFileReader(file.FullName);
-            int sampleRate = afr.WaveFormat.SampleRate;
-            int bytesPerSample = afr.WaveFormat.BitsPerSample / 8;
-            int totalTime = (int)afr.TotalTime.TotalSeconds;
-            int sampleCount = (int)(afr.Length / bytesPerSample);
-            int channelsCount = afr.WaveFormat.Channels;
-            var audio = new List<double>(sampleCount);
-            var buffer = new float[sampleRate * channelsCount];
-            int samplesRead = 0;
-            while ((samplesRead = afr.Read(buffer, 0, buffer.Length)) > 0) audio.AddRange(buffer.Take(samplesRead).Select(x => x * multiplier));
-            return (audio.ToArray(), sampleRate, bytesPerSample, totalTime);
-        }
 
         public static KeyValuePair<double[], double[]>[] MakeFFT(double[] audio, int sampleRate, int totalTime)
         {
@@ -140,18 +123,6 @@ namespace Scanner.Audio
         public static bool IsPowerOfTwo(int x)
         {
             return ((x & (x - 1)) == 0) && (x > 0);
-        }
-
-        public unsafe static void WriteToWav(string filename, MemoryStream iStream, MemoryStream qStream)
-        {
-            FileInfo file = new(Environment.CurrentDirectory + "/" + filename + ".wav");
-
-            RawSourceWaveStream iComponent = new(iStream, new WaveFormat(44100, 16, 1));
-            RawSourceWaveStream qComponent = new(qStream, new WaveFormat(44100, 16, 1));
-
-            MultiplexingWaveProvider waveProvider = new(new IWaveProvider[] { iComponent, qComponent }, 2);
-
-            WaveFileWriter.CreateWaveFile(file.FullName, waveProvider);
         }
 
         public unsafe static void SimpleAverage(float* values, float* averagedValues, int length, int k)

@@ -14,7 +14,7 @@ namespace SDRSharp.Radio
         public const int MaxNFMBandwidth = 15000;
         public const int MinNFMAudioFrequency = 300;
 
-        private readonly double _minThreadedSampleRate = Utils.GetDoubleSetting("minThreadedSampleRate", 1000000);
+        private readonly double _minThreadedSampleRate = 1000000;
 
         private readonly AutomaticGainControl _agc = new AutomaticGainControl();
         private readonly AmDetector _amDetector = new AmDetector();

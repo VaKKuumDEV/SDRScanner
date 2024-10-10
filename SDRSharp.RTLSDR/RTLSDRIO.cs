@@ -1,19 +1,16 @@
-﻿using System;
-using System.Windows.Forms;
-using SDRSharp.Radio;
+﻿using SDRSharp.Radio;
 
 namespace SDRSharp.RTLSDR
 {
     public unsafe class RtlSdrIO : IFrontendController, IDisposable
     {
-        private readonly RtlSdrControllerDialog _gui;
         private RtlDevice _rtlDevice;
         private uint _frequency = 105500000;
         private Radio.SamplesAvailableDelegate _callback;
 
         public RtlSdrIO()
         {
-            _gui = new RtlSdrControllerDialog(this);
+            
         }
 
         ~RtlSdrIO()
@@ -23,10 +20,6 @@ namespace SDRSharp.RTLSDR
 
         public void Dispose()
         {
-            if (_gui != null)
-            {
-                _gui.Dispose();
-            }
             GC.SuppressFinalize(this);
         }
 
@@ -36,8 +29,6 @@ namespace SDRSharp.RTLSDR
             _rtlDevice = new RtlDevice(index);
             _rtlDevice.SamplesAvailable += rtlDevice_SamplesAvailable;
             _rtlDevice.Frequency = _frequency;
-            _gui.ConfigureGUI();
-            _gui.ConfigureDevice();
         }
 
         public RtlDevice Device
@@ -109,16 +100,6 @@ namespace SDRSharp.RTLSDR
         public string SoundCardHint
         {
             get { return string.Empty; }
-        }
-
-        public void ShowSettingGUI(IWin32Window parent)
-        {
-            _gui.Show();
-        }
-
-        public void HideSettingGUI()
-        {
-            _gui.Hide();
         }
 
         public double Samplerate

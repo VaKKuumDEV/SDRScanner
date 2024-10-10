@@ -40,7 +40,7 @@ namespace SDRSharp.RTLSDR
         private Thread _worker;
         private readonly SamplesAvailableEventArgs _eventArgs = new SamplesAvailableEventArgs();
         private static readonly RtlSdrReadAsyncDelegate _rtlCallback = RtlSdrSamplesAvailable;
-        private static readonly uint _readLength = (uint) Utils.GetIntSetting("RTLBufferLength", 16 * 1024);
+        private static readonly uint _readLength = (uint) 16 * 1024;
 
         static RtlDevice()
         {

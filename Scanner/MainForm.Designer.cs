@@ -47,8 +47,6 @@
             DevicesBox = new ComboBox();
             FreqBox = new NumericUpDown();
             GainBox = new ComboBox();
-            StartSignalRecButton = new Button();
-            DatabaseButton = new Button();
             ControlButton = new Button();
             SamplerateBox = new NumericUpDown();
             HashBox = new TextBox();
@@ -249,8 +247,6 @@
             tableLayoutPanel10.AutoSize = true;
             tableLayoutPanel10.ColumnCount = 1;
             tableLayoutPanel10.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanel10.Controls.Add(StartSignalRecButton, 0, 2);
-            tableLayoutPanel10.Controls.Add(DatabaseButton, 0, 1);
             tableLayoutPanel10.Controls.Add(ControlButton, 0, 0);
             tableLayoutPanel10.Dock = DockStyle.Top;
             tableLayoutPanel10.Location = new Point(0, 444);
@@ -260,34 +256,8 @@
             tableLayoutPanel10.RowStyles.Add(new RowStyle());
             tableLayoutPanel10.RowStyles.Add(new RowStyle());
             tableLayoutPanel10.RowStyles.Add(new RowStyle());
-            tableLayoutPanel10.Size = new Size(308, 138);
+            tableLayoutPanel10.Size = new Size(308, 46);
             tableLayoutPanel10.TabIndex = 18;
-            // 
-            // StartSignalRecButton
-            // 
-            StartSignalRecButton.AutoSize = true;
-            StartSignalRecButton.Dock = DockStyle.Top;
-            StartSignalRecButton.Location = new Point(3, 95);
-            StartSignalRecButton.Name = "StartSignalRecButton";
-            StartSignalRecButton.Padding = new Padding(4);
-            StartSignalRecButton.Size = new Size(302, 40);
-            StartSignalRecButton.TabIndex = 12;
-            StartSignalRecButton.Text = "Записать в базу";
-            StartSignalRecButton.UseVisualStyleBackColor = true;
-            StartSignalRecButton.Click += StartSignalRecButton_Click;
-            // 
-            // DatabaseButton
-            // 
-            DatabaseButton.AutoSize = true;
-            DatabaseButton.Dock = DockStyle.Top;
-            DatabaseButton.Location = new Point(3, 49);
-            DatabaseButton.Name = "DatabaseButton";
-            DatabaseButton.Padding = new Padding(4);
-            DatabaseButton.Size = new Size(302, 40);
-            DatabaseButton.TabIndex = 11;
-            DatabaseButton.Text = "База сигналов";
-            DatabaseButton.UseVisualStyleBackColor = true;
-            DatabaseButton.Click += DatabaseButton_Click;
             // 
             // ControlButton
             // 
@@ -555,12 +525,10 @@
         private NumericUpDown FreqBox;
         private ComboBox GainBox;
         private TableLayoutPanel tableLayoutPanel10;
-        private Button DatabaseButton;
         private Button ControlButton;
         private TableLayoutPanel AdditionalPanel;
         private NumericUpDown SamplerateBox;
         private TextBox SignalNameBox;
         private TextBox HashBox;
-        private Button StartSignalRecButton;
     }
 }

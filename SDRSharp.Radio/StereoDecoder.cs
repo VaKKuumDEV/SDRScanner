@@ -16,9 +16,9 @@ namespace SDRSharp.Radio
         private const float PllZeta = 0.707f;
         private const float AudioGain = 0.2f;
 
-        private static readonly float _deemphasisTime = (float) Utils.GetDoubleSetting("deemphasisTime", 50) * 1e-6f;
-        private static readonly float _pllPhaseAdjM = (float) Utils.GetDoubleSetting("pllPhaseAdjM", 0.0f);
-        private static readonly float _pllPhaseAdjB = (float) Utils.GetDoubleSetting("pllPhaseAdjB", -1.75);
+        private static readonly float _deemphasisTime = (float)50 * 1e-6f;
+        private static readonly float _pllPhaseAdjM = (float) 0.0f;
+        private static readonly float _pllPhaseAdjB = (float) -1.75;
         private static readonly bool _isMultiThreaded = Environment.ProcessorCount > 1;
 
         private readonly SharpEvent _event = new SharpEvent(false);
