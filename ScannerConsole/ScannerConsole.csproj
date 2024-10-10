@@ -11,7 +11,11 @@
 
   <ItemGroup>
     <PackageReference Include="FftSharp" Version="2.1.0" />
-    <PackageReference Include="RtlSdrManager" Version="0.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SDRSharp.Radio\SDRSharp.Radio.csproj" />
+    <ProjectReference Include="..\SDRSharp.RTLSDR\SDRSharp.RTLSDR.csproj" />
   </ItemGroup>
 
   <ItemGroup>
