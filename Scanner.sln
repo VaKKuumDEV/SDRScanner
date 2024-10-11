@@ -7,10 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scanner", "Scanner\Scanner.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScannerConsole", "ScannerConsole\ScannerConsole.csproj", "{DA0F9445-A809-44D4-9873-4D1B642AB9B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SDRSharp.Radio", "SDRSharp.Radio\SDRSharp.Radio.csproj", "{C57E54DF-3025-4E37-B750-B1068F78ACDA}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SDRSharp.RTLSDR", "SDRSharp.RTLSDR\SDRSharp.RTLSDR.csproj", "{02E5A518-9291-4CEC-B6C5-83C252E6F9D2}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,22 +31,6 @@ Global
 		{DA0F9445-A809-44D4-9873-4D1B642AB9B0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DA0F9445-A809-44D4-9873-4D1B642AB9B0}.Release|x86.ActiveCfg = Release|Any CPU
 		{DA0F9445-A809-44D4-9873-4D1B642AB9B0}.Release|x86.Build.0 = Release|Any CPU
-		{C57E54DF-3025-4E37-B750-B1068F78ACDA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C57E54DF-3025-4E37-B750-B1068F78ACDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C57E54DF-3025-4E37-B750-B1068F78ACDA}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{C57E54DF-3025-4E37-B750-B1068F78ACDA}.Debug|x86.Build.0 = Debug|Any CPU
-		{C57E54DF-3025-4E37-B750-B1068F78ACDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C57E54DF-3025-4E37-B750-B1068F78ACDA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C57E54DF-3025-4E37-B750-B1068F78ACDA}.Release|x86.ActiveCfg = Release|Any CPU
-		{C57E54DF-3025-4E37-B750-B1068F78ACDA}.Release|x86.Build.0 = Release|Any CPU
-		{02E5A518-9291-4CEC-B6C5-83C252E6F9D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{02E5A518-9291-4CEC-B6C5-83C252E6F9D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{02E5A518-9291-4CEC-B6C5-83C252E6F9D2}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{02E5A518-9291-4CEC-B6C5-83C252E6F9D2}.Debug|x86.Build.0 = Debug|Any CPU
-		{02E5A518-9291-4CEC-B6C5-83C252E6F9D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{02E5A518-9291-4CEC-B6C5-83C252E6F9D2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{02E5A518-9291-4CEC-B6C5-83C252E6F9D2}.Release|x86.ActiveCfg = Release|Any CPU
-		{02E5A518-9291-4CEC-B6C5-83C252E6F9D2}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -18,11 +18,8 @@
     <PackageReference Include="OpenTK" Version="4.8.2" />
     <PackageReference Include="OpenTK.GLControl" Version="4.0.1" />
     <PackageReference Include="ScottPlot.WinForms" Version="5.0.39" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\SDRSharp.Radio\SDRSharp.Radio.csproj" />
-    <ProjectReference Include="..\SDRSharp.RTLSDR\SDRSharp.RTLSDR.csproj" />
+    <PackageReference Include="SDRNet.Radio" Version="1.0.0" />
+    <PackageReference Include="SDRNet.RTLSDR" Version="1.0.0" />
   </ItemGroup>
 
 </Project>
