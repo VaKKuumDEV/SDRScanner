@@ -17,7 +17,8 @@ namespace Scanner
         private List<AudioDevice> AudioDevices { get; } = [];
         private WorkingStatuses Status { get; set; } = WorkingStatuses.NOT_INIT;
         private DateTime SignalTime { get; set; } = DateTime.Now;
-        private List<double> FrequesList { get; set; } = [];
+        private double[] FrequesList { get; set; } = [];
+        private int Bandwidth { get => Convert.ToInt32(bandwidthBox.Value); set => bandwidthBox.Value = value; }
 
         public enum WorkingStatuses
         {
@@ -38,7 +39,6 @@ namespace Scanner
         unsafe public MainForm()
         {
             InitializeComponent();
-            AdditionalPanel.Hide();
 
             SpectrPlot.Plot.Title("Спектр");
             SpectrPlot.Plot.XLabel("Частота (Гц)");
@@ -104,7 +104,6 @@ namespace Scanner
             Status = WorkingStatuses.STOPPED;
             IO?.Stop();
 
-            AdditionalPanel.Hide();
             ControlButton.Text = "Запуск";
         }
 
@@ -115,9 +114,9 @@ namespace Scanner
                 uint freq = (uint)FreqBox.Value * 1000;
                 int gain = 0;
 
-                FrequesList = new(new double[RESOLUTION]);
+                FrequesList = new double[RESOLUTION];
                 double fSampleRate = FFT.FrequencyResolution(RESOLUTION, IO.Samplerate);
-                for (int i = 0; i < FrequesList.Count; i++) FrequesList[i] = freq - (IO.Samplerate / 2) + (i * fSampleRate);
+                for (int i = 0; i < FrequesList.Length; i++) FrequesList[i] = freq - (IO.Samplerate / 2) + (i * fSampleRate);
 
                 SignalTime = DateTime.Now;
                 if (GainBox.SelectedIndex != -1) gain = IO.SupportedGains[GainBox.SelectedIndex];
@@ -128,9 +127,7 @@ namespace Scanner
                 IO.UseTunerAGC = true;
 
                 ControlButton.Text = "Остановить";
-                SamplerateBox.Value = IO.Samplerate;
                 SpectrPlot.Plot.Clear();
-                AdditionalPanel.Show();
 
                 Status = WorkingStatuses.STARTED;
             }
@@ -144,14 +141,14 @@ namespace Scanner
 
             float[] power = new float[e.Length];
             float[] simpleAveraged = new float[e.Length];
-            float[] cumSum = new float[e.Length];
+            float[] integratedPower = new float[e.Length];
             fixed (float* srcPower = power)
             {
                 Fourier.SpectrumPower(e.Buffer, srcPower, e.Length, IO.Gain);
                 fixed (float* averagedSrc = simpleAveraged)
                 {
                     AudioUtils.SimpleAverage(srcPower, averagedSrc, e.Length, 30);
-                    fixed (float* cumSrc = cumSum)
+                    fixed (float* cumSrc = integratedPower)
                     {
                         AudioUtils.CumulativeSum(averagedSrc, cumSrc, e.Length);
                         AudioUtils.IntegratedSpectrum(cumSrc, e.Length);
@@ -165,6 +162,15 @@ namespace Scanner
             {
                 filteredPoints = RamerDouglasPeucker.Reduce(pointsSrc, 3, e.Length);
             }
+
+            AudioUtils.Point[] integratedSpectrumPoints = new AudioUtils.Point[e.Length], filteredIntegratedSpectrumPoints;
+            for (int i = 0; i < integratedPower.Length; i++) integratedSpectrumPoints[i] = new(FrequesList[i], integratedPower[i]);
+            fixed (AudioUtils.Point* pointsSrc = integratedSpectrumPoints)
+            {
+                filteredIntegratedSpectrumPoints = RamerDouglasPeucker.Reduce(pointsSrc, 0.1d, e.Length);
+            }
+
+            double centerFreq = FrequesList[RESOLUTION / 2];
 
             if ((DateTime.Now - SignalTime).TotalMilliseconds >= 100)
             {
@@ -193,17 +199,19 @@ namespace Scanner
                     SpectrPlot.Plot.Clear();
                     SpectrPlot.Plot.Add.SignalXY(FrequesList.ToArray(), simpleAveraged);
                     SpectrPlot.Plot.Add.SignalXY(filteredPoints.Select(p => p.X).ToArray(), filteredPoints.Select(p => p.Y).ToArray());
-                    SpectrPlot.Plot.Add.VerticalLine(FrequesList[FrequesList.Count / 2], color: ScottPlot.Color.FromColor(Color.Red));
+                    SpectrPlot.Plot.Add.VerticalLine(centerFreq, color: ScottPlot.Color.FromColor(Color.Red));
+
+                    //foreach (var point in filteredPoints.Where(p => p.IsLow)) SpectrPlot.Plot.Add.VerticalLine(point.X, color: ScottPlot.Color.FromColor(Color.Orange));
 
                     SpectrPlot.Plot.Axes.AutoScaleX();
                     SpectrPlot.Plot.Axes.SetLimitsY(20, 60);
                     SpectrPlot.Refresh();
 
                     NoisePlot.Plot.Clear();
-                    NoisePlot.Plot.Add.SignalXY(FrequesList.ToArray(), cumSum);
+                    NoisePlot.Plot.Add.SignalXY(FrequesList, integratedPower);
                     NoisePlot.Plot.Add.Line(new(FrequesList.First(), 0), new(FrequesList.Last(), 1));
-                    NoisePlot.Plot.Axes.SetLimitsX(FrequesList.First(), FrequesList.Last());
-                    NoisePlot.Plot.Axes.SetLimitsY(0, 1);
+                    NoisePlot.Plot.Axes.AutoScaleX();
+                    NoisePlot.Plot.Axes.AutoScaleY();
                     NoisePlot.Refresh();
                 });
                 SignalTime = DateTime.Now;

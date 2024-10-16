@@ -73,5 +73,18 @@
 
             return maxIndex;
         }
+
+        public unsafe static List<int> GetNoiseFreqs(float* integratedSum, int length)
+        {
+            float scale = 1.0f / length;
+            List<int> freqIndexes = [];
+
+            for (int i = 0; i < length; i++)
+            {
+                if (Math.Abs(integratedSum[i] - scale * i) < 1e-4F) freqIndexes.Add(i);
+            }
+
+            return freqIndexes;
+        }
     }
 }
