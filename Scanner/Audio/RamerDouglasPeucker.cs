@@ -1,6 +1,4 @@
-﻿using static Scanner.Audio.AudioUtils;
-
-namespace Scanner.Audio
+﻿namespace Scanner.Audio
 {
     /*
      * Sources:

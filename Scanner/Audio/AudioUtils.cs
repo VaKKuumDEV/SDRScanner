@@ -6,15 +6,22 @@
         public const int POINTS = 10;
         public const int HASH_RATE = 100;
 
-        public struct Point(double x, double y, bool isLow = true)
+        public struct Point(double x, double y)
         {
+            public enum Position
+            {
+                None,
+                Top,
+                Low,
+            }
+
             public double X { get; } = x;
             public double Y { get; } = y;
-            public bool IsLow { get; set; } = isLow;
+            public Position Pos { get; set; } = Position.None;
 
             public override readonly string ToString()
             {
-                return $"{X}:{Y}:{IsLow}";
+                return $"{X}:{Y}:{Pos}";
             }
         };
 
@@ -50,30 +57,6 @@
             }
         }
 
-        public static int GetBottomPoint(List<Point> points)
-        {
-            int minIndex = 0;
-            for (int i = 1; i < points.Count; i++)
-            {
-                if (points[minIndex].Y > points[i].Y) minIndex = i;
-                else break;
-            }
-
-            return minIndex;
-        }
-
-        public static int GetTopPoint(List<Point> points)
-        {
-            int maxIndex = 0;
-            for (int i = 1; i < points.Count; i++)
-            {
-                if (points[maxIndex].Y < points[i].Y) maxIndex = i;
-                else break;
-            }
-
-            return maxIndex;
-        }
-
         public unsafe static List<int> GetNoiseFreqs(float* integratedSum, int length)
         {
             float scale = 1.0f / length;
@@ -81,7 +64,7 @@
 
             for (int i = 0; i < length; i++)
             {
-                if (Math.Abs(integratedSum[i] - scale * i) < 1e-4F) freqIndexes.Add(i);
+                if (Math.Abs(integratedSum[i] - scale * i) <= 1e-2F) freqIndexes.Add(i);
             }
 
             return freqIndexes;

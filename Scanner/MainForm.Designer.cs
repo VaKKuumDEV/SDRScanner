@@ -37,16 +37,19 @@
             TableLayoutPanel tableLayoutPanel10;
             TableLayoutPanel tableLayoutPanel1;
             Label label3;
+            TableLayoutPanel tableLayoutPanel7;
+            Label label2;
             DevicesBox = new ComboBox();
             FreqBox = new NumericUpDown();
             GainBox = new ComboBox();
             ControlButton = new Button();
-            bandwidthBox = new NumericUpDown();
+            NoiseOffsetBox = new NumericUpDown();
             ContentPanel = new TableLayoutPanel();
             tableLayoutPanel2 = new TableLayoutPanel();
             tableLayoutPanel3 = new TableLayoutPanel();
             NoisePlot = new ScottPlot.WinForms.FormsPlot();
             SpectrPlot = new ScottPlot.WinForms.FormsPlot();
+            SignalTypeBox = new TextBox();
             tableLayoutPanel4 = new TableLayoutPanel();
             label9 = new Label();
             tableLayoutPanel5 = new TableLayoutPanel();
@@ -56,13 +59,16 @@
             tableLayoutPanel10 = new TableLayoutPanel();
             tableLayoutPanel1 = new TableLayoutPanel();
             label3 = new Label();
+            tableLayoutPanel7 = new TableLayoutPanel();
+            label2 = new Label();
             tableLayoutPanel4.SuspendLayout();
             tableLayoutPanel5.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)FreqBox).BeginInit();
             tableLayoutPanel6.SuspendLayout();
             tableLayoutPanel10.SuspendLayout();
             tableLayoutPanel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)bandwidthBox).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)NoiseOffsetBox).BeginInit();
+            tableLayoutPanel7.SuspendLayout();
             ContentPanel.SuspendLayout();
             tableLayoutPanel2.SuspendLayout();
             tableLayoutPanel3.SuspendLayout();
@@ -192,13 +198,14 @@
             tableLayoutPanel10.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             tableLayoutPanel10.Controls.Add(ControlButton, 0, 0);
             tableLayoutPanel10.Dock = DockStyle.Top;
-            tableLayoutPanel10.Location = new Point(0, 248);
+            tableLayoutPanel10.Location = new Point(0, 310);
             tableLayoutPanel10.Margin = new Padding(0);
             tableLayoutPanel10.Name = "tableLayoutPanel10";
-            tableLayoutPanel10.RowCount = 3;
+            tableLayoutPanel10.RowCount = 1;
             tableLayoutPanel10.RowStyles.Add(new RowStyle());
             tableLayoutPanel10.RowStyles.Add(new RowStyle());
             tableLayoutPanel10.RowStyles.Add(new RowStyle());
+            tableLayoutPanel10.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
             tableLayoutPanel10.Size = new Size(308, 46);
             tableLayoutPanel10.TabIndex = 18;
             // 
@@ -210,7 +217,7 @@
             ControlButton.Name = "ControlButton";
             ControlButton.Padding = new Padding(4);
             ControlButton.Size = new Size(302, 40);
-            ControlButton.TabIndex = 7;
+            ControlButton.TabIndex = 5;
             ControlButton.Text = "Запуск";
             ControlButton.UseVisualStyleBackColor = true;
             // 
@@ -219,7 +226,7 @@
             tableLayoutPanel1.AutoSize = true;
             tableLayoutPanel1.ColumnCount = 1;
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanel1.Controls.Add(bandwidthBox, 0, 1);
+            tableLayoutPanel1.Controls.Add(NoiseOffsetBox, 0, 1);
             tableLayoutPanel1.Controls.Add(label3, 0, 0);
             tableLayoutPanel1.Dock = DockStyle.Top;
             tableLayoutPanel1.Location = new Point(0, 62);
@@ -231,18 +238,16 @@
             tableLayoutPanel1.Size = new Size(308, 62);
             tableLayoutPanel1.TabIndex = 20;
             // 
-            // bandwidthBox
+            // NoiseOffsetBox
             // 
-            bandwidthBox.Dock = DockStyle.Top;
-            bandwidthBox.Increment = new decimal(new int[] { 1000, 0, 0, 0 });
-            bandwidthBox.Location = new Point(3, 29);
-            bandwidthBox.Maximum = new decimal(new int[] { 100000, 0, 0, 0 });
-            bandwidthBox.Minimum = new decimal(new int[] { 10000, 0, 0, 0 });
-            bandwidthBox.Name = "bandwidthBox";
-            bandwidthBox.Size = new Size(302, 30);
-            bandwidthBox.TabIndex = 1;
-            bandwidthBox.ThousandsSeparator = true;
-            bandwidthBox.Value = new decimal(new int[] { 75000, 0, 0, 0 });
+            NoiseOffsetBox.Dock = DockStyle.Top;
+            NoiseOffsetBox.Location = new Point(3, 29);
+            NoiseOffsetBox.Maximum = new decimal(new int[] { 10, 0, 0, 0 });
+            NoiseOffsetBox.Name = "NoiseOffsetBox";
+            NoiseOffsetBox.Size = new Size(302, 30);
+            NoiseOffsetBox.TabIndex = 1;
+            NoiseOffsetBox.ThousandsSeparator = true;
+            NoiseOffsetBox.Value = new decimal(new int[] { 1, 0, 0, 0 });
             // 
             // label3
             // 
@@ -253,7 +258,35 @@
             label3.Padding = new Padding(2);
             label3.Size = new Size(302, 26);
             label3.TabIndex = 3;
-            label3.Text = "Ширина окна (кГц):";
+            label3.Text = "Допуск шума (дБ):";
+            // 
+            // tableLayoutPanel7
+            // 
+            tableLayoutPanel7.AutoSize = true;
+            tableLayoutPanel7.ColumnCount = 1;
+            tableLayoutPanel7.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tableLayoutPanel7.Controls.Add(label2, 0, 0);
+            tableLayoutPanel7.Controls.Add(SignalTypeBox, 0, 1);
+            tableLayoutPanel7.Dock = DockStyle.Top;
+            tableLayoutPanel7.Location = new Point(0, 248);
+            tableLayoutPanel7.Margin = new Padding(0);
+            tableLayoutPanel7.Name = "tableLayoutPanel7";
+            tableLayoutPanel7.RowCount = 2;
+            tableLayoutPanel7.RowStyles.Add(new RowStyle());
+            tableLayoutPanel7.RowStyles.Add(new RowStyle());
+            tableLayoutPanel7.Size = new Size(308, 62);
+            tableLayoutPanel7.TabIndex = 21;
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Dock = DockStyle.Top;
+            label2.Location = new Point(3, 0);
+            label2.Name = "label2";
+            label2.Padding = new Padding(2);
+            label2.Size = new Size(302, 26);
+            label2.TabIndex = 5;
+            label2.Text = "Тип сигнала:";
             // 
             // ContentPanel
             // 
@@ -276,22 +309,23 @@
             tableLayoutPanel2.AutoSize = true;
             tableLayoutPanel2.ColumnCount = 1;
             tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tableLayoutPanel2.Controls.Add(tableLayoutPanel7, 0, 4);
             tableLayoutPanel2.Controls.Add(tableLayoutPanel1, 0, 1);
             tableLayoutPanel2.Controls.Add(tableLayoutPanel4, 0, 0);
             tableLayoutPanel2.Controls.Add(tableLayoutPanel5, 0, 2);
             tableLayoutPanel2.Controls.Add(tableLayoutPanel6, 0, 3);
-            tableLayoutPanel2.Controls.Add(tableLayoutPanel10, 0, 4);
+            tableLayoutPanel2.Controls.Add(tableLayoutPanel10, 0, 5);
             tableLayoutPanel2.Dock = DockStyle.Fill;
             tableLayoutPanel2.Location = new Point(570, 0);
             tableLayoutPanel2.Margin = new Padding(0);
             tableLayoutPanel2.Name = "tableLayoutPanel2";
-            tableLayoutPanel2.RowCount = 5;
+            tableLayoutPanel2.RowCount = 6;
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
             tableLayoutPanel2.RowStyles.Add(new RowStyle());
-            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tableLayoutPanel2.RowStyles.Add(new RowStyle());
             tableLayoutPanel2.Size = new Size(308, 649);
             tableLayoutPanel2.TabIndex = 0;
             // 
@@ -333,6 +367,15 @@
             SpectrPlot.Size = new Size(570, 324);
             SpectrPlot.TabIndex = 0;
             // 
+            // SignalTypeBox
+            // 
+            SignalTypeBox.Dock = DockStyle.Top;
+            SignalTypeBox.Location = new Point(3, 29);
+            SignalTypeBox.Name = "SignalTypeBox";
+            SignalTypeBox.ReadOnly = true;
+            SignalTypeBox.Size = new Size(302, 30);
+            SignalTypeBox.TabIndex = 4;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(11F, 22F);
@@ -358,7 +401,9 @@
             tableLayoutPanel10.PerformLayout();
             tableLayoutPanel1.ResumeLayout(false);
             tableLayoutPanel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)bandwidthBox).EndInit();
+            ((System.ComponentModel.ISupportInitialize)NoiseOffsetBox).EndInit();
+            tableLayoutPanel7.ResumeLayout(false);
+            tableLayoutPanel7.PerformLayout();
             ContentPanel.ResumeLayout(false);
             ContentPanel.PerformLayout();
             tableLayoutPanel2.ResumeLayout(false);
@@ -379,6 +424,7 @@
         private TableLayoutPanel tableLayoutPanel10;
         private Button ControlButton;
         private ScottPlot.WinForms.FormsPlot NoisePlot;
-        private NumericUpDown bandwidthBox;
+        private NumericUpDown NoiseOffsetBox;
+        private TextBox SignalTypeBox;
     }
 }
