@@ -17,9 +17,10 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="OpenTK" Version="4.8.2" />
     <PackageReference Include="OpenTK.GLControl" Version="4.0.1" />
-    <PackageReference Include="ScottPlot.WinForms" Version="5.0.39" />
+    <PackageReference Include="ScottPlot.WinForms" Version="5.0.40" />
     <PackageReference Include="SDRNet.Radio" Version="1.0.0" />
-    <PackageReference Include="SDRNet.RTLSDR" Version="1.0.0" />
+    <PackageReference Include="SDRNet.RTLSDR" Version="1.0.1" />
+    <PackageReference Include="SDRNet.RTLTCP" Version="1.0.0" />
   </ItemGroup>
 
 </Project>

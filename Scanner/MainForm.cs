@@ -1,8 +1,8 @@
 using SDRSharp.RTLSDR;
 using SDRSharp.Radio;
 using Scanner.Audio;
-using SDRSharp.Radio.PortAudio;
 using FftSharp;
+using System.Drawing;
 
 namespace Scanner
 {
@@ -12,9 +12,7 @@ namespace Scanner
         public const int BUFFER_LENGTH = 50;
         public const double KORREL_DOPUSK = 0.5;
 
-        private static RtlDevice? IO { get; set; } = null;
-        private List<DeviceDisplay> DevicesList { get; } = [];
-        private List<AudioDevice> AudioDevices { get; } = [];
+        private IFrontendController? Source { get; set; } = null;
         private WorkingStatuses Status { get; set; } = WorkingStatuses.NOT_INIT;
         private DateTime SignalTime { get; set; } = DateTime.Now;
         private double[] FrequesList { get; set; } = [];
@@ -27,15 +25,6 @@ namespace Scanner
             STOPPED,
         };
 
-        public struct BandwidthInfo
-        {
-            public int Samplerate { get; set; }
-            public int FromIndex { get; set; }
-            public int ToIndex { get; set; }
-            public double Left { get; set; }
-            public double Right { get; set; }
-        };
-
         unsafe public MainForm()
         {
             InitializeComponent();
@@ -45,26 +34,22 @@ namespace Scanner
             SpectrPlot.Plot.YLabel("Мощность (дБ)");
             SpectrPlot.Refresh();
 
-            DevicesBox.SelectedIndexChanged += new((sender, args) =>
+            AddSourceBox.Click += new((sender, args) =>
             {
-                int index = DevicesBox.SelectedIndex;
-                if (index != -1 && index < DevicesList.Count)
+                ChooseTypeForm chooseForm = new();
+                chooseForm.ShowDialog(this);
+
+                if (chooseForm.ChoosenType == ChooseTypeForm.SdrTypes.USB)
                 {
-                    if (IO != null && IO.Index == index) return;
-                    else if (IO != null && IO.Index != index)
+                    RtlSdrForm form = new();
+                    form.ShowDialog(this);
+
+                    if (form.RtlSdrIO is { } source)
                     {
-                        if (Status == WorkingStatuses.STARTED) Stop();
-                        IO.Dispose();
-                        IO = null;
+                        Source = source;
+                        SourceBox.Text = "(USB) " + source.Device?.Name;
+                        Status = WorkingStatuses.STOPPED;
                     }
-
-                    DeviceDisplay device = DevicesList[index];
-                    IO = new(device.Index);
-                    IO.SamplesAvailable += IO_SamplesAvailable;
-
-                    GainBox.Items.Clear();
-                    foreach (int gain in IO.SupportedGains) GainBox.Items.Add(gain.ToString() + " дБ");
-                    if (GainBox.Items.Count > 0) GainBox.SelectedIndex = 0;
                 }
             });
 
@@ -72,8 +57,8 @@ namespace Scanner
             {
                 if (Status == WorkingStatuses.STARTED)
                 {
-                    IO?.Stop();
-                    IO?.Start();
+                    Stop();
+                    Start();
                 }
             });
 
@@ -82,87 +67,72 @@ namespace Scanner
                 if (Status == WorkingStatuses.STARTED) Stop();
                 else if (Status == WorkingStatuses.STOPPED) Start();
             });
-
-            LoadDevicesList();
-        }
-
-        private void LoadDevicesList()
-        {
-            DeviceDisplay[] devices = DeviceDisplay.GetActiveDevices();
-            DevicesList.Clear();
-            DevicesList.AddRange(devices);
-
-            DevicesBox.Items.Clear();
-            foreach (DeviceDisplay device in DevicesList) DevicesBox.Items.Add("(#" + device.Index + ") " + device.Name);
-
-            Status = WorkingStatuses.STOPPED;
-            if (DevicesList.Count > 0) DevicesBox.SelectedIndex = 0;
         }
 
         private void Stop()
         {
-            Status = WorkingStatuses.STOPPED;
-            IO?.Stop();
+            Source?.Stop();
 
+            Status = WorkingStatuses.STOPPED;
             ControlButton.Text = "Запуск";
+            AddSourceBox.Enabled = true;
         }
 
-        private void Start()
+        private unsafe void Start()
         {
-            if (IO != null)
+            if (Source != null)
             {
                 uint freq = (uint)FreqBox.Value * 1000;
-                int gain = 0;
 
                 FrequesList = new double[RESOLUTION];
-                double fSampleRate = FFT.FrequencyResolution(RESOLUTION, IO.Samplerate);
-                for (int i = 0; i < FrequesList.Length; i++) FrequesList[i] = freq - (IO.Samplerate / 2) + (i * fSampleRate);
+                double fSampleRate = FFT.FrequencyResolution(RESOLUTION, Source.Samplerate);
+                for (int i = 0; i < FrequesList.Length; i++) FrequesList[i] = freq - (Source.Samplerate / 2) + (i * fSampleRate);
 
                 SignalTime = DateTime.Now;
-                if (GainBox.SelectedIndex != -1) gain = IO.SupportedGains[GainBox.SelectedIndex];
 
-                IO.Frequency = freq;
-                IO.Gain = gain;
-                IO.Start();
-                IO.UseTunerAGC = true;
+                Source.Frequency = freq;
+                Source.Start(IO_SamplesAvailable);
 
                 ControlButton.Text = "Остановить";
+                AddSourceBox.Enabled = false;
                 SpectrPlot.Plot.Clear();
 
                 Status = WorkingStatuses.STARTED;
             }
-            else MessageBox.Show("Не загружено устройство", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            else MessageBox.Show("Не загружен источник", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
-        private unsafe void IO_SamplesAvailable(object sender, SamplesAvailableEventArgs e)
+        private unsafe void IO_SamplesAvailable(IFrontendController sender, SDRSharp.Radio.Complex* data, int len)
         {
-            if (IO == null) return;
-            Fourier.ForwardTransform(e.Buffer, e.Length);
+            if (Source == null) return;
+            Fourier.ForwardTransform(data, len);
 
-            float[] power = new float[e.Length];
-            float[] simpleAveraged = new float[e.Length];
-            float[] integratedPower = new float[e.Length];
-            List<int> noiseFreqs;
+            int gain = 0;
+            if (Source is RtlSdrIO rtlsdr && rtlsdr.Device != null) gain = rtlsdr.Device.Gain;
+
+            float[] power = new float[len];
+            float[] simpleAveraged = new float[len];
+            float[] integratedPower = new float[len];
             fixed (float* srcPower = power)
             {
-                Fourier.SpectrumPower(e.Buffer, srcPower, e.Length, IO.Gain);
+                Fourier.SpectrumPower(data, srcPower, len, gain);
                 fixed (float* averagedSrc = simpleAveraged)
                 {
-                    AudioUtils.SimpleAverage(srcPower, averagedSrc, e.Length, 30);
-                    fixed (float* cumSrc = integratedPower)
-                    {
-                        AudioUtils.CumulativeSum(averagedSrc, cumSrc, e.Length);
-                        AudioUtils.IntegratedSpectrum(cumSrc, e.Length);
-                        noiseFreqs = AudioUtils.GetNoiseFreqs(cumSrc, e.Length);
-                    }
+                    AudioUtils.SimpleAverage(srcPower, averagedSrc, len, 30);
+                }
+
+                fixed (float* cumSrc = integratedPower)
+                {
+                    AudioUtils.CumulativeSum(srcPower, cumSrc, len);
+                    AudioUtils.IntegratedSpectrum(cumSrc, len);
                 }
             }
 
-            AudioUtils.Point[] points = new AudioUtils.Point[e.Length], filteredPoints;
+            AudioUtils.Point[] points = new AudioUtils.Point[len], filteredPoints;
             for (int i = 0; i < simpleAveraged.Length; i++) points[i] = new(FrequesList[i], simpleAveraged[i]);
             fixed (AudioUtils.Point* pointsSrc = points)
             {
-                filteredPoints = RamerDouglasPeucker.Reduce(pointsSrc, 3, e.Length);
+                filteredPoints = RamerDouglasPeucker.Reduce(pointsSrc, 3, len);
             }
 
             filteredPoints[0].Pos = AudioUtils.Point.Position.Low;
@@ -182,9 +152,9 @@ namespace Scanner
 
             var topPoints = filteredPoints.Where(p => p.Pos == AudioUtils.Point.Position.Top);
             var noiseLevel = topPoints.Select(p => p.Y).Average() + NoiseOffset;
-            var noiseKoef = (double)noiseFreqs.Count / e.Length;
+            var positiveCount = topPoints.Where(p => p.Y - noiseLevel > NoiseOffset * 2).Count();
 
-            if ((DateTime.Now - SignalTime).TotalMilliseconds >= 50)
+            if ((DateTime.Now - SignalTime).TotalMilliseconds >= 100)
             {
                 BeginInvoke(() =>
                 {
@@ -196,7 +166,7 @@ namespace Scanner
                     SpectrPlot.Plot.Add.HorizontalLine(noiseLevel, color: ScottPlot.Color.FromColor(Color.Aqua));
 
                     SpectrPlot.Plot.Axes.AutoScaleX();
-                    SpectrPlot.Plot.Axes.SetLimitsY(20 + IO.Gain, 60 + IO.Gain);
+                    SpectrPlot.Plot.Axes.SetLimitsY(noiseLevel - 30, noiseLevel + 30);
                     SpectrPlot.Refresh();
 
                     NoisePlot.Plot.Clear();
@@ -206,7 +176,7 @@ namespace Scanner
                     NoisePlot.Plot.Axes.AutoScaleY();
                     NoisePlot.Refresh();
 
-                    SignalTypeBox.Text = "(" + noiseKoef.ToString("0.00") + ") " + (noiseKoef > 0.7 ? "Шум" : "Полезный сигнал");
+                    SignalTypeBox.Text = "(" + positiveCount + ") " + (positiveCount == 0 ? "Шум" : "Полезный сигнал");
                 });
                 SignalTime = DateTime.Now;
             }

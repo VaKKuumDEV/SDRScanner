@@ -25,6 +25,20 @@
             }
         };
 
+        public static float Correlation(this IEnumerable<float> nums1, IEnumerable<float> nums2)
+        {
+            float avg1 = nums1.Average();
+            float avg2 = nums2.Average();
+
+            float sum1 = nums1.Zip(nums2, (x1, y1) => (x1 - avg1) * (y1 - avg2)).Sum();
+
+            float sumSqr1 = nums1.Sum(x => (float)Math.Pow(x - avg1, 2.0f));
+            float sumSqr2 = nums2.Sum(y => (float)Math.Pow(y - avg2, 2.0f));
+
+            float correl = sum1 / (float)Math.Sqrt(sumSqr1 * sumSqr2);
+            return correl;
+        }
+
         public unsafe static void CumulativeSum(float* sequence, float* cumulativeSum, int length)
         {
             float sum = 0;
@@ -55,19 +69,6 @@
 
                 if (valuesQueue.Count == k) valuesQueue.Dequeue();
             }
-        }
-
-        public unsafe static List<int> GetNoiseFreqs(float* integratedSum, int length)
-        {
-            float scale = 1.0f / length;
-            List<int> freqIndexes = [];
-
-            for (int i = 0; i < length; i++)
-            {
-                if (Math.Abs(integratedSum[i] - scale * i) <= 1e-2F) freqIndexes.Add(i);
-            }
-
-            return freqIndexes;
         }
     }
 }
