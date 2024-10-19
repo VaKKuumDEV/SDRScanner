@@ -51,6 +51,18 @@ namespace Scanner
                         Status = WorkingStatuses.STOPPED;
                     }
                 }
+                else if (chooseForm.ChoosenType == ChooseTypeForm.SdrTypes.TCP)
+                {
+                    RtlTcpForm form = new();
+                    form.ShowDialog(this);
+
+                    if (form.RtlTcpIO is { } source)
+                    {
+                        Source = source;
+                        SourceBox.Text = "(TCP)";
+                        Status = WorkingStatuses.STOPPED;
+                    }
+                }
             });
 
             FreqBox.ValueChanged += new((sender, args) =>
