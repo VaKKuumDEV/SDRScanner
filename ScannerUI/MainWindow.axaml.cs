@@ -7,6 +7,8 @@ namespace ScannerUI
         public MainWindow()
         {
             InitializeComponent();
+
+            WindowState = WindowState.Maximized;
         }
     }
 }

@@ -117,7 +117,7 @@ namespace Scanner
         private unsafe void IO_SamplesAvailable(IFrontendController sender, SDRSharp.Radio.Complex* data, int len)
         {
             if (Source == null) return;
-            //Fourier.ForwardTransform(data, len);
+            Fourier.ForwardTransform(data, len);
 
             int gain = 0;
             if (Source is RtlSdrIO rtlsdr && rtlsdr.Device != null) gain = rtlsdr.Device.Gain;

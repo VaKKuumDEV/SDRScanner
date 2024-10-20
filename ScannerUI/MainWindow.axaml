@@ -4,9 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:scannerUI="clr-namespace:ScannerUI.Views"
         mc:Ignorable="d"
-        d:DesignWidth="800"
-        d:DesignHeight="450"
         x:Class="ScannerUI.MainWindow"
-        Title="AvaloniaRaspbianLiteDrm">
+        Title="ScannerUI">
 	<scannerUI:MainView />
 </Window>
