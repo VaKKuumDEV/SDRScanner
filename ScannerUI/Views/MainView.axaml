@@ -25,6 +25,7 @@
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="*"/>
 				<RowDefinition Height="Auto"/>
 			</Grid.RowDefinitions>
@@ -33,7 +34,8 @@
 			<ComboBox Name="GainsBox" Grid.Row="1" HorizontalAlignment="Stretch" />
 			<NumericUpDown Name="FrequencyBox" Value="433950" Increment="10" Minimum="25000" Maximum="1600000" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Grid.Row="2" HorizontalAlignment="Stretch" Padding="4" />
 			<NumericUpDown Name="NoiseOffsetBox" Value="1" Increment="1" Minimum="0" Maximum="10" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Grid.Row="3" HorizontalAlignment="Stretch" Padding="4" />
-			<Button Name="ControlButton" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" Content="Запуск" Padding="8" Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="1" />
+			<ScottPlot:AvaPlot Name="PoweredPlot" Margin="4" Grid.Row="4" Grid.Column="0" Height="400" />
+			<Button Name="ControlButton" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" Content="Запуск" Padding="8" Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="1" />
 		</Grid>
 	</Grid>
 </UserControl>

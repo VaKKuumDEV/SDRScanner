@@ -1,9 +1,11 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
 using ScannerUI.Audio;
+using ScottPlot;
 using SDRSharp.Radio;
 using SDRSharp.RTLSDR;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -22,6 +24,7 @@ public partial class MainView : UserControl
     private int _noiseOffset = 1;
     public List<DeviceDisplay> Devices { get; set; } = [];
     public RtlSdrIO? IO { get; set; } = null;
+    private ConcurrentQueue<List<KeyValuePair<double, double>>> Buffer { get; } = [];
 
     public enum WorkingStatuses
     {
@@ -74,12 +77,22 @@ public partial class MainView : UserControl
             else if (Status == WorkingStatuses.STOPPED) Start();
         });
 
+        Unloaded += new((sender, args) =>
+        {
+            Stop();
+        });
+
         LoadDevicesList();
 
         SpectrPlot.Plot.Title("Спектр");
         SpectrPlot.Plot.XLabel("Частота (Гц)");
         SpectrPlot.Plot.YLabel("Мощность (дБ)");
         SpectrPlot.Refresh();
+
+        PoweredPlot.Plot.Title("Накопленнй буфер");
+        PoweredPlot.Plot.XLabel("Частота (Гц)");
+        PoweredPlot.Plot.YLabel("Мощность (дБ)");
+        PoweredPlot.Refresh();
     }
 
     private void LoadDevicesList()
@@ -97,6 +110,7 @@ public partial class MainView : UserControl
     private void Stop()
     {
         IO?.Stop();
+        Buffer.Clear();
 
         Status = WorkingStatuses.STOPPED;
         ControlButton.Content = "Запуск";
@@ -122,6 +136,22 @@ public partial class MainView : UserControl
 
             Status = WorkingStatuses.STARTED;
         }
+    }
+
+    private List<KeyValuePair<double, double>> GetPoweredBuffer()
+    {
+        Dictionary<double, double> buffer = [];
+        foreach (var listKv in Buffer)
+        {
+            foreach (var kv in listKv)
+            {
+                var freq = Math.Floor(kv.Key);
+                if (buffer.TryGetValue(freq, out var val) && kv.Value > val) buffer[freq] = kv.Value;
+                else buffer[freq] = kv.Value;
+            }
+        }
+
+        return [.. buffer];
     }
 
     private unsafe void IO_SamplesAvailable(IFrontendController sender, SDRSharp.Radio.Complex* data, int len)
@@ -173,22 +203,32 @@ public partial class MainView : UserControl
 
         var topPoints = filteredPoints.Where(p => p.Pos == AudioUtils.Point.Position.Top);
         var noiseLevel = topPoints.Select(p => p.Y).Average() + _noiseOffset;
-        var positiveCount = topPoints.Where(p => p.Y - noiseLevel > _noiseOffset * 2).Count();
+        var positivePoints = topPoints.Where(p => p.Y - noiseLevel > _noiseOffset * 2);
+
+        Buffer.Enqueue(positivePoints.Select(p => new KeyValuePair<double, double>(p.X, p.Y)).ToList());
+        if (Buffer.Count >= 500) Buffer.TryDequeue(out var result);
 
         if ((DateTime.Now - SignalTime).TotalMilliseconds >= 100)
         {
+            var poweredBuffer = GetPoweredBuffer();
             Dispatcher.UIThread.Post(() =>
             {
                 SpectrPlot.Plot.Clear();
                 SpectrPlot.Plot.Add.SignalXY(FrequesList.ToArray(), simpleAveraged);
                 SpectrPlot.Plot.Add.SignalXY(filteredPoints.Select(p => p.X).ToArray(), filteredPoints.Select(p => p.Y).ToArray());
-                SpectrPlot.Plot.Add.VerticalLine(FrequesList[RESOLUTION / 2], color: ScottPlot.Color.FromColor(Color.Red));
+                SpectrPlot.Plot.Add.VerticalLine(FrequesList[RESOLUTION / 2], color: ScottPlot.Color.FromColor(System.Drawing.Color.Red));
 
-                SpectrPlot.Plot.Add.HorizontalLine(noiseLevel, color: ScottPlot.Color.FromColor(Color.Aqua));
+                SpectrPlot.Plot.Add.HorizontalLine(noiseLevel, color: ScottPlot.Color.FromColor(System.Drawing.Color.Aqua));
 
                 SpectrPlot.Plot.Axes.AutoScaleX();
                 SpectrPlot.Plot.Axes.SetLimitsY(noiseLevel - 30, noiseLevel + 30);
                 SpectrPlot.Refresh();
+
+                PoweredPlot.Plot.Clear();
+                PoweredPlot.Plot.Add.Bars(poweredBuffer.Select(p => p.Key).ToArray(), poweredBuffer.Select(p => p.Value).ToArray());
+                PoweredPlot.Plot.Axes.Margins(bottom: 0);
+                PoweredPlot.Plot.Axes.SetLimitsX(FrequesList.First(), FrequesList.Last());
+                PoweredPlot.Refresh();
             });
 
             SignalTime = DateTime.Now;
