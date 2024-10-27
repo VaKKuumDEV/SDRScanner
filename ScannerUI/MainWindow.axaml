@@ -36,7 +36,7 @@
 			<ComboBox Name="DevicesBox" Grid.Row="0" HorizontalAlignment="Stretch" />
 			<ComboBox Name="GainsBox" Grid.Row="1" HorizontalAlignment="Stretch" />
 			<NumericUpDown Name="FrequencyBox" Value="433950" Increment="10" Minimum="25000" Maximum="1600000" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Grid.Row="2" HorizontalAlignment="Stretch" Padding="4" />
-			<NumericUpDown Name="NoiseOffsetBox" Value="1" Increment="1" Minimum="0" Maximum="10" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Grid.Row="3" HorizontalAlignment="Stretch" Padding="4" />
+			<TextBox IsReadOnly="True" Name="CorellationBox" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Grid.Row="3" HorizontalAlignment="Stretch" Padding="4" />
 			<ScottPlot:AvaPlot Name="PoweredPlot" Margin="4" Grid.Row="4" Grid.Column="0" />
 			<Button Name="ControlButton" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" Content="Запуск" Padding="8" Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="1" />
 		</Grid>
