@@ -18,6 +18,7 @@ namespace ScannerUI.Audio
         /// </summary>
         /// <param name="points">The points.</param>
         /// <param name="tolerance">The tolerance.</param>
+        /// <param name="length"></param>
         /// <returns></returns>
         public unsafe static AudioUtils.Point[] Reduce(AudioUtils.Point* points, double tolerance, int length)
         {
