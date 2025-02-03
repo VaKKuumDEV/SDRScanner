@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using System.Threading;
+using System.Collections.Concurrent;
 
 namespace ScannerUI
 {
@@ -22,8 +23,7 @@ namespace ScannerUI
         public RtlSdrIO? IO { get; set; } = null;
 
         private readonly Lock _lock = new();
-        private int AveragedCount = 0;
-        private float[] SpectrumBuffer = [];
+        private ConcurrentQueue<float[]> SpectrumBuffer = [];
         private float AverageNoiseLevel = 0;
 
         public enum WorkingStatuses
@@ -108,7 +108,6 @@ namespace ScannerUI
         private void Stop()
         {
             IO?.Stop();
-            AveragedCount = 0;
             SpectrumBuffer = [];
 
             Status = WorkingStatuses.STOPPED;
@@ -119,8 +118,7 @@ namespace ScannerUI
         {
             if (IO != null)
             {
-                AveragedCount = 0;
-                SpectrumBuffer = new float[Resolution];
+                SpectrumBuffer = [];
                 uint freq = Frequency * 1000;
 
                 double fSampleRate = FftSharp.FFT.FrequencyResolution(Resolution, IO.Samplerate);
@@ -138,6 +136,27 @@ namespace ScannerUI
             }
         }
 
+        private float[] GetSummarizedBuffer()
+        {
+            var buffer = SpectrumBuffer.ToArray();
+            var resultBuffer = new float[Resolution];
+
+            for (int i = 0; i < Resolution; i++)
+            {
+                for (int j = 0; j < buffer.Length; j++)
+                {
+                    resultBuffer[i] += buffer[j][i];
+                }
+            }
+
+            for (int i = 0; i < Resolution; i++)
+            {
+                resultBuffer[i] /= buffer.Length;
+            }
+
+            return resultBuffer;
+        }
+
         private unsafe void IO_SamplesAvailable(IFrontendController sender, Complex* data, int len)
         {
             if (IO == null) return;
@@ -145,22 +164,21 @@ namespace ScannerUI
 
             int gain = IO.Device?.Gain ?? 0;
 
-            Interlocked.Increment(ref AveragedCount);
             lock (_lock)
             {
+                float[] dataFloat = new float[len];
                 for (int i = 0; i < len; i++)
                 {
-                    SpectrumBuffer[i] += data[i].ModulusSquared();
+                    dataFloat[i] = data[i].ModulusSquared();
                 }
+                SpectrumBuffer.Enqueue(dataFloat);
 
-                if (AveragedCount >= AverageCount)
+                if (SpectrumBuffer.Count >= AverageCount)
                 {
-                    var spectrum = SpectrumBuffer.Select(x => x / AverageCount).ToArray();
-                    float noiseFloorDb = CalculateNoiseFloor(spectrum) + gain;
+                    float noiseFloorDb = CalculateNoiseFloor(GetSummarizedBuffer()) + gain;
 
                     AverageNoiseLevel = noiseFloorDb;
-                    Array.Clear(SpectrumBuffer, 0, SpectrumBuffer.Length);
-                    AveragedCount = 0;
+                    SpectrumBuffer.TryDequeue(out var dequeueResult);
                 }
             }
 
