@@ -189,7 +189,7 @@ namespace ScannerUI
                 {
                     for (int i = 0; i < len; i++)
                     {
-                        powerSrc[i] = (float)(10 * Math.Log10(data[i].ModulusSquared() + 1e-12)) + gain;
+                        powerSrc[i] = (float)(10 * Math.Log10(data[i].ModulusSquared() + float.Epsilon)) + gain;
                     }
                 }
 
@@ -210,11 +210,14 @@ namespace ScannerUI
 
         private static float CalculateNoiseFloor(float[] spectrum)
         {
+            // Применение медианного фильтра для сглаживания спектра
+            float[] smoothedSpectrum = ApplyMedianFilter(spectrum, 5);
+
             // Кумулятивная сумма
-            float[] cdf = new float[spectrum.Length];
-            cdf[0] = spectrum[0];
-            for (int i = 1; i < spectrum.Length; i++)
-                cdf[i] = cdf[i - 1] + spectrum[i];
+            float[] cdf = new float[smoothedSpectrum.Length];
+            cdf[0] = smoothedSpectrum[0];
+            for (int i = 1; i < smoothedSpectrum.Length; i++)
+                cdf[i] = cdf[i - 1] + smoothedSpectrum[i];
 
             // Поиск точки максимального отклонения
             double maxDeviation = 0;
@@ -235,6 +238,29 @@ namespace ScannerUI
             // Расчет мощности шума
             float noisePower = cdf[thresholdIndex] / (thresholdIndex + 1);
             return (float)(10 * Math.Log10(noisePower + float.Epsilon)) + 4.5f;
+        }
+
+        private static float[] ApplyMedianFilter(float[] data, int windowSize)
+        {
+            float[] result = new float[data.Length];
+            int halfWindow = windowSize / 2;
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                int start = Math.Max(0, i - halfWindow);
+                int end = Math.Min(data.Length - 1, i + halfWindow);
+                float[] window = new float[end - start + 1];
+
+                for (int j = start; j <= end; j++)
+                {
+                    window[j - start] = data[j];
+                }
+
+                Array.Sort(window);
+                result[i] = window[window.Length / 2];
+            }
+
+            return result;
         }
     }
 }
