@@ -2,12 +2,9 @@
 using Avalonia.Threading;
 using SDRSharp.Radio;
 using SDRSharp.RTLSDR;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System;
-using ScannerUI.Audio;
-using System.Drawing;
 using System.Threading;
 
 namespace ScannerUI
@@ -24,7 +21,7 @@ namespace ScannerUI
         public List<DeviceDisplay> Devices { get; set; } = [];
         public RtlSdrIO? IO { get; set; } = null;
 
-        private object _lock = new();
+        private readonly Lock _lock = new();
         private int AveragedCount = 0;
         private float[] SpectrumBuffer = [];
         private float AverageNoiseLevel = 0;
