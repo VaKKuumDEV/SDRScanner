@@ -13,7 +13,7 @@ namespace ScannerUI
     public partial class MainWindow : Window
     {
         public const int Resolution = 8192;
-        private const int AverageCount = 200; // Количество усреднений
+        private const int AverageCount = 50; // Количество усреднений
 
         public uint Frequency { get => Convert.ToUInt32(FrequencyBox.Value); set => FrequencyBox.Value = Convert.ToDecimal(value); }
         private WorkingStatuses Status { get; set; } = WorkingStatuses.NOT_INIT;
@@ -184,12 +184,12 @@ namespace ScannerUI
 
             if ((DateTime.Now - SignalTime).TotalMilliseconds >= 50)
             {
-                var power = new float[len];
+                var power = GetSummarizedBuffer();
                 fixed (float* powerSrc = power)
                 {
                     for (int i = 0; i < len; i++)
                     {
-                        powerSrc[i] = (float)(10 * Math.Log10(data[i].ModulusSquared() + float.Epsilon)) + gain;
+                        powerSrc[i] = (float)(10 * Math.Log10(powerSrc[i] + float.Epsilon)) + gain;
                     }
                 }
 
@@ -200,7 +200,7 @@ namespace ScannerUI
                     SpectrPlot.Plot.Add.HorizontalLine(AverageNoiseLevel);
 
                     SpectrPlot.Plot.Axes.AutoScaleX();
-                    SpectrPlot.Plot.Axes.SetLimitsY(-10 + gain, 60 + gain);
+                    SpectrPlot.Plot.Axes.SetLimitsY(AverageNoiseLevel - 40, AverageNoiseLevel + 40);
                     SpectrPlot.Refresh();
                 });
 
@@ -212,6 +212,7 @@ namespace ScannerUI
         {
             // Применение медианного фильтра для сглаживания спектра
             float[] smoothedSpectrum = ApplyMedianFilter(spectrum, 5);
+            // float[] smoothedSpectrum = spectrum;
 
             // Кумулятивная сумма
             float[] cdf = new float[smoothedSpectrum.Length];
