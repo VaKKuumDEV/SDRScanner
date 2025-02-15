@@ -7,6 +7,7 @@ using System.Linq;
 using System;
 using System.Threading;
 using System.Collections.Concurrent;
+using ScannerUI.Audio;
 
 namespace ScannerUI
 {
@@ -167,6 +168,7 @@ namespace ScannerUI
             lock (_lock)
             {
                 float[] dataFloat = new float[len];
+
                 for (int i = 0; i < len; i++)
                 {
                     dataFloat[i] = data[i].ModulusSquared();
@@ -185,19 +187,23 @@ namespace ScannerUI
             if ((DateTime.Now - SignalTime).TotalMilliseconds >= 50)
             {
                 var power = GetSummarizedBuffer();
-                fixed (float* powerSrc = power)
+                power = power.AsParallel().AsOrdered().Select(x => (float)(10 * Math.Log10(x + float.Epsilon)) + gain).ToArray();
+
+                var powerPoints = new AudioUtils.Point[Resolution];
+                for (int i = 0; i < power.Length; i++) powerPoints[i] = new(FrequesList[i], power[i]);
+                AudioUtils.Point[] ramerReduced;
+                fixed (AudioUtils.Point* powerPointsSrc = powerPoints)
                 {
-                    for (int i = 0; i < len; i++)
-                    {
-                        powerSrc[i] = (float)(10 * Math.Log10(powerSrc[i] + float.Epsilon)) + gain;
-                    }
+                    ramerReduced = RamerDouglasPeucker.Reduce(powerPointsSrc, 6.5f, powerPoints.Length);
                 }
 
                 Dispatcher.UIThread.Post(() =>
                 {
                     SpectrPlot.Plot.Clear();
-                    SpectrPlot.Plot.Add.Signal(power);
+                    SpectrPlot.Plot.Add.SignalXY(FrequesList, power);
                     SpectrPlot.Plot.Add.HorizontalLine(AverageNoiseLevel);
+
+                    SpectrPlot.Plot.Add.SignalXY([.. ramerReduced.Select(x => x.X)], [.. ramerReduced.Select(x => x.Y)]);
 
                     SpectrPlot.Plot.Axes.AutoScaleX();
                     SpectrPlot.Plot.Axes.SetLimitsY(AverageNoiseLevel - 40, AverageNoiseLevel + 40);
@@ -208,17 +214,20 @@ namespace ScannerUI
             }
         }
 
-        private static float CalculateNoiseFloor(float[] spectrum)
+        private static unsafe float CalculateNoiseFloor(float[] spectrum)
         {
             // Применение медианного фильтра для сглаживания спектра
             float[] smoothedSpectrum = ApplyMedianFilter(spectrum, 5);
-            // float[] smoothedSpectrum = spectrum;
 
             // Кумулятивная сумма
             float[] cdf = new float[smoothedSpectrum.Length];
-            cdf[0] = smoothedSpectrum[0];
-            for (int i = 1; i < smoothedSpectrum.Length; i++)
-                cdf[i] = cdf[i - 1] + smoothedSpectrum[i];
+            fixed (float* cdfSpectrum = cdf)
+            {
+                fixed (float* spectrumSrc = spectrum)
+                {
+                    AudioUtils.CumulativeSum(spectrumSrc, cdfSpectrum, spectrum.Length);
+                }
+            }
 
             // Поиск точки максимального отклонения
             double maxDeviation = 0;
@@ -238,7 +247,7 @@ namespace ScannerUI
 
             // Расчет мощности шума
             float noisePower = cdf[thresholdIndex] / (thresholdIndex + 1);
-            return (float)(10 * Math.Log10(noisePower + float.Epsilon)) + 4.5f;
+            return (float)(10 * Math.Log10(noisePower + float.Epsilon)) + 3f;
         }
 
         private static float[] ApplyMedianFilter(float[] data, int windowSize)
