@@ -99,6 +99,30 @@ namespace ScannerUI
             System.Numerics.Complex[] spectrum = FftSharp.FFT.Forward(powerSamples);
             double[] power = FftSharp.FFT.Power(spectrum);
 
+            var powerPoints = new AudioUtils.Point[power.Length];
+            for (int i = 0; i < power.Length; i++) powerPoints[i] = new(i, power[i]);
+            AudioUtils.Point[] ramerReduced;
+            fixed (AudioUtils.Point* powerPointsSrc = powerPoints)
+            {
+                ramerReduced = RamerDouglasPeucker.Reduce(powerPointsSrc, 9f, powerPoints.Length);
+            }
+
+            ramerReduced[0].Pos = AudioUtils.Point.Position.Low;
+            for (int i = 1; i < ramerReduced.Length; i++)
+            {
+                if (ramerReduced[i].Y >= ramerReduced[i - 1].Y)
+                {
+                    ramerReduced[i].Pos = AudioUtils.Point.Position.Top;
+                    if (ramerReduced[i - 1].Pos == AudioUtils.Point.Position.Top) ramerReduced[i - 1].Pos = AudioUtils.Point.Position.None;
+                }
+                else if (ramerReduced[i].Y < ramerReduced[i - 1].Y)
+                {
+                    ramerReduced[i].Pos = AudioUtils.Point.Position.Low;
+                    if (ramerReduced[i - 1].Pos == AudioUtils.Point.Position.Low) ramerReduced[i - 1].Pos = AudioUtils.Point.Position.None;
+                }
+            }
+            var topPoints = ramerReduced.Where(p => p.Pos == AudioUtils.Point.Position.Top).ToArray();
+
             double[] integratedSpectrum = new double[power.Length];
             fixed (double* powerSrc = power)
             {
@@ -111,6 +135,8 @@ namespace ScannerUI
 
             SpectrPlot.Plot.Clear();
             SpectrPlot.Plot.Add.Signal(power);
+            SpectrPlot.Plot.Add.SignalXY([.. ramerReduced.Select(x => x.X)], [.. ramerReduced.Select(x => x.Y)]);
+            SpectrPlot.Plot.Add.Markers(topPoints.Select(x => x.X).ToArray(), topPoints.Select(x => x.Y).ToArray(), ScottPlot.MarkerShape.FilledCircle, 4f, ScottPlot.Colors.Red);
 
             SpectrPlot.Plot.Axes.AutoScaleX();
             SpectrPlot.Plot.Axes.AutoScaleY();
