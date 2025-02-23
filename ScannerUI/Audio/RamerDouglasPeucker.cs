@@ -81,7 +81,7 @@ namespace ScannerUI.Audio
                 // Perpendicular Distance
                 AudioUtils.Point point = *(points + i);
                 double area = distXY + distX * point.Y + distY * point.X;
-                double distance = (area / bottom) * area;
+                double distance = area / bottom * area;
 
                 if (distance > maxDistance)
                 {

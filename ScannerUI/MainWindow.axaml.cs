@@ -1,29 +1,31 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Threading;
 using SDRSharp.Radio;
 using SDRSharp.RTLSDR;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using System.Threading;
+using System.Collections.Concurrent;
 using ScannerUI.Audio;
-using System.Drawing;
 
 namespace ScannerUI
 {
     public partial class MainWindow : Window
     {
-        public const int RESOLUTION = 8192;
+        public const int Resolution = 8192;
+        private const int AverageCount = 50; // Количество усреднений
 
         public uint Frequency { get => Convert.ToUInt32(FrequencyBox.Value); set => FrequencyBox.Value = Convert.ToDecimal(value); }
         private WorkingStatuses Status { get; set; } = WorkingStatuses.NOT_INIT;
         private DateTime SignalTime { get; set; } = DateTime.Now;
-        private double[] FrequesList { get; set; } = new double[RESOLUTION];
-        private float[] DirectLine { get; set; } = new float[RESOLUTION];
+        private double[] FrequesList { get; set; } = new double[Resolution];
         public List<DeviceDisplay> Devices { get; set; } = [];
         public RtlSdrIO? IO { get; set; } = null;
-        private ConcurrentQueue<float[]> IntegratedSpectrumBuffer { get; set; } = [];
-        private double _bandwidth = 0;
+
+        private readonly Lock _lock = new();
+        private ConcurrentQueue<float[]> SpectrumBuffer = [];
+        private float AverageNoiseLevel = 0;
 
         public enum WorkingStatuses
         {
@@ -35,12 +37,6 @@ namespace ScannerUI
         public MainWindow()
         {
             InitializeComponent();
-
-            _bandwidth = Convert.ToDouble(BandwidthBox.Value);
-            BandwidthBox.ValueChanged += new((sender, args) =>
-            {
-                _bandwidth = Convert.ToDouble(BandwidthBox.Value);
-            });
 
             DevicesBox.SelectionChanged += new((sender, args) =>
             {
@@ -54,7 +50,7 @@ namespace ScannerUI
                     GainsBox.Items.Clear();
                     if (IO.Device != null)
                     {
-                        foreach (int gain in IO.Device.SupportedGains) GainsBox.Items.Add(gain.ToString() + " ��");
+                        foreach (int gain in IO.Device.SupportedGains) GainsBox.Items.Add(gain.ToString() + " дБ");
                         if (GainsBox.Items.Count > 0) GainsBox.SelectedIndex = 0;
                     }
 
@@ -89,9 +85,9 @@ namespace ScannerUI
             SpectrPlot.Plot.Axes.Bottom.Label.FontSize = (float)FontSize;
             SpectrPlot.Plot.Axes.Left.TickLabelStyle.FontSize = (float)FontSize;
             SpectrPlot.Plot.Axes.Bottom.TickLabelStyle.FontSize = (float)FontSize;
-            SpectrPlot.Plot.Title("������");
-            SpectrPlot.Plot.XLabel("������� (��)");
-            SpectrPlot.Plot.YLabel("�������� (��)");
+            SpectrPlot.Plot.Title("Спектр");
+            SpectrPlot.Plot.XLabel("Частота (Гц)");
+            SpectrPlot.Plot.YLabel("Мощность (дБ)");
             SpectrPlot.Refresh();
 
             PoweredPlot.Plot.Axes.Frameless();
@@ -113,53 +109,53 @@ namespace ScannerUI
         private void Stop()
         {
             IO?.Stop();
-            IntegratedSpectrumBuffer.Clear();
+            SpectrumBuffer = [];
 
             Status = WorkingStatuses.STOPPED;
-            ControlButton.Content = "������";
+            ControlButton.Content = "Запуск";
         }
 
         private unsafe void Start()
         {
             if (IO != null)
             {
+                SpectrumBuffer = [];
                 uint freq = Frequency * 1000;
 
-                double fSampleRate = FftSharp.FFT.FrequencyResolution(RESOLUTION, IO.Samplerate);
-                for (int i = 0; i < FrequesList.Length; i++) FrequesList[i] = freq - (fSampleRate * RESOLUTION / 2) + (i * fSampleRate);
-
-                float k = 1.0f / RESOLUTION;
-                for (int i = 0; i < RESOLUTION; i++) DirectLine[i] = i * k;
+                double fSampleRate = FftSharp.FFT.FrequencyResolution(Resolution, IO.Samplerate);
+                for (int i = 0; i < FrequesList.Length; i++) FrequesList[i] = freq - (fSampleRate * Resolution / 2) + (i * fSampleRate);
 
                 SignalTime = DateTime.Now;
 
                 IO.Frequency = freq;
                 IO.Start(IO_SamplesAvailable);
 
-                ControlButton.Content = "����������";
+                ControlButton.Content = "Остановить";
                 SpectrPlot.Plot.Clear();
 
                 Status = WorkingStatuses.STARTED;
             }
         }
 
-        private float[] GetTotalBuffer(int length)
+        private float[] GetSummarizedBuffer()
         {
-            var integratedBuffer = IntegratedSpectrumBuffer.ToArray();
-            float[] totalBuffer = new float[length];
-            for (int i = 0; i < length; i++)
-            {
-                float sum = 0;
-                for (int j = 0; j < integratedBuffer.Length; j++)
-                {
-                    sum += integratedBuffer[j][i];
-                }
+            var buffer = SpectrumBuffer.ToArray();
+            var resultBuffer = new float[Resolution];
 
-                float average = sum / integratedBuffer.Length;
-                totalBuffer[i] = average;
+            for (int i = 0; i < Resolution; i++)
+            {
+                for (int j = 0; j < buffer.Length; j++)
+                {
+                    resultBuffer[i] += buffer[j][i];
+                }
             }
 
-            return totalBuffer;
+            for (int i = 0; i < Resolution; i++)
+            {
+                resultBuffer[i] /= buffer.Length;
+            }
+
+            return resultBuffer;
         }
 
         private unsafe void IO_SamplesAvailable(IFrontendController sender, Complex* data, int len)
@@ -169,106 +165,112 @@ namespace ScannerUI
 
             int gain = IO.Device?.Gain ?? 0;
 
-            float[] power = new float[len];
-            float[] simpleAveraged = new float[len];
-            float[] integratedPower = new float[len];
-            fixed (float* srcPower = power)
+            lock (_lock)
             {
-                Fourier.SpectrumPower(data, srcPower, len, gain);
-                fixed (float* averagedSrc = simpleAveraged)
+                float[] dataFloat = new float[len];
+
+                for (int i = 0; i < len; i++)
                 {
-                    AudioUtils.SimpleAverage(srcPower, averagedSrc, len, 30);
-                    fixed (float* cumSrc = integratedPower)
-                    {
-                        AudioUtils.CumulativeSum(averagedSrc, cumSrc, len);
-                        AudioUtils.IntegratedSpectrum(cumSrc, len);
-                    }
+                    dataFloat[i] = data[i].ModulusSquared();
+                }
+                SpectrumBuffer.Enqueue(dataFloat);
+
+                if (SpectrumBuffer.Count >= AverageCount)
+                {
+                    float noiseFloorDb = CalculateNoiseFloor(GetSummarizedBuffer()) + gain;
+
+                    AverageNoiseLevel = noiseFloorDb;
+                    SpectrumBuffer.TryDequeue(out var dequeueResult);
                 }
             }
 
-            AudioUtils.Point[] points = new AudioUtils.Point[len], filteredPoints;
-            for (int i = 0; i < simpleAveraged.Length; i++) points[i] = new(FrequesList[i], simpleAveraged[i]);
-            fixed (AudioUtils.Point* pointsSrc = points)
+            if ((DateTime.Now - SignalTime).TotalMilliseconds >= 50)
             {
-                filteredPoints = RamerDouglasPeucker.Reduce(pointsSrc, 3, len);
-            }
+                var power = GetSummarizedBuffer();
+                power = power.AsParallel().AsOrdered().Select(x => (float)(10 * Math.Log10(x + float.Epsilon)) + gain).ToArray();
 
-            filteredPoints[0].Pos = AudioUtils.Point.Position.Low;
-            for (int i = 1; i < filteredPoints.Length; i++)
-            {
-                if (filteredPoints[i].Y >= filteredPoints[i - 1].Y)
+                var powerPoints = new AudioUtils.Point[Resolution];
+                for (int i = 0; i < power.Length; i++) powerPoints[i] = new(FrequesList[i], power[i]);
+                AudioUtils.Point[] ramerReduced;
+                fixed (AudioUtils.Point* powerPointsSrc = powerPoints)
                 {
-                    filteredPoints[i].Pos = AudioUtils.Point.Position.Top;
-                    if (filteredPoints[i - 1].Pos == AudioUtils.Point.Position.Top) filteredPoints[i - 1].Pos = AudioUtils.Point.Position.None;
+                    ramerReduced = RamerDouglasPeucker.Reduce(powerPointsSrc, 6.5f, powerPoints.Length);
                 }
-                else if (filteredPoints[i].Y < filteredPoints[i - 1].Y)
-                {
-                    filteredPoints[i].Pos = AudioUtils.Point.Position.Low;
-                    if (filteredPoints[i - 1].Pos == AudioUtils.Point.Position.Low) filteredPoints[i - 1].Pos = AudioUtils.Point.Position.None;
-                }
-            }
 
-            double centerFreq = IO.Frequency;
-            double leftFreq = centerFreq - _bandwidth * 1000;
-            double rightFreq = centerFreq + _bandwidth * 1000;
-
-            int freqIndexMin = 0, freqIndexMax = 0;
-            for (int i = 0; i < RESOLUTION; i++)
-            {
-                if (FrequesList[i] >= leftFreq)
-                {
-                    freqIndexMin = i;
-                    break;
-                }
-            }
-            for (int i = RESOLUTION - 1; i >= 0; i--)
-            {
-                if (FrequesList[i] <= rightFreq)
-                {
-                    freqIndexMax = i;
-                    break;
-                }
-            }
-
-            var topPoints = filteredPoints.Where(p => p.Pos == AudioUtils.Point.Position.Top);
-            var noiseLevel = topPoints.Select(p => p.Y).Average();
-
-            float corellation = 1 - Math.Abs(integratedPower.Take(new Range(freqIndexMin, freqIndexMax)).Correlation(DirectLine.Take(new Range(freqIndexMin, freqIndexMax))));
-            bool isNoise = corellation < 0.0001f;
-            float[]? totalBuffer = null;
-
-            if (!isNoise) IntegratedSpectrumBuffer.Enqueue(integratedPower.Take(new Range(freqIndexMin, freqIndexMax)).ToArray());
-            else if (IntegratedSpectrumBuffer.Count >= 500) IntegratedSpectrumBuffer.TryDequeue(out _);
-
-            totalBuffer = GetTotalBuffer(freqIndexMax - freqIndexMin);
-            if ((DateTime.Now - SignalTime).TotalMilliseconds >= 500)
-            {
                 Dispatcher.UIThread.Post(() =>
                 {
                     SpectrPlot.Plot.Clear();
-                    SpectrPlot.Plot.Add.SignalXY(filteredPoints.Select(p => p.X).ToArray(), filteredPoints.Select(p => p.Y).ToArray());
-                    SpectrPlot.Plot.Add.VerticalLine(centerFreq, color: ScottPlot.Color.FromColor(Color.Red));
-                    SpectrPlot.Plot.Add.VerticalLine(leftFreq, color: ScottPlot.Color.FromColor(Color.Green));
-                    SpectrPlot.Plot.Add.VerticalLine(rightFreq, color: ScottPlot.Color.FromColor(Color.Green));
+                    SpectrPlot.Plot.Add.SignalXY(FrequesList, power);
+                    SpectrPlot.Plot.Add.HorizontalLine(AverageNoiseLevel);
 
-                    SpectrPlot.Plot.Add.HorizontalLine(noiseLevel, color: ScottPlot.Color.FromColor(Color.Aqua));
+                    SpectrPlot.Plot.Add.SignalXY([.. ramerReduced.Select(x => x.X)], [.. ramerReduced.Select(x => x.Y)]);
 
                     SpectrPlot.Plot.Axes.AutoScaleX();
-                    SpectrPlot.Plot.Axes.SetLimitsY(noiseLevel - 30 + gain, noiseLevel + 30 + gain);
+                    SpectrPlot.Plot.Axes.SetLimitsY(AverageNoiseLevel - 40, AverageNoiseLevel + 40);
                     SpectrPlot.Refresh();
-
-                    PoweredPlot.Plot.Clear();
-                    PoweredPlot.Plot.Add.Signal(integratedPower.Take(new Range(freqIndexMin, freqIndexMax)).ToArray(), color: ScottPlot.Color.FromColor(Color.Blue));
-                    //PoweredPlot.Plot.Add.Line(new(0, 0), new(freqIndexMax - freqIndexMin, 1)).Color = ScottPlot.Color.FromColor(Color.Orange);
-                    //PoweredPlot.Plot.Axes.SetLimits(0, freqIndexMax, 0, 1);
-                    PoweredPlot.Plot.Axes.AutoScale();
-                    PoweredPlot.Refresh();
-
-                    CorellationBox.Text = corellation.ToString("0.0000000") + " (" + (isNoise ? "���" : "�������� ������") + ")";
                 });
 
                 SignalTime = DateTime.Now;
             }
+        }
+
+        private static unsafe float CalculateNoiseFloor(float[] spectrum)
+        {
+            // Применение медианного фильтра для сглаживания спектра
+            float[] smoothedSpectrum = ApplyMedianFilter(spectrum, 5);
+
+            // Кумулятивная сумма
+            float[] cdf = new float[smoothedSpectrum.Length];
+            fixed (float* cdfSpectrum = cdf)
+            {
+                fixed (float* spectrumSrc = spectrum)
+                {
+                    AudioUtils.CumulativeSum(spectrumSrc, cdfSpectrum, spectrum.Length);
+                }
+            }
+
+            // Поиск точки максимального отклонения
+            double maxDeviation = 0;
+            int thresholdIndex = 0;
+
+            for (int i = 0; i < cdf.Length; i++)
+            {
+                double ideal = (double)(i + 1) / cdf.Length;
+                double deviation = Math.Abs(cdf[i] / cdf.Last() - ideal);
+
+                if (deviation > maxDeviation)
+                {
+                    maxDeviation = deviation;
+                    thresholdIndex = i;
+                }
+            }
+
+            // Расчет мощности шума
+            float noisePower = cdf[thresholdIndex] / (thresholdIndex + 1);
+            return (float)(10 * Math.Log10(noisePower + float.Epsilon)) + 3f;
+        }
+
+        private static float[] ApplyMedianFilter(float[] data, int windowSize)
+        {
+            float[] result = new float[data.Length];
+            int halfWindow = windowSize / 2;
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                int start = Math.Max(0, i - halfWindow);
+                int end = Math.Min(data.Length - 1, i + halfWindow);
+                float[] window = new float[end - start + 1];
+
+                for (int j = start; j <= end; j++)
+                {
+                    window[j - start] = data[j];
+                }
+
+                Array.Sort(window);
+                result[i] = window[window.Length / 2];
+            }
+
+            return result;
         }
     }
 }
