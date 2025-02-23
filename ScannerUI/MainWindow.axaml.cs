@@ -44,6 +44,21 @@ namespace ScannerUI
                 MoveToSample(SampleNum + 1);
             };
 
+            ShowOriginalLines.IsCheckedChanged += (sender, args) =>
+            {
+                MoveToSample(SampleNum);
+            };
+
+            ShowReducedLines.IsCheckedChanged += (sender, args) =>
+            {
+                MoveToSample(SampleNum);
+            };
+
+            ShowTopPoints.IsCheckedChanged += (sender, args) =>
+            {
+                MoveToSample(SampleNum);
+            };
+
             SpectrPlot.Plot.Axes.Title.Label.FontSize = (float)FontSize;
             SpectrPlot.Plot.Axes.Left.Label.FontSize = (float)FontSize;
             SpectrPlot.Plot.Axes.Bottom.Label.FontSize = (float)FontSize;
@@ -134,9 +149,9 @@ namespace ScannerUI
             }
 
             SpectrPlot.Plot.Clear();
-            SpectrPlot.Plot.Add.Signal(power);
-            SpectrPlot.Plot.Add.SignalXY([.. ramerReduced.Select(x => x.X)], [.. ramerReduced.Select(x => x.Y)]);
-            SpectrPlot.Plot.Add.Markers(topPoints.Select(x => x.X).ToArray(), topPoints.Select(x => x.Y).ToArray(), ScottPlot.MarkerShape.FilledCircle, 4f, ScottPlot.Colors.Red);
+            if (ShowOriginalLines.IsChecked == true) SpectrPlot.Plot.Add.Signal(power);
+            if (ShowReducedLines.IsChecked == true) SpectrPlot.Plot.Add.SignalXY([.. ramerReduced.Select(x => x.X)], [.. ramerReduced.Select(x => x.Y)]);
+            if (ShowTopPoints.IsChecked == true) SpectrPlot.Plot.Add.Markers(topPoints.Select(x => x.X).ToArray(), topPoints.Select(x => x.Y).ToArray(), ScottPlot.MarkerShape.FilledCircle, 4f, ScottPlot.Colors.Red);
 
             SpectrPlot.Plot.Axes.AutoScaleX();
             SpectrPlot.Plot.Axes.AutoScaleY();
