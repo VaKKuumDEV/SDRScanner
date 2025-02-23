@@ -64,14 +64,14 @@ namespace ScannerUI.Audio
             }
         }
 
-        public unsafe static void SimpleAverage(float* values, float* averagedValues, int length, int k)
+        public unsafe static void SimpleAverage(double* values, double* averagedValues, int length, int k)
         {
-            Queue<float> valuesQueue = [];
+            Queue<double> valuesQueue = [];
             for (int i = 0; i < length; i++)
             {
                 valuesQueue.Enqueue(values[i]);
 
-                float average = valuesQueue.Sum() / k;
+                double average = valuesQueue.Sum() / valuesQueue.Count;
                 averagedValues[i] = average;
 
                 if (valuesQueue.Count == k) valuesQueue.Dequeue();

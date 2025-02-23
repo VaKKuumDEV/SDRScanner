@@ -59,6 +59,11 @@ namespace ScannerUI
                 MoveToSample(SampleNum);
             };
 
+            ShowSimpleAveraged.IsCheckedChanged += (sender, args) =>
+            {
+                MoveToSample(SampleNum);
+            };
+
             SpectrPlot.Plot.Axes.Title.Label.FontSize = (float)FontSize;
             SpectrPlot.Plot.Axes.Left.Label.FontSize = (float)FontSize;
             SpectrPlot.Plot.Axes.Bottom.Label.FontSize = (float)FontSize;
@@ -138,6 +143,15 @@ namespace ScannerUI
             }
             var topPoints = ramerReduced.Where(p => p.Pos == AudioUtils.Point.Position.Top).ToArray();
 
+            var topPointsSimpleAveraged = new double[topPoints.Length];
+            fixed (double* topPointsSimpleAveragedSrc = topPointsSimpleAveraged)
+            {
+                fixed (double* topPointsSrc = topPoints.Select(p => p.Y).ToArray())
+                {
+                    AudioUtils.SimpleAverage(topPointsSrc, topPointsSimpleAveragedSrc, topPoints.Length, 5);
+                }
+            }
+
             double[] integratedSpectrum = new double[power.Length];
             fixed (double* powerSrc = power)
             {
@@ -149,9 +163,10 @@ namespace ScannerUI
             }
 
             SpectrPlot.Plot.Clear();
-            if (ShowOriginalLines.IsChecked == true) SpectrPlot.Plot.Add.Signal(power);
-            if (ShowReducedLines.IsChecked == true) SpectrPlot.Plot.Add.SignalXY([.. ramerReduced.Select(x => x.X)], [.. ramerReduced.Select(x => x.Y)]);
+            if (ShowOriginalLines.IsChecked == true) SpectrPlot.Plot.Add.Signal(power, color: ScottPlot.Colors.LightBlue);
+            if (ShowReducedLines.IsChecked == true) SpectrPlot.Plot.Add.SignalXY([.. ramerReduced.Select(x => x.X)], [.. ramerReduced.Select(x => x.Y)], color: ScottPlot.Colors.Orange);
             if (ShowTopPoints.IsChecked == true) SpectrPlot.Plot.Add.Markers(topPoints.Select(x => x.X).ToArray(), topPoints.Select(x => x.Y).ToArray(), ScottPlot.MarkerShape.FilledCircle, 4f, ScottPlot.Colors.Red);
+            if (ShowSimpleAveraged.IsChecked == true) SpectrPlot.Plot.Add.SignalXY(topPoints.Select(x => x.X).ToArray(), topPointsSimpleAveraged, color: ScottPlot.Colors.Green);
 
             SpectrPlot.Plot.Axes.AutoScaleX();
             SpectrPlot.Plot.Axes.AutoScaleY();

@@ -46,16 +46,20 @@
 					<RowDefinition Height="Auto"/>
 					<RowDefinition Height="Auto"/>
 					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
 				</Grid.RowDefinitions>
 
-				<CheckBox Name="ShowOriginalLines" Grid.Row="0" Grid.Column="0"/>
+				<CheckBox Name="ShowOriginalLines" IsChecked="True" Grid.Row="0" Grid.Column="0"/>
 				<TextBlock Text="Показывать начальные линии" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="0" Grid.Column="1"/>
 
-				<CheckBox Name="ShowReducedLines" IsChecked="True" Grid.Row="1" Grid.Column="0"/>
+				<CheckBox Name="ShowReducedLines" IsChecked="False" Grid.Row="1" Grid.Column="0"/>
 				<TextBlock Text="Показывать линии по Рамеру-Дугласу-Пекеру" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="1" Grid.Column="1"/>
 
 				<CheckBox Name="ShowTopPoints" IsChecked="True" Grid.Row="2" Grid.Column="0"/>
 				<TextBlock Text="Показывать ключевые точки" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="2" Grid.Column="1"/>
+
+				<CheckBox Name="ShowSimpleAveraged" IsChecked="False" Grid.Row="3" Grid.Column="0"/>
+				<TextBlock Text="Показывать скользящее среднее" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="3" Grid.Column="1"/>
 			</Grid>
 
 			<ScottPlot:AvaPlot Name="PoweredPlot" Margin="2" Grid.Row="3" Grid.Column="0" />
