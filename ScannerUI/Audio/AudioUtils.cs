@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Avalonia.Platform.Storage;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -6,9 +7,11 @@ namespace ScannerUI.Audio
 {
     public static class AudioUtils
     {
-        public const double SAMPLE_RATE = 2e6;
-        public const int POINTS = 10;
-        public const int HASH_RATE = 100;
+        public static FilePickerFileType WavFiles { get; } = new("Wav Files")
+        {
+            Patterns = ["*.wav"],
+            MimeTypes = ["audio/x-wav"]
+        };
 
         public struct Point(double x, double y)
         {
@@ -43,9 +46,9 @@ namespace ScannerUI.Audio
             return correl;
         }
 
-        public unsafe static void CumulativeSum(float* sequence, float* cumulativeSum, int length)
+        public unsafe static void CumulativeSum(double* sequence, double* cumulativeSum, int length)
         {
-            float sum = 0;
+            double sum = 0;
             for (int i = 0; i < length; i++)
             {
                 sum += sequence[i];
@@ -53,7 +56,7 @@ namespace ScannerUI.Audio
             }
         }
 
-        public unsafe static void IntegratedSpectrum(float* cumulativeSum, int length)
+        public unsafe static void IntegratedSpectrum(double* cumulativeSum, int length)
         {
             for (int i = 0; i < length; i++)
             {

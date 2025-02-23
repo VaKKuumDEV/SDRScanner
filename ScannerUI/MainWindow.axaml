@@ -26,12 +26,30 @@
 				<ColumnDefinition Width="*" />
 			</Grid.ColumnDefinitions>
 			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="*"/>
 				<RowDefinition Height="Auto"/>
 			</Grid.RowDefinitions>
-			
-			<ScottPlot:AvaPlot Name="PoweredPlot" Margin="2" Grid.Row="0" Grid.Column="0" />
-			<Button Name="ControlButton" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" Content="Запуск" Padding="4" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="1" />
+
+			<Button Name="FilePickButton" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" Content="Выбор файла" Padding="4" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1" />
+			<TextBlock Name="ChoosenFileBox" Text="Выберите файл" Grid.Row="1" Padding="4" />
+			<ScottPlot:AvaPlot Name="PoweredPlot" Margin="2" Grid.Row="2" Grid.Column="0" />
+
+			<Grid Grid.Row="3">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="50*"/>
+					<ColumnDefinition Width="50*"/>
+				</Grid.ColumnDefinitions>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+				</Grid.RowDefinitions>
+				
+				<TextBlock Name="SampleProgressBox" Padding="4" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" />
+				<Button Name="LeftButton" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" Content="&lt;" Padding="4" Grid.Row="1" Grid.Column="0" />
+				<Button Name="RightButton" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" Content="&gt;" Padding="4" Grid.Row="1" Grid.Column="1" />
+			</Grid>
 		</Grid>
 	</Grid>
 </Window>
