@@ -32,17 +32,17 @@ namespace ScannerUI.Audio
             }
         };
 
-        public static float Correlation(this IEnumerable<float> nums1, IEnumerable<float> nums2)
+        public static double Correlation(this IEnumerable<double> nums1, IEnumerable<double> nums2)
         {
-            float avg1 = nums1.Average();
-            float avg2 = nums2.Average();
+            double avg1 = nums1.Average();
+            double avg2 = nums2.Average();
 
-            float sum1 = nums1.Zip(nums2, (x1, y1) => (x1 - avg1) * (y1 - avg2)).Sum();
+            double sum1 = nums1.Zip(nums2, (x1, y1) => (x1 - avg1) * (y1 - avg2)).Sum();
 
-            float sumSqr1 = nums1.Sum(x => (float)Math.Pow(x - avg1, 2.0f));
-            float sumSqr2 = nums2.Sum(y => (float)Math.Pow(y - avg2, 2.0f));
+            double sumSqr1 = nums1.Sum(x => (double)Math.Pow(x - avg1, 2.0f));
+            double sumSqr2 = nums2.Sum(y => (double)Math.Pow(y - avg2, 2.0f));
 
-            float correl = sum1 / (float)Math.Sqrt(sumSqr1 * sumSqr2);
+            double correl = sum1 / (double)Math.Sqrt(sumSqr1 * sumSqr2);
             return correl;
         }
 
