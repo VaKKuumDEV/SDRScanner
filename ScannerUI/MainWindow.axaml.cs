@@ -6,6 +6,7 @@ using Avalonia.Platform.Storage;
 using NAudio.Wave;
 using System.Collections.Generic;
 using ScottPlot;
+using ScottPlot.DataSources;
 
 namespace ScannerUI
 {
@@ -256,10 +257,10 @@ namespace ScannerUI
             Audios[plotType].IntegratedSpectrum = topPointsSimpleAveraged;
 
             spectrPlot.Clear();
-            if (ShowOriginalLines.IsChecked == true) spectrPlot.Add.Signal(power, color: ScottPlot.Colors.LightBlue);
-            if (ShowReducedLines.IsChecked == true) spectrPlot.Add.SignalXY([.. ramerReduced.Select(x => x.X)], [.. ramerReduced.Select(x => x.Y)], color: ScottPlot.Colors.Orange);
-            if (ShowTopPoints.IsChecked == true) spectrPlot.Add.Markers(topPoints.Select(x => x.X).ToArray(), topPoints.Select(x => x.Y).ToArray(), ScottPlot.MarkerShape.FilledCircle, 4f, ScottPlot.Colors.Red);
-            if (ShowSimpleAveraged.IsChecked == true) spectrPlot.Add.SignalXY(topPoints.Select(x => x.X).ToArray(), topPointsSimpleAveraged, color: ScottPlot.Colors.Green);
+            if (ShowOriginalLines.IsChecked == true) spectrPlot.Add.Signal(power, color: Colors.Blue);
+            if (ShowReducedLines.IsChecked == true) spectrPlot.Add.SignalXY([.. ramerReduced.Select(x => x.X)], [.. ramerReduced.Select(x => x.Y)], color: Colors.Orange);
+            if (ShowTopPoints.IsChecked == true) spectrPlot.Add.Markers(topPoints.Select(x => x.X).ToArray(), topPoints.Select(x => x.Y).ToArray(), MarkerShape.FilledCircle, 4f, Colors.Red);
+            if (ShowSimpleAveraged.IsChecked == true) spectrPlot.Add.SignalXY(topPoints.Select(x => x.X).ToArray(), topPointsSimpleAveraged, color: Colors.Green);
 
             spectrPlot.Axes.AutoScaleX();
             spectrPlot.Axes.AutoScaleY();
