@@ -10,9 +10,15 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="FftSharp" Version="2.1.0" />
-		<PackageReference Include="SDRNet.Radio" Version="1.0.0" />
-		<PackageReference Include="SDRNet.RTLSDR" Version="1.0.0" />
+		<PackageReference Include="FftSharp" Version="2.2.0" />
+		<PackageReference Include="SDRNet.HackRfOne" Version="1.0.0" />
+		<PackageReference Include="SDRNet.RTLSDR" Version="1.0.2" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Include="SDRNet.HackRfOne">
+	    <HintPath>..\..\SDR.NET\SDRNet.HackRfOne\bin\Release\net8.0\SDRNet.HackRfOne.dll</HintPath>
+	  </Reference>
 	</ItemGroup>
 
 </Project>

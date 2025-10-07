@@ -1,5 +1,5 @@
-﻿using SDRSharp.Radio;
-using SDRSharp.RTLSDR;
+﻿using SDRNet.Radio;
+using SDRNet.HackRfOne;
 
 DeviceDisplay[] devices = DeviceDisplay.GetActiveDevices();
 if (devices.Length > 0)
@@ -11,7 +11,7 @@ if (devices.Length > 0)
     Console.Write("Enter index: ");
 
     int deviceIndex = int.Parse(Console.ReadLine() ?? "0");
-    RtlDevice device = new(devices[deviceIndex].Index);
+    HackRFDevice device = new();
     device.SamplesAvailable += IO_SamplesAvailable;
     device.Frequency = 433950000u;
 
@@ -27,7 +27,7 @@ else
 
 static unsafe void IO_SamplesAvailable(object sender, SamplesAvailableEventArgs e)
 {
-    if (sender is RtlDevice device)
+    if (sender is HackRFDevice device)
     {
         Fourier.ForwardTransform(e.Buffer, e.Length);
 
@@ -35,7 +35,7 @@ static unsafe void IO_SamplesAvailable(object sender, SamplesAvailableEventArgs 
         float[] simpleAveraged = new float[e.Length];
         fixed (float* srcPower = power)
         {
-            Fourier.SpectrumPower(e.Buffer, srcPower, e.Length, device.Gain);
+            Fourier.SpectrumPower(e.Buffer, srcPower, e.Length, device.LNAGain);
         }
 
         Console.WriteLine("Average: " + power.Average());
