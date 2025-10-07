@@ -4,27 +4,20 @@ using System.Collections.Generic;
 
 namespace ScannerUI.Helpers
 {
-    #region BurstCollector (energy detector + burst assembly)
     /// <summary>
     /// Energy-based burst detector. Keeps noise floor estimate and emits completed bursts via callback.
     /// Single responsibility: collect bursts from stream of IQ samples.
     /// </summary>
-    public class BurstCollector
+    public class BurstCollector(Action<Complex[], double> onBurstReady, int noiseBufSize = 10_000)
     {
-        private readonly RingBufferFloat noiseBuf;
-        private readonly Action<Complex[], double> onBurstReady;
+        private readonly RingBufferFloat noiseBuf = new(noiseBufSize);
+        private readonly Action<Complex[], double> onBurstReady = onBurstReady ?? throw new ArgumentNullException(nameof(onBurstReady));
         private float energyThresholdFactor = 6f;
         private bool inBurst = false;
-        private List<Complex> currentBurst = new List<Complex>();
+        private List<Complex> currentBurst = [];
         private int silenceToEndSamples = 0;
         private int silenceCounter = 0;
         private double lastConfiguredSamplerate = 1e6; // default
-
-        public BurstCollector(Action<Complex[], double> onBurstReady, int noiseBufSize = 10_000)
-        {
-            this.onBurstReady = onBurstReady ?? throw new ArgumentNullException(nameof(onBurstReady));
-            noiseBuf = new RingBufferFloat(noiseBufSize);
-        }
 
         public void ConfigureForSampleRate(double samplerate)
         {
@@ -87,5 +80,4 @@ namespace ScannerUI.Helpers
             }
         }
     }
-    #endregion
 }
