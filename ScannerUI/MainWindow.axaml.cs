@@ -4,8 +4,6 @@ using SDRNet.Radio;
 using SDRNet.HackRfOne;
 using System;
 using System.Collections.Generic;
-using ScannerUI.Detectors;
-using ScannerUI.Helpers;
 
 namespace ScannerUI
 {
@@ -19,28 +17,11 @@ namespace ScannerUI
         private List<DeviceDisplay> Devices { get; set; } = [];
         private HackRFIO? IO { get; set; } = null;
 
-        // components
-        private readonly BurstCollector burstCollector;
-        private readonly DetectorManager detectorManager;
-
         public enum WorkingStatuses { NOT_INIT, STARTED, STOPPED }
 
         public MainWindow()
         {
             InitializeComponent();
-
-            // init components
-            detectorManager = new DetectorManager();
-            detectorManager.RegisterDetector(new Detector433()); // only 433 MHz detector enabled for now
-            detectorManager.RegisterDetector(new DetectorWifi());
-
-            burstCollector = new BurstCollector(onBurstReady: (burst, samplerate) =>
-            {
-                if (detectorManager.ProcessBurst(burst, samplerate) is { } newDetectedDevice)
-                {
-                    DevicesListbox.Items.Add(newDetectedDevice);
-                }
-            });
 
             DevicesBox.SelectionChanged += new((sender, args) =>
             {
@@ -62,7 +43,6 @@ namespace ScannerUI
 
             Unloaded += new((sender, args) =>
             {
-                burstCollector.Dispose();
                 Stop();
             });
 
@@ -114,9 +94,6 @@ namespace ScannerUI
 
                 IO.Frequency = freq;
 
-                // configure burstCollector with samplerate (silence threshold depends on samplerate)
-                burstCollector.ConfigureForSampleRate(IO.Samplerate);
-
                 IO.Start(IO_SamplesAvailable);
                 ControlButton.Content = "Остановить";
                 SpectrPlot.Plot.Clear();
@@ -124,43 +101,25 @@ namespace ScannerUI
             }
         }
 
-        // core callback from hackrf -> keep minimal and non-blocking
         private unsafe void IO_SamplesAvailable(IFrontendController sender, Complex* data, int len)
         {
             if (IO == null) return;
 
-            // copy IQ to managed array quickly
-            Complex[] iq = new Complex[len];
-            for (int i = 0; i < len; i++) iq[i] = data[i];
-
-            // pass to burstCollector (which updates noise model and emits bursts)
-            burstCollector.ProcessIncoming(iq);
-
-            // prepare spectrum for UI only (non-destructive)
-            // we reuse the existing Fourier calls like before
-            fixed (Complex* p = iq)
+            Fourier.ForwardTransform(data, len);
+            float[] power = new float[len];
+            fixed (float* pp = power)
             {
-                Complex* tmp = stackalloc Complex[len];
-                for (int i = 0; i < len; i++) tmp[i] = p[i];
-
-                Fourier.ForwardTransform(tmp, len);
-                float[] power = new float[len];
-                fixed (float* pp = power)
-                {
-                    Fourier.SpectrumPower(tmp, pp, len);
-                }
-
-                Dispatcher.UIThread.Post(() =>
-                {
-                    SpectrPlot.Plot.Clear();
-                    SpectrPlot.Plot.Add.SignalXY(FrequesList, power);
-                    SpectrPlot.Plot.Axes.AutoScaleX();
-                    SpectrPlot.Plot.Axes.SetLimitsY(10, 80);
-                    SpectrPlot.Refresh();
-
-                    CorellationBox.Text = $"Уникальных устройств: {detectorManager.TotalUniqueDevices}";
-                });
+                Fourier.SpectrumPower(data, pp, len);
             }
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                SpectrPlot.Plot.Clear();
+                SpectrPlot.Plot.Add.SignalXY(FrequesList, power);
+                SpectrPlot.Plot.Axes.AutoScaleX();
+                SpectrPlot.Plot.Axes.SetLimitsY(10, 80);
+                SpectrPlot.Refresh();
+            });
         }
     }
 }
