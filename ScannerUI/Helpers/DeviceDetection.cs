@@ -11,7 +11,7 @@ namespace ScannerUI.Helpers
 
         public override string ToString()
         {
-            return Summary + ": " + Frequency.ToString("F0") + " Hz";
+            return $"{Summary}: {Frequency:F0} Hz";
         }
     }
 }

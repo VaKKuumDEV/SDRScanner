@@ -11,8 +11,8 @@ namespace ScannerUI.Helpers
     /// </summary>
     public class DetectorManager
     {
-        private readonly List<IDetector> detectors = new List<IDetector>();
-        private readonly Dictionary<string, DeviceFingerprint> globalRegistry = new Dictionary<string, DeviceFingerprint>();
+        private readonly List<IDetector> detectors = [];
+        private readonly Dictionary<string, DeviceFingerprint> globalRegistry = [];
 
         public int TotalUniqueDevices => globalRegistry.Count;
 
@@ -45,7 +45,7 @@ namespace ScannerUI.Helpers
         {
             // key can include detectorName to avoid collisions across protocols
             string key = $"{detectorName}:{fingerprint}";
-            if (!globalRegistry.ContainsKey(key))
+            if (!globalRegistry.TryGetValue(key, out DeviceFingerprint? ex))
             {
                 globalRegistry[key] = new DeviceFingerprint
                 {
@@ -62,7 +62,6 @@ namespace ScannerUI.Helpers
             }
             else
             {
-                var ex = globalRegistry[key];
                 ex.LastSeen = DateTime.UtcNow;
                 ex.Count++;
             }
