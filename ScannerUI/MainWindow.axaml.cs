@@ -4,12 +4,16 @@ using SDRNet.Radio;
 using SDRNet.HackRfOne;
 using System;
 using System.Collections.Generic;
+using ScannerUI.Helpers;
 
 namespace ScannerUI
 {
     public partial class MainWindow : Window
     {
         public const int Resolution = 131072;
+
+        private DetectorManager DetectorManager { get; } = new();
+        private BurstCollector Collector { get; }
 
         public uint Frequency { get => Convert.ToUInt32(FrequencyBox.Value); set => FrequencyBox.Value = Convert.ToDecimal(value); }
         private WorkingStatuses Status { get; set; } = WorkingStatuses.NOT_INIT;
@@ -22,6 +26,11 @@ namespace ScannerUI
         public MainWindow()
         {
             InitializeComponent();
+
+            Collector = new(DetectorManager, result =>
+            {
+
+            }, 100);
 
             DevicesBox.SelectionChanged += new((sender, args) =>
             {
@@ -104,6 +113,10 @@ namespace ScannerUI
         private unsafe void IO_SamplesAvailable(IFrontendController sender, Complex* data, int len)
         {
             if (IO == null) return;
+
+            Complex[] tempArray = new Complex[len];
+            for (int i = 0; i < len; i++) tempArray[i] = data[i];
+            Collector.ProcessIncoming(tempArray, IO.Samplerate, IO.Frequency);
 
             Fourier.ForwardTransform(data, len);
             float[] power = new float[len];
