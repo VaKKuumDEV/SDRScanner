@@ -61,6 +61,7 @@ namespace ScannerUI
 
             Unloaded += new((sender, args) =>
             {
+                burstCollector.Dispose();
                 Stop();
             });
 
@@ -153,7 +154,7 @@ namespace ScannerUI
                     SpectrPlot.Plot.Clear();
                     SpectrPlot.Plot.Add.SignalXY(FrequesList, power);
                     SpectrPlot.Plot.Axes.AutoScaleX();
-                    SpectrPlot.Plot.Axes.AutoScaleY();
+                    SpectrPlot.Plot.Axes.SetLimitsY(10, 80);
                     SpectrPlot.Refresh();
 
                     CorellationBox.Text = $"Уникальных устройств: {detectorManager.TotalUniqueDevices}";

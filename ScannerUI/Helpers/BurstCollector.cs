@@ -1,23 +1,45 @@
 ﻿using SDRNet.Radio;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace ScannerUI.Helpers
 {
     /// <summary>
-    /// Energy-based burst detector. Keeps noise floor estimate and emits completed bursts via callback.
-    /// Single responsibility: collect bursts from stream of IQ samples.
+    /// Energy-based burst detector working in a background thread.
+    /// Uses a queue to offload heavy DSP work from UI thread.
     /// </summary>
-    public class BurstCollector(Action<Complex[], double> onBurstReady, int noiseBufSize = 10_000)
+    public class BurstCollector : IDisposable
     {
-        private readonly RingBufferFloat noiseBuf = new(noiseBufSize);
-        private readonly Action<Complex[], double> onBurstReady = onBurstReady ?? throw new ArgumentNullException(nameof(onBurstReady));
+        private readonly RingBufferFloat noiseBuf;
+        private readonly Action<Complex[], double> onBurstReady;
         private readonly float energyThresholdFactor = 6f;
+
+        private readonly ConcurrentQueue<Complex[]> queue = new();
+        private readonly Thread workerThread;
+        private readonly AutoResetEvent dataEvent = new(false);
+        private readonly CancellationTokenSource cts = new();
+
         private bool inBurst = false;
         private readonly List<Complex> currentBurst = [];
         private int silenceToEndSamples = 0;
         private int silenceCounter = 0;
         private double lastConfiguredSamplerate = 1e6; // default
+
+        public BurstCollector(Action<Complex[], double> onBurstReady, int noiseBufSize = 10_000)
+        {
+            this.onBurstReady = onBurstReady ?? throw new ArgumentNullException(nameof(onBurstReady));
+            noiseBuf = new(noiseBufSize);
+
+            // Запуск фонового потока обработки
+            workerThread = new Thread(ProcessLoop)
+            {
+                IsBackground = true,
+                Name = "BurstCollectorWorker"
+            };
+            workerThread.Start();
+        }
 
         public void ConfigureForSampleRate(double samplerate)
         {
@@ -25,12 +47,53 @@ namespace ScannerUI.Helpers
             silenceToEndSamples = (int)(0.01 * samplerate); // 10 ms gap
         }
 
+        /// <summary>
+        /// Adds incoming IQ data to processing queue (non-blocking).
+        /// </summary>
         public void ProcessIncoming(Complex[] iq)
         {
-            if (iq == null || iq.Length == 0) return;
+            if (iq == null || iq.Length == 0)
+                return;
 
+            queue.Enqueue(iq);
+            dataEvent.Set(); // уведомляем поток о новых данных
+        }
+
+        /// <summary>
+        /// Фоновый цикл обработки IQ блоков.
+        /// </summary>
+        private void ProcessLoop()
+        {
+            try
+            {
+                while (!cts.IsCancellationRequested)
+                {
+                    if (queue.IsEmpty)
+                    {
+                        dataEvent.WaitOne(10);
+                        continue;
+                    }
+
+                    if (queue.TryDequeue(out var iq))
+                    {
+                        ProcessBlock(iq);
+                    }
+                }
+            }
+            catch (ThreadAbortException)
+            {
+                // Игнорируем завершение
+            }
+        }
+
+        /// <summary>
+        /// Обработка одного блока IQ (выполняется в фоне).
+        /// </summary>
+        private void ProcessBlock(Complex[] iq)
+        {
             int n = iq.Length;
             float[] samplePower = new float[n];
+
             for (int i = 0; i < n; i++)
             {
                 var c = iq[i];
@@ -43,7 +106,6 @@ namespace ScannerUI.Helpers
             float std = noiseBuf.StdDev(mean);
             float thresh = mean + energyThresholdFactor * std;
 
-            // assemble bursts and when finished - callback
             for (int i = 0; i < n; i++)
             {
                 float p = samplePower[i];
@@ -65,10 +127,9 @@ namespace ScannerUI.Helpers
                         silenceCounter++;
                         if (silenceCounter > silenceToEndSamples)
                         {
-                            // completed burst
                             var burst = currentBurst.ToArray();
                             try { onBurstReady?.Invoke(burst, lastConfiguredSamplerate); }
-                            catch { /* swallow exceptions from detectors to avoid stopping stream */ }
+                            catch { /* ignore exceptions from callback */ }
                             inBurst = false;
                         }
                     }
@@ -78,6 +139,15 @@ namespace ScannerUI.Helpers
                     }
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            cts.Cancel();
+            dataEvent.Set();
+            workerThread.Join(200);
+            dataEvent.Dispose();
+            cts.Dispose();
         }
     }
 }
