@@ -9,6 +9,6 @@ namespace ScannerUI.Detectors
         string Name { get; }
 
         /// <summary>Return true if this detector claims the burst (and optionally registers device)</summary>
-        bool AnalyzeAndRegister(Complex[] burstIq, double sampleRate, DetectorRegistration registration);
+        DeviceDetection? AnalyzeAndRegister(Complex[] burstIq, double sampleRate, DetectorRegistration registration);
     }
 }

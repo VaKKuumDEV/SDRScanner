@@ -16,9 +16,9 @@ namespace ScannerUI.Detectors
     {
         public string Name => "433MHz";
 
-        public bool AnalyzeAndRegister(Complex[] burstIq, double sampleRate, DetectorRegistration registration)
+        public DeviceDetection? AnalyzeAndRegister(Complex[] burstIq, double sampleRate, DetectorRegistration registration)
         {
-            if (burstIq == null || burstIq.Length < 16) return false; // too short
+            if (burstIq == null || burstIq.Length < 16) return null; // too short
 
             // envelope
             int N = burstIq.Length;
@@ -66,7 +66,7 @@ namespace ScannerUI.Detectors
                     string fp = MakeFingerprint(centerFreq, bw, mod, N / sampleRate, pulseRate);
                     registration.Register(fp, centerFreq, bw, mod);
 
-                    return true; // recognized and registered
+                    return new DeviceDetection(Name + " " + mod, fp, centerFreq); // recognized and registered
                 }
             }
         }

@@ -35,9 +35,10 @@ namespace ScannerUI
 
             burstCollector = new BurstCollector(onBurstReady: (burst, samplerate) =>
             {
-                // run analysis async-ish (non-blocking UI thread)
-                // detectorManager will route burst to all registered detectors
-                detectorManager.ProcessBurst(burst, samplerate);
+                if (detectorManager.ProcessBurst(burst, samplerate) is { } newDetectedDevice)
+                {
+                    DevicesListbox.Items.Add(newDetectedDevice);
+                }
             });
 
             DevicesBox.SelectionChanged += new((sender, args) =>
@@ -79,8 +80,7 @@ namespace ScannerUI
             SpectrPlot.Plot.YLabel("Мощность (дБ)");
             SpectrPlot.Refresh();
 
-            PoweredPlot.Plot.Axes.Frameless();
-            PoweredPlot.Refresh();
+            DevicesListbox.Items.Clear();
         }
 
         private void LoadDevicesList()

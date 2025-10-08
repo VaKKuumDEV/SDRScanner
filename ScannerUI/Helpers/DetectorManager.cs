@@ -18,22 +18,27 @@ namespace ScannerUI.Helpers
 
         public void RegisterDetector(IDetector d) => detectors.Add(d);
 
-        public void ProcessBurst(Complex[] burstIq, double sampleRate)
+        public DeviceDetection? ProcessBurst(Complex[] burstIq, double sampleRate)
         {
-            // route to each detector - detector may return true if it recognized the burst as its protocol
+            DeviceDetection? device = null;
             foreach (var d in detectors)
             {
                 try
                 {
                     var reg = new DetectorRegistration(this, d.Name);
-                    bool recognized = d.AnalyzeAndRegister(burstIq, sampleRate, reg);
-                    // if recognized we still allow other detectors to look (some bursts might match multiple signatures)
+                    if (d.AnalyzeAndRegister(burstIq, sampleRate, reg) is { } detectedDevice)
+                    {
+                        device = detectedDevice;
+                        break;
+                    }
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Detector {d.Name} threw: {ex.Message}");
                 }
             }
+
+            return device;
         }
 
         internal void RegisterDevice(string detectorName, string fingerprint, double centerFreqHz, double bandwidthHz, string modulation)

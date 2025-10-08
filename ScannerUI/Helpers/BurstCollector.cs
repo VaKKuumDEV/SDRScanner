@@ -12,9 +12,9 @@ namespace ScannerUI.Helpers
     {
         private readonly RingBufferFloat noiseBuf = new(noiseBufSize);
         private readonly Action<Complex[], double> onBurstReady = onBurstReady ?? throw new ArgumentNullException(nameof(onBurstReady));
-        private float energyThresholdFactor = 6f;
+        private readonly float energyThresholdFactor = 6f;
         private bool inBurst = false;
-        private List<Complex> currentBurst = [];
+        private readonly List<Complex> currentBurst = [];
         private int silenceToEndSamples = 0;
         private int silenceCounter = 0;
         private double lastConfiguredSamplerate = 1e6; // default
