@@ -29,7 +29,7 @@ namespace ScannerUI.Helpers
                     if (d.AnalyzeAndRegister(burstIq, sampleRate, reg) is { } detectedDevice)
                     {
                         device = detectedDevice;
-                        break;
+                        //break;
                     }
                 }
                 catch (Exception ex)

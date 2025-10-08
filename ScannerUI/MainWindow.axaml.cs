@@ -32,6 +32,7 @@ namespace ScannerUI
             // init components
             detectorManager = new DetectorManager();
             detectorManager.RegisterDetector(new Detector433()); // only 433 MHz detector enabled for now
+            detectorManager.RegisterDetector(new DetectorWifi());
 
             burstCollector = new BurstCollector(onBurstReady: (burst, samplerate) =>
             {

@@ -14,7 +14,7 @@ namespace ScannerUI.Helpers
     {
         private readonly RingBufferFloat noiseBuf;
         private readonly Action<Complex[], double> onBurstReady;
-        private readonly float energyThresholdFactor = 6f;
+        private readonly float energyThresholdFactor = 2f;
 
         private readonly ConcurrentQueue<Complex[]> queue = new();
         private readonly Thread workerThread;
@@ -27,7 +27,7 @@ namespace ScannerUI.Helpers
         private int silenceCounter = 0;
         private double lastConfiguredSamplerate = 1e6; // default
 
-        public BurstCollector(Action<Complex[], double> onBurstReady, int noiseBufSize = 10_000)
+        public BurstCollector(Action<Complex[], double> onBurstReady, int noiseBufSize = 2_000)
         {
             this.onBurstReady = onBurstReady ?? throw new ArgumentNullException(nameof(onBurstReady));
             noiseBuf = new(noiseBufSize);
