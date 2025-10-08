@@ -5,6 +5,8 @@ using SDRNet.HackRfOne;
 using System;
 using System.Collections.Generic;
 using ScannerUI.Helpers;
+using ScannerUI.Detector;
+using System.Linq;
 
 namespace ScannerUI
 {
@@ -29,8 +31,8 @@ namespace ScannerUI
 
             Collector = new(DetectorManager, result =>
             {
-
-            }, 100);
+                
+            });
 
             DevicesBox.SelectionChanged += new((sender, args) =>
             {

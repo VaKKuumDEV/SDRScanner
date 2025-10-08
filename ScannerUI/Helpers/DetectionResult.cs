@@ -18,7 +18,7 @@ namespace ScannerUI.Helpers
         public string? Label { get; init; }
 
         /// <summary>Вероятность/доверие в диапазоне [0..1].</summary>
-        public double Confidence { get; init; }
+        public double Confidence { get; set; }
 
         /// <summary>Оценка мощности/уровня сигнала (dBFS или относительный dB), по договоренности в системе.</summary>
         public double? EstimatedPowerDb { get; init; }
