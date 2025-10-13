@@ -74,5 +74,49 @@ namespace ScannerUI.Audio
                 if (valuesQueue.Count == k) valuesQueue.Dequeue();
             }
         }
+
+        public unsafe static void CompressArray(float* source, int sourceLength, float* compressed, int compressedLength)
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+            if (compressed == null)
+                throw new ArgumentNullException(nameof(compressed));
+            if (sourceLength <= 0)
+                throw new ArgumentException("Source length must be positive.", nameof(sourceLength));
+            if (compressedLength <= 0)
+                throw new ArgumentException("Compressed length must be positive.", nameof(compressedLength));
+
+            if (compressedLength >= sourceLength)
+            {
+                // Если сжатие не требуется — копируем (или обрезаем)
+                int copyLen = Math.Min(sourceLength, compressedLength);
+                for (int i = 0; i < copyLen; i++)
+                {
+                    compressed[i] = source[i];
+                }
+                // Остальную часть (если compressed длиннее) можно оставить как есть или обнулить — здесь не трогаем
+                return;
+            }
+
+            float blockSize = (float)sourceLength / compressedLength;
+
+            for (int i = 0; i < compressedLength; i++)
+            {
+                int start = (int)Math.Floor(i * blockSize);
+                int end = (int)Math.Ceiling((i + 1) * blockSize);
+                if (end > sourceLength) end = sourceLength;
+                if (start >= end) start = end - 1; // защита от пустого блока
+
+                float sum = 0f;
+                int count = end - start;
+
+                for (int j = start; j < end; j++)
+                {
+                    sum += source[j];
+                }
+
+                compressed[i] = sum / count;
+            }
+        }
     }
 }

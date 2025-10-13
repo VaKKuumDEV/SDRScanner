@@ -1,11 +1,15 @@
 ﻿using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using Avalonia.Threading;
-using SDRNet.Radio;
-using SDRNet.HackRfOne;
-using System;
-using System.Collections.Generic;
-using ScannerUI.Helpers;
+using ScannerUI.Audio;
 using ScannerUI.Detector;
+using ScannerUI.Helpers;
+using ScottPlot;
+using SDRNet.HackRfOne;
+using SDRNet.Radio;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ScannerUI
@@ -13,9 +17,10 @@ namespace ScannerUI
     public partial class MainWindow : Window
     {
         public const int Resolution = 131072;
+        public const int WaterfallResolution = 2_048;
 
         private DetectorManager DetectorManager { get; } = new();
-        private BurstCollector Collector { get; }
+        private BurstCollector Collector { get; set; } = null;
 
         public uint Frequency { get => Convert.ToUInt32(FrequencyBox.Value); set => FrequencyBox.Value = Convert.ToDecimal(value); }
         private WorkingStatuses Status { get; set; } = WorkingStatuses.NOT_INIT;
@@ -24,14 +29,16 @@ namespace ScannerUI
         private HackRFIO? IO { get; set; } = null;
 
         public enum WorkingStatuses { NOT_INIT, STARTED, STOPPED }
+        public ConcurrentQueue<float[]> SignalQueue { get; } = new();
 
         public MainWindow()
         {
+            DetectorManager.RegisterDetector(new WifiDetector());
             InitializeComponent();
 
             Collector = new(DetectorManager, result =>
             {
-                
+
             });
 
             DevicesBox.SelectionChanged += new((sender, args) =>
@@ -104,6 +111,7 @@ namespace ScannerUI
                 for (int i = 0; i < FrequesList.Length; i++) FrequesList[i] = freq - (fSampleRate * Resolution / 2) + (i * fSampleRate);
 
                 IO.Frequency = freq;
+                IO.Samplerate = 2000000;
 
                 IO.Start(IO_SamplesAvailable);
                 ControlButton.Content = "Остановить";
@@ -125,15 +133,41 @@ namespace ScannerUI
             fixed (float* pp = power)
             {
                 Fourier.SpectrumPower(data, pp, len);
+
+                float[] heatmapSlice = new float[WaterfallResolution];
+                fixed (float* heatmapSliceSrc = heatmapSlice)
+                {
+                    AudioUtils.CompressArray(pp, len, heatmapSliceSrc, WaterfallResolution);
+                }
+
+                SignalQueue.Enqueue(heatmapSlice);
+                if (SignalQueue.Count > 100) SignalQueue.TryDequeue(out _);
+            }
+
+            double[,] heatmap = new double[SignalQueue.Count, WaterfallResolution];
+
+            for (int i = 0; i < SignalQueue.Count; i++)
+            {
+                if (SignalQueue.TryDequeue(out float[]? slice))
+                {
+                    for (int j = 0; j < WaterfallResolution; j++) heatmap[i, j] = slice[j];
+                    SignalQueue.Enqueue(slice);
+                }
             }
 
             Dispatcher.UIThread.Post(() =>
             {
                 SpectrPlot.Plot.Clear();
-                SpectrPlot.Plot.Add.SignalXY(FrequesList, power);
+                SpectrPlot.Plot.Add.Heatmap(heatmap);
                 SpectrPlot.Plot.Axes.AutoScaleX();
-                SpectrPlot.Plot.Axes.SetLimitsY(10, 80);
+                SpectrPlot.Plot.Axes.SetLimitsY(0, 100);
                 SpectrPlot.Refresh();
+
+                //SpectrPlot.Plot.Clear();
+                //SpectrPlot.Plot.Add.SignalXY(FrequesList, power);
+                //SpectrPlot.Plot.Axes.AutoScaleX();
+                //SpectrPlot.Plot.Axes.SetLimitsY(10, 80);
+                //SpectrPlot.Refresh();
             });
         }
     }
