@@ -20,7 +20,7 @@ namespace ScannerUI
         public const int WaterfallResolution = 2_048;
 
         private DetectorManager DetectorManager { get; } = new();
-        private BurstCollector Collector { get; set; } = null;
+        private BurstCollector Collector { get; }
 
         public uint Frequency { get => Convert.ToUInt32(FrequencyBox.Value); set => FrequencyBox.Value = Convert.ToDecimal(value); }
         private WorkingStatuses Status { get; set; } = WorkingStatuses.NOT_INIT;
@@ -162,12 +162,6 @@ namespace ScannerUI
                 SpectrPlot.Plot.Axes.AutoScaleX();
                 SpectrPlot.Plot.Axes.SetLimitsY(0, 100);
                 SpectrPlot.Refresh();
-
-                //SpectrPlot.Plot.Clear();
-                //SpectrPlot.Plot.Add.SignalXY(FrequesList, power);
-                //SpectrPlot.Plot.Axes.AutoScaleX();
-                //SpectrPlot.Plot.Axes.SetLimitsY(10, 80);
-                //SpectrPlot.Refresh();
             });
         }
     }
