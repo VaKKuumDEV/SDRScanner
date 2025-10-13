@@ -6,7 +6,6 @@ using Avalonia.Platform.Storage;
 using NAudio.Wave;
 using System.Collections.Generic;
 using ScottPlot;
-using ScottPlot.DataSources;
 
 namespace ScannerUI
 {
@@ -31,6 +30,7 @@ namespace ScannerUI
             public double[] Data = [];
             public double[] IntegratedSpectrum = [];
             public int Sample = 0;
+            public int SampleRate = 0;
         }
 
         public MainWindow()
@@ -159,6 +159,7 @@ namespace ScannerUI
             window.ApplyInPlace(floatSamples);
 
             Audios[plotType].Data = floatSamples;
+            Audios[plotType].SampleRate = reader.WaveFormat.SampleRate;
             MoveToSample(plotType, 0);
         }
 
@@ -197,6 +198,7 @@ namespace ScannerUI
                 var samplesSlice = Audios[plotType].Data.Skip(Audios[plotType].Sample * Resolution).Take(Resolution).ToArray();
 
                 ApplySample(plotType, samplesSlice);
+                CalculateWhiteNoiseCorrelation(plotType);
             }
         }
 
@@ -254,7 +256,7 @@ namespace ScannerUI
                 }
             }
 
-            Audios[plotType].IntegratedSpectrum = topPointsSimpleAveraged;
+            Audios[plotType].IntegratedSpectrum = integratedSpectrum;
 
             spectrPlot.Clear();
             if (ShowOriginalLines.IsChecked == true) spectrPlot.Add.Signal(power, color: Colors.Blue);
@@ -282,6 +284,30 @@ namespace ScannerUI
             AlterPoweredPlot.Refresh();
 
             CalculateCorrelation();
+        }
+
+        private void CalculateWhiteNoiseCorrelation(PlotType plotType)
+        {
+            var sample = Audios[plotType].IntegratedSpectrum;
+            var text = "Корреляция сэмпла с белым шумом: ";
+
+            if (sample.Length > 0)
+            {
+                var lengthCurseFreqs = FftSharp.FFT.FrequencyScale(sample.Length, Audios[plotType].SampleRate);
+                var lengthCurseArray = new double[sample.Length];
+                for (int i = 0; i < sample.Length - 1; i++) lengthCurseArray[i] = Math.Sqrt(Math.Pow(lengthCurseFreqs[i + 1] - lengthCurseFreqs[i], 2d) + Math.Pow(sample[i + 1] - sample[i], 2d));
+
+                var lengthCurve = lengthCurseArray.Sum();
+                var whiteNoiseLength = Math.Sqrt(Math.Pow(lengthCurseFreqs.Last() - lengthCurseFreqs.First(), 2d) + 1);
+
+                var koef = (lengthCurve - whiteNoiseLength) / whiteNoiseLength * 1e10;
+
+                text += koef.ToString();
+            }
+            else text += "0";
+
+            if (plotType == PlotType.Left) SampleCorrelationBox.Text = text;
+            else if (plotType == PlotType.Right) AlterSampleCorrelationBox.Text = text;
         }
 
         private void CalculateCorrelation()

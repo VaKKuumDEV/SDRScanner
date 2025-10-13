@@ -45,11 +45,13 @@
 				<Grid.RowDefinitions>
 					<RowDefinition Height="Auto"/>
 					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
 				</Grid.RowDefinitions>
 
-				<TextBlock Name="SampleProgressBox" Padding="4" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" />
-				<Button Name="LeftButton" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" Content="&lt;" Padding="4" Grid.Row="1" Grid.Column="0" />
-				<Button Name="RightButton" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" Content="&gt;" Padding="4" Grid.Row="1" Grid.Column="1" />
+				<TextBlock Name="SampleCorrelationBox" Text="Корреляция сэмпла с белым шумом" Padding="4" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" />
+				<TextBlock Name="SampleProgressBox" Padding="4" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" />
+				<Button Name="LeftButton" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" Content="&lt;" Padding="4" Grid.Row="2" Grid.Column="0" />
+				<Button Name="RightButton" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" Content="&gt;" Padding="4" Grid.Row="2" Grid.Column="1" />
 			</Grid>
 
 			<Grid Grid.Row="2" Grid.Column="1">
@@ -60,11 +62,13 @@
 				<Grid.RowDefinitions>
 					<RowDefinition Height="Auto"/>
 					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
 				</Grid.RowDefinitions>
 
-				<TextBlock Name="AlterSampleProgressBox" Padding="4" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" />
-				<Button Name="AlterLeftButton" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" Content="&lt;" Padding="4" Grid.Row="1" Grid.Column="0" />
-				<Button Name="AlterRightButton" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" Content="&gt;" Padding="4" Grid.Row="1" Grid.Column="1" />
+				<TextBlock Name="AlterSampleCorrelationBox" Text="Корреляция сэмпла с белым шумом" Padding="4" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" />
+				<TextBlock Name="AlterSampleProgressBox" Padding="4" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" />
+				<Button Name="AlterLeftButton" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" Content="&lt;" Padding="4" Grid.Row="2" Grid.Column="0" />
+				<Button Name="AlterRightButton" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" Content="&gt;" Padding="4" Grid.Row="2" Grid.Column="1" />
 			</Grid>
 		</Grid>
 
