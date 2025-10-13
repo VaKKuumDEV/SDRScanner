@@ -17,7 +17,7 @@
 		<!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
 		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.3.7" />
 		<PackageReference Include="FftSharp" Version="2.2.0" />
-		<PackageReference Include="ScottPlot.Avalonia" Version="5.0.56" />
+		<PackageReference Include="ScottPlot.Avalonia" Version="5.1.57" />
 		<PackageReference Include="SDRNet.HackRfOne" Version="1.0.0" />
 		<PackageReference Include="SDRNet.RTLSDR" Version="1.0.2" />
 		<PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.119.1" />
