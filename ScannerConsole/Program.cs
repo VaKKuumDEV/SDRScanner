@@ -1,43 +1,21 @@
-﻿using SDRNet.Radio;
-using SDRNet.HackRfOne;
+﻿using SDRNet.HackRfOne;
 
-DeviceDisplay[] devices = DeviceDisplay.GetActiveDevices();
-if (devices.Length > 0)
-{
-    Console.WriteLine("Devices:");
-    for (int i = 0; i < devices.Length; i++) Console.WriteLine(string.Format("Device {0}: {1}", devices[i].Index, devices[i].Name));
+const double SAMPLE_RATE = 20.48e6; // 20.48 Msps
 
-    Console.WriteLine();
-    Console.Write("Enter index: ");
+HackRFDevice device = new();
+device.SamplesAvailable += IO_SamplesAvailable;
+device.Frequency = 2437u * 1000000;
+device.SampleRate = (uint)SAMPLE_RATE;
 
-    int deviceIndex = int.Parse(Console.ReadLine() ?? "0");
-    HackRFDevice device = new();
-    device.SamplesAvailable += IO_SamplesAvailable;
-    device.Frequency = 433950000u;
+device.Start();
 
-    device.Start();
-
-    Console.Read();
-    device.Stop();
-}
-else
-{
-    Console.WriteLine("No devices found");
-}
+Console.Read();
+device.Stop();
 
 static unsafe void IO_SamplesAvailable(object sender, SamplesAvailableEventArgs e)
 {
     if (sender is HackRFDevice device)
     {
-        Fourier.ForwardTransform(e.Buffer, e.Length);
-
-        float[] power = new float[e.Length];
-        float[] simpleAveraged = new float[e.Length];
-        fixed (float* srcPower = power)
-        {
-            Fourier.SpectrumPower(e.Buffer, srcPower, e.Length, device.LNAGain);
-        }
-
-        Console.WriteLine("Average: " + power.Average());
+        
     }
 }

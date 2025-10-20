@@ -11,8 +11,9 @@
 
 	<ItemGroup>
 		<PackageReference Include="FftSharp" Version="2.2.0" />
-		<PackageReference Include="SDRNet.HackRfOne" Version="1.0.0" />
-		<PackageReference Include="SDRNet.RTLSDR" Version="1.0.2" />
+		<PackageReference Include="ManagedNativeWifi" Version="3.0.2" />
+		<PackageReference Include="SDRNet.HackRfOne" Version="1.0.1" />
+		<PackageReference Include="SDRNet.RTLSDR" Version="1.0.3" />
 	</ItemGroup>
 
 	<ItemGroup>
