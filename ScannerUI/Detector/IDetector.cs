@@ -1,5 +1,6 @@
 ﻿using ScannerUI.Helpers;
 using SDRNet.Radio;
+using System;
 using System.Threading;
 
 namespace ScannerUI.Detector
@@ -7,7 +8,7 @@ namespace ScannerUI.Detector
     /// <summary>
     /// Общий интерфейс для детекторов. Метод Detect возвращает массив найденных сигналов в переданном IQ-блоке.
     /// </summary>
-    public interface IDetector
+    public interface IDetector : IDisposable
     {
         /// <summary>
         /// Человеко‑читаемое имя детектора (например, "SpectralPeakDetector", "BleEnergyDetector").

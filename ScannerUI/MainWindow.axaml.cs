@@ -36,6 +36,11 @@ namespace ScannerUI
             DetectorManager.RegisterDetector(new WifiDetector());
             InitializeComponent();
 
+            Unloaded += (sender, args) =>
+            {
+                DetectorManager.Dispose();
+            };
+
             Collector = new(DetectorManager, result =>
             {
 

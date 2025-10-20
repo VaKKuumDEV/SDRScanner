@@ -1,21 +1,22 @@
-﻿using SDRNet.HackRfOne;
+﻿using InTheHand.Bluetooth;
+using InTheHand.Net.Sockets;
 
-const double SAMPLE_RATE = 20.48e6; // 20.48 Msps
+await ManagedNativeWifi.NativeWifi.ScanNetworksAsync(timeout: TimeSpan.FromSeconds(10));
+var networks = ManagedNativeWifi.NativeWifi.EnumerateBssNetworks();
 
-HackRFDevice device = new();
-device.SamplesAvailable += IO_SamplesAvailable;
-device.Frequency = 2437u * 1000000;
-device.SampleRate = (uint)SAMPLE_RATE;
-
-device.Start();
-
-Console.Read();
-device.Stop();
-
-static unsafe void IO_SamplesAvailable(object sender, SamplesAvailableEventArgs e)
+Console.WriteLine("WiFi:");
+foreach (var network in networks)
 {
-    if (sender is HackRFDevice device)
-    {
-        
-    }
+    Console.WriteLine(network.Ssid.ToString() + ": " + network.Channel);
+}
+
+Console.WriteLine("");
+Console.WriteLine("Bluetooth:");
+
+BluetoothClient client = new();
+var devices = client.DiscoverDevices().ToList();
+
+foreach (var device in devices)
+{
+    Console.WriteLine(device.DeviceName);
 }

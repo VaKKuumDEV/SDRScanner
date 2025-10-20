@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System;
 using SDRNet.Radio;
-using System.Linq;
 
 namespace ScannerUI.Helpers
 {
