@@ -4,46 +4,66 @@ using Avalonia.Threading;
 using ScannerUI.Audio;
 using ScannerUI.Detector;
 using ScannerUI.Helpers;
-using ScottPlot;
 using SDRNet.HackRfOne;
 using SDRNet.Radio;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ScannerUI
 {
     public partial class MainWindow : Window
     {
-        public const int Resolution = 131072;
+        public const int ScanInterval = 2;
         public const int WaterfallResolution = 2_048;
 
         private DetectorManager DetectorManager { get; } = new();
         private BurstCollector Collector { get; }
 
-        public uint Frequency { get => Convert.ToUInt32(FrequencyBox.Value); set => FrequencyBox.Value = Convert.ToDecimal(value); }
         private WorkingStatuses Status { get; set; } = WorkingStatuses.NOT_INIT;
-        private double[] FrequesList { get; set; } = new double[Resolution];
         private List<DeviceDisplay> Devices { get; set; } = [];
-        private HackRFIO? IO { get; set; } = null;
+        private IFrontendController? IO { get; set; } = null;
 
         public enum WorkingStatuses { NOT_INIT, STARTED, STOPPED }
         public ConcurrentQueue<float[]> SignalQueue { get; } = new();
 
-        public MainWindow()
+        private Thread? WorkerThread { get; set; } = null;
+        private CancellationTokenSource Cts { get; set; } = new();
+
+        private int[] ScanFreqs { get; set; } = [];
+        private int CurrentFreqIndex { get; set; } = 0;
+
+        private ObservableCollection<DetectionResult> DetectedDevices { get; } = [];
+
+        public unsafe MainWindow()
         {
             DetectorManager.RegisterDetector(new WifiDetector());
             InitializeComponent();
 
             Unloaded += (sender, args) =>
             {
+                Stop();
+
+                Cts.Dispose();
                 DetectorManager.Dispose();
             };
 
             Collector = new(DetectorManager, result =>
             {
-
+                Dispatcher.UIThread.Post(() =>
+                {
+                    foreach (var res in result)
+                    {
+                        if (!DetectedDevices.Contains(res))
+                        {
+                            DetectedDevices.Add(res);
+                        }
+                    }
+                });
             });
 
             DevicesBox.SelectionChanged += new((sender, args) =>
@@ -53,7 +73,9 @@ namespace ScannerUI
                 {
                     DeviceDisplay device = Devices[index];
                     IO = new HackRFIO();
-                    IO.SelectDevice(device.Index);
+                    ((HackRFIO)IO).SelectDevice(device.Index);
+                    IO.Samplerate = 2000000;
+                    IO.SamplesAvailable += IO_SamplesAvailable;
                     Status = WorkingStatuses.STOPPED;
                 }
             });
@@ -64,13 +86,64 @@ namespace ScannerUI
                 else if (Status == WorkingStatuses.STOPPED) Start();
             });
 
-            Unloaded += new((sender, args) =>
-            {
-                Stop();
-            });
+            DevicesListbox.ItemsSource = DetectedDevices;
 
             LoadDevicesList();
             InitPlots();
+        }
+
+        private unsafe void ProcessLoop()
+        {
+            try
+            {
+                while (!Cts.IsCancellationRequested && IO != null)
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        StatusLabel.Content = "Сканирую на частоте " + ScanFreqs[CurrentFreqIndex] + " МГц";
+                    });
+
+                    IO.Frequency = (long)(ScanFreqs[CurrentFreqIndex] * 1e6);
+
+                    IO.Start();
+
+                    Thread.Sleep(ScanInterval * 1000);
+
+                    CurrentFreqIndex++;
+                    if (CurrentFreqIndex >= ScanFreqs.Length) CurrentFreqIndex = 0;
+
+                    IO.Stop();
+                    if (ScanFreqs.Length == 0) break;
+                }
+            }
+            catch (ThreadAbortException)
+            {
+                // Игнорируем завершение
+            }
+        }
+
+        private static int[] GetScanFreqs(bool wifi2g, bool wifi5g)
+        {
+            List<int> freqs = [];
+            if (wifi2g)
+            {
+                for (int i = 1; i <= 14; i++)
+                {
+                    int freq = Convert.ToInt32(WiFiChannelHelper.ChannelToFreqMHz(i));
+                    freqs.Add(freq);
+                }
+            }
+
+            if (wifi5g)
+            {
+                for (int i = 36; i <= 165; i++)
+                {
+                    int freq = Convert.ToInt32(WiFiChannelHelper.ChannelToFreqMHz(i));
+                    freqs.Add(freq);
+                }
+            }
+
+            return [.. freqs.Order()];
         }
 
         private void InitPlots()
@@ -84,8 +157,6 @@ namespace ScannerUI
             SpectrPlot.Plot.XLabel("Частота (Гц)");
             SpectrPlot.Plot.YLabel("Мощность (дБ)");
             SpectrPlot.Refresh();
-
-            DevicesListbox.Items.Clear();
         }
 
         private void LoadDevicesList()
@@ -100,34 +171,54 @@ namespace ScannerUI
             if (Devices.Count > 0) DevicesBox.SelectedIndex = 0;
         }
 
-        private void Stop()
+        private async void Stop()
         {
-            IO?.Stop();
+            ControlButton.Content = "Останавливаю...";
+            ControlButton.IsEnabled = false;
+
+            Cts.Cancel();
+            await Task.Run(() => WorkerThread?.Join(ScanInterval * 1000));
+
+            DetectedDevices.Clear();
             Status = WorkingStatuses.STOPPED;
             ControlButton.Content = "Запуск";
+            ControlButton.IsEnabled = true;
+
+            StatusLabel.Content = "Сканирование не ведется";
         }
 
         private unsafe void Start()
         {
             if (IO != null)
             {
-                uint freq = Frequency * 1000;
-                double fSampleRate = FftSharp.FFT.FrequencyResolution(Resolution, IO.Samplerate);
-                for (int i = 0; i < FrequesList.Length; i++) FrequesList[i] = freq - (fSampleRate * Resolution / 2) + (i * fSampleRate);
+                var scanFreqs = GetScanFreqs(Wifi2GCheckbox.IsChecked ?? false, Wifi5GCheckbox.IsChecked ?? false);
 
-                IO.Frequency = freq;
-                IO.Samplerate = 2000000;
+                if (scanFreqs.Length > 0)
+                {
+                    WorkerThread = new Thread(ProcessLoop)
+                    {
+                        IsBackground = true,
+                        Name = "MainWindowWorker"
+                    };
+                    WorkerThread.Start();
 
-                IO.Start(IO_SamplesAvailable);
-                ControlButton.Content = "Остановить";
-                SpectrPlot.Plot.Clear();
-                Status = WorkingStatuses.STARTED;
+                    StatusLabel.Content = "Запускаю сканирование...";
+                    ScanFreqs = scanFreqs;
+                    CurrentFreqIndex = 0;
+                    Cts = new();
+
+                    ControlButton.Content = "Остановить";
+                    SpectrPlot.Plot.Clear();
+                    Status = WorkingStatuses.STARTED;
+                }
             }
         }
 
         private unsafe void IO_SamplesAvailable(IFrontendController sender, Complex* data, int len)
         {
             if (IO == null) return;
+
+            double fSampleRate = FftSharp.FFT.FrequencyResolution(len, IO.Samplerate);
 
             Complex[] tempArray = new Complex[len];
             for (int i = 0; i < len; i++) tempArray[i] = data[i];

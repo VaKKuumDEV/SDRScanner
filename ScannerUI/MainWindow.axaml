@@ -1,15 +1,17 @@
 <Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:scannerUI="clr-namespace:ScannerUI.Views"
-        mc:Ignorable="d"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:scannerUI="clr-namespace:ScannerUI.Views"
+		mc:Ignorable="d"
 		FontSize="10"
 		WindowState="Maximized"
-        x:Class="ScannerUI.MainWindow"
+		x:Class="ScannerUI.MainWindow"
 		xmlns:ScottPlot="clr-namespace:ScottPlot.Avalonia;assembly=ScottPlot.Avalonia"
 		Icon="/Assets/icon.ico"
-        Title="ScannerUI">
+		d:DesignWidth="600"
+		d:DesignHeight="400"
+		Title="ScannerUI">
 	<Grid>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="70*" />
@@ -19,7 +21,15 @@
 			<RowDefinition Height="*"/>
 		</Grid.RowDefinitions>
 
-		<ScottPlot:AvaPlot Name="SpectrPlot" Margin="2" Grid.Row="0" Grid.Column="0" />
+		<Grid Grid.Row="0" Grid.Column="0">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="*"/>
+				<RowDefinition Height="Auto"/>
+			</Grid.RowDefinitions>
+
+			<ScottPlot:AvaPlot Name="SpectrPlot" Margin="2" Grid.Row="0"/>
+			<Label x:Name="StatusLabel" Content="Сканирование не ведется" FontSize="16" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontWeight="Bold" Grid.Row="1" />
+		</Grid>
 
 		<Grid Margin="4" Grid.Row="0" Grid.Column="1">
 			<Grid.ColumnDefinitions>
@@ -28,16 +38,22 @@
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
-				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="*"/>
 				<RowDefinition Height="Auto"/>
 			</Grid.RowDefinitions>
 
 			<ComboBox Name="DevicesBox" Grid.Row="0" HorizontalAlignment="Stretch" Padding="2" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" />
-			<NumericUpDown Name="FrequencyBox" Value="2442000" Increment="10" Minimum="25000" Maximum="6000000" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Grid.Row="1" HorizontalAlignment="Stretch" Padding="2" />
-			<TextBox IsReadOnly="True" Name="CorellationBox" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Grid.Row="2" HorizontalAlignment="Stretch" Padding="2" />
-			<ListBox Name="DevicesListbox" Margin="2" Grid.Row="3" Grid.Column="0" />
-			<Button Name="ControlButton" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" Content="Запуск" Padding="4" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="1" />
+			<Grid Grid.Row="1">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+				</Grid.RowDefinitions>
+
+				<CheckBox Content="WiFi 2.4G" Grid.Row="0" x:Name="Wifi2GCheckbox" IsChecked="True"/>
+				<CheckBox Content="WiFi 5G" Grid.Row="1" x:Name="Wifi5GCheckbox"/>
+			</Grid>
+			<ListBox Name="DevicesListbox" Margin="2" Grid.Row="2" Grid.Column="0" />
+			<Button Name="ControlButton" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" Content="Запуск" Padding="4" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="1" />
 		</Grid>
 	</Grid>
 </Window>

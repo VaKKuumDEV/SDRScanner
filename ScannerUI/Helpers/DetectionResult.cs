@@ -1,15 +1,10 @@
-﻿using System;
-
-namespace ScannerUI.Helpers
+﻿namespace ScannerUI.Helpers
 {
     /// <summary>
     /// Результат одного обнаруженного сигнала (парсируемый минимальный набор полей).
     /// </summary>
     public sealed class DetectionResult
     {
-        /// <summary>Уникальный идентификатор обнаружения (в пределах процесса).</summary>
-        public Guid Id { get; init; } = Guid.NewGuid();
-
         /// <summary>Имя/тип детектора, который сгенерировал этот результат.</summary>
         public string DetectorName { get; init; } = string.Empty;
 
@@ -19,6 +14,16 @@ namespace ScannerUI.Helpers
         public override string ToString()
         {
             return $"{Label ?? "signal"} [{DetectorName}]";
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is DetectionResult result)
+            {
+                return result.Label == Label && result.DetectorName == DetectorName;
+            }
+
+            return base.Equals(obj);
         }
     }
 }
