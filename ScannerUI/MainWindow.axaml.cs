@@ -122,7 +122,7 @@ namespace ScannerUI
             }
         }
 
-        private static int[] GetScanFreqs(bool wifi2g, bool wifi5g)
+        private static int[] GetScanFreqs(bool wifi2g, bool wifi5g, bool smartDevices)
         {
             List<int> freqs = [];
             if (wifi2g)
@@ -143,11 +143,24 @@ namespace ScannerUI
                 }
             }
 
+            if (smartDevices)
+            {
+                freqs.Add(433);
+            }
+
             return [.. freqs.Order()];
         }
 
         private void InitPlots()
         {
+            WaterfallPlot.Plot.Axes.Title.Label.FontSize = (float)FontSize;
+            WaterfallPlot.Plot.Axes.Left.Label.FontSize = (float)FontSize;
+            WaterfallPlot.Plot.Axes.Bottom.Label.FontSize = (float)FontSize;
+            WaterfallPlot.Plot.Axes.Left.TickLabelStyle.FontSize = (float)FontSize;
+            WaterfallPlot.Plot.Axes.Bottom.TickLabelStyle.FontSize = (float)FontSize;
+            WaterfallPlot.Plot.Title("Водопад");
+            WaterfallPlot.Refresh();
+
             SpectrPlot.Plot.Axes.Title.Label.FontSize = (float)FontSize;
             SpectrPlot.Plot.Axes.Left.Label.FontSize = (float)FontSize;
             SpectrPlot.Plot.Axes.Bottom.Label.FontSize = (float)FontSize;
@@ -191,7 +204,7 @@ namespace ScannerUI
         {
             if (IO != null)
             {
-                var scanFreqs = GetScanFreqs(Wifi2GCheckbox.IsChecked ?? false, Wifi5GCheckbox.IsChecked ?? false);
+                var scanFreqs = GetScanFreqs(Wifi2GCheckbox.IsChecked ?? false, Wifi5GCheckbox.IsChecked ?? false, SmartDevicesCheckbox.IsChecked ?? false);
 
                 if (scanFreqs.Length > 0)
                 {
@@ -218,7 +231,13 @@ namespace ScannerUI
         {
             if (IO == null) return;
 
-            double fSampleRate = FftSharp.FFT.FrequencyResolution(len, IO.Samplerate);
+            double fSampleRate = FftSharp.FFT.FrequencyResolution(len, sender.Samplerate);
+            var freqs = new double[len];
+            var startFreq = sender.Frequency - (fSampleRate * len / 2);
+            for (int i = 0; i < len; i++)
+            {
+                freqs[i] = startFreq + (i * fSampleRate);
+            }
 
             Complex[] tempArray = new Complex[len];
             for (int i = 0; i < len; i++) tempArray[i] = data[i];
@@ -254,10 +273,16 @@ namespace ScannerUI
             Dispatcher.UIThread.Post(() =>
             {
                 SpectrPlot.Plot.Clear();
-                SpectrPlot.Plot.Add.Heatmap(heatmap);
+                SpectrPlot.Plot.Add.SignalXY(freqs, power);
                 SpectrPlot.Plot.Axes.AutoScaleX();
-                SpectrPlot.Plot.Axes.SetLimitsY(0, 100);
+                SpectrPlot.Plot.Axes.SetLimitsY(-20, 80);
                 SpectrPlot.Refresh();
+
+                WaterfallPlot.Plot.Clear();
+                WaterfallPlot.Plot.Add.Heatmap(heatmap);
+                WaterfallPlot.Plot.Axes.AutoScaleX();
+                WaterfallPlot.Plot.Axes.SetLimitsY(0, 100);
+                WaterfallPlot.Refresh();
             });
         }
     }

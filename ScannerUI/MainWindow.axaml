@@ -24,11 +24,13 @@
 		<Grid Grid.Row="0" Grid.Column="0">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="*"/>
+				<RowDefinition Height="*"/>
 				<RowDefinition Height="Auto"/>
 			</Grid.RowDefinitions>
 
-			<ScottPlot:AvaPlot Name="SpectrPlot" Margin="2" Grid.Row="0"/>
-			<Label x:Name="StatusLabel" Content="Сканирование не ведется" FontSize="16" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontWeight="Bold" Grid.Row="1" />
+			<ScottPlot:AvaPlot Name="WaterfallPlot" Margin="2" Grid.Row="0"/>
+			<ScottPlot:AvaPlot Name="SpectrPlot" Margin="2" Grid.Row="1"/>
+			<Label x:Name="StatusLabel" Content="Сканирование не ведется" FontSize="16" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontWeight="Bold" Grid.Row="2" />
 		</Grid>
 
 		<Grid Margin="4" Grid.Row="0" Grid.Column="1">
@@ -47,10 +49,12 @@
 				<Grid.RowDefinitions>
 					<RowDefinition Height="Auto"/>
 					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
 				</Grid.RowDefinitions>
 
 				<CheckBox Content="WiFi 2.4G" Grid.Row="0" x:Name="Wifi2GCheckbox" IsChecked="True"/>
 				<CheckBox Content="WiFi 5G" Grid.Row="1" x:Name="Wifi5GCheckbox"/>
+				<CheckBox Content="433 МГц" Grid.Row="2" x:Name="SmartDevicesCheckbox"/>
 			</Grid>
 			<ListBox Name="DevicesListbox" Margin="2" Grid.Row="2" Grid.Column="0" />
 			<Button Name="ControlButton" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" Content="Запуск" Padding="4" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="1" />
