@@ -170,6 +170,14 @@ namespace ScannerUI
             SpectrPlot.Plot.XLabel("Частота (Гц)");
             SpectrPlot.Plot.YLabel("Мощность (дБ)");
             SpectrPlot.Refresh();
+
+            CorellationPlot.Plot.Axes.Title.Label.FontSize = (float)FontSize;
+            CorellationPlot.Plot.Axes.Left.Label.FontSize = (float)FontSize;
+            CorellationPlot.Plot.Axes.Bottom.Label.FontSize = (float)FontSize;
+            CorellationPlot.Plot.Axes.Left.TickLabelStyle.FontSize = (float)FontSize;
+            CorellationPlot.Plot.Axes.Bottom.TickLabelStyle.FontSize = (float)FontSize;
+            CorellationPlot.Plot.Title("Отклонение от прямой");
+            CorellationPlot.Refresh();
         }
 
         private void LoadDevicesList()
@@ -245,9 +253,19 @@ namespace ScannerUI
 
             Fourier.ForwardTransform(data, len);
             float[] power = new float[len];
+            float[] integratedSpectrum = new float[len];
+            double curveCorrelation;
             fixed (float* pp = power)
             {
                 Fourier.SpectrumPower(data, pp, len);
+
+                fixed (float* integratedSpectrumSrc = integratedSpectrum)
+                {
+                    AudioUtils.CumulativeSum(pp, integratedSpectrumSrc, len);
+                    AudioUtils.IntegratedSpectrum(integratedSpectrumSrc, len);
+
+                    curveCorrelation = AudioUtils.CurveCorrelation(integratedSpectrumSrc, len, sender.Samplerate);
+                }
 
                 float[] heatmapSlice = new float[WaterfallResolution];
                 fixed (float* heatmapSliceSrc = heatmapSlice)

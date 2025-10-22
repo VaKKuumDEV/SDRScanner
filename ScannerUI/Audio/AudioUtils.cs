@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ScottPlot;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -28,6 +29,19 @@ namespace ScannerUI.Audio
                 return $"{X}:{Y}:{Pos}";
             }
         };
+
+        public unsafe static double CurveCorrelation(float* powerSrc, int len, double samplerate)
+        {
+            var lengthCurseFreqs = FftSharp.FFT.FrequencyScale(len, samplerate);
+            var lengthCurseArray = new double[len];
+            for (int i = 0; i < len - 1; i++) lengthCurseArray[i] = Math.Sqrt(Math.Pow(lengthCurseFreqs[i + 1] - lengthCurseFreqs[i], 2d) + Math.Pow(powerSrc[i + 1] - powerSrc[i], 2d));
+
+            var lengthCurve = lengthCurseArray.Sum();
+            var whiteNoiseLength = Math.Sqrt(Math.Pow(lengthCurseFreqs.Last() - lengthCurseFreqs.First(), 2d) + 1);
+
+            var koef = (lengthCurve - whiteNoiseLength) / whiteNoiseLength;
+            return koef;
+        }
 
         public static float Correlation(this IEnumerable<float> nums1, IEnumerable<float> nums2)
         {

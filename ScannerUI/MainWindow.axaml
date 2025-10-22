@@ -23,13 +23,21 @@
 
 		<Grid Grid.Row="0" Grid.Column="0">
 			<Grid.RowDefinitions>
-				<RowDefinition Height="*"/>
-				<RowDefinition Height="*"/>
+				<RowDefinition Height="50*"/>
+				<RowDefinition Height="50*"/>
 				<RowDefinition Height="Auto"/>
 			</Grid.RowDefinitions>
 
 			<ScottPlot:AvaPlot Name="WaterfallPlot" Margin="2" Grid.Row="0"/>
-			<ScottPlot:AvaPlot Name="SpectrPlot" Margin="2" Grid.Row="1"/>
+			<Grid Grid.Row="1">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="50*"/>
+					<ColumnDefinition Width="50*"/>
+				</Grid.ColumnDefinitions>
+
+				<ScottPlot:AvaPlot Name="SpectrPlot" Margin="2" Grid.Column="0"/>
+				<ScottPlot:AvaPlot Name="CorellationPlot" Margin="2" Grid.Column="1"/>
+			</Grid>
 			<Label x:Name="StatusLabel" Content="Сканирование не ведется" FontSize="16" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontWeight="Bold" Grid.Row="2" />
 		</Grid>
 
