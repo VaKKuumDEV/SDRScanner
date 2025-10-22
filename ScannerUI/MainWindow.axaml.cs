@@ -20,6 +20,7 @@ namespace ScannerUI
     {
         public const int ScanInterval = 2;
         public const int WaterfallResolution = 2_048;
+        public const int WaterfallHeight = 300;
 
         private DetectorManager DetectorManager { get; } = new();
         private BurstCollector Collector { get; }
@@ -171,12 +172,8 @@ namespace ScannerUI
             SpectrPlot.Plot.YLabel("Мощность (дБ)");
             SpectrPlot.Refresh();
 
-            CorellationPlot.Plot.Axes.Title.Label.FontSize = (float)FontSize;
-            CorellationPlot.Plot.Axes.Left.Label.FontSize = (float)FontSize;
-            CorellationPlot.Plot.Axes.Bottom.Label.FontSize = (float)FontSize;
-            CorellationPlot.Plot.Axes.Left.TickLabelStyle.FontSize = (float)FontSize;
-            CorellationPlot.Plot.Axes.Bottom.TickLabelStyle.FontSize = (float)FontSize;
             CorellationPlot.Plot.Title("Отклонение от прямой");
+            CorellationPlot.Plot.Axes.Frameless();
             CorellationPlot.Refresh();
         }
 
@@ -264,7 +261,7 @@ namespace ScannerUI
                     AudioUtils.CumulativeSum(pp, integratedSpectrumSrc, len);
                     AudioUtils.IntegratedSpectrum(integratedSpectrumSrc, len);
 
-                    curveCorrelation = AudioUtils.CurveCorrelation(integratedSpectrumSrc, len, sender.Samplerate);
+                    curveCorrelation = AudioUtils.CurveCorrelation(integratedSpectrumSrc, freqs, len, sender.Samplerate);
                 }
 
                 float[] heatmapSlice = new float[WaterfallResolution];
@@ -274,7 +271,7 @@ namespace ScannerUI
                 }
 
                 SignalQueue.Enqueue(heatmapSlice);
-                if (SignalQueue.Count > 100) SignalQueue.TryDequeue(out _);
+                if (SignalQueue.Count > WaterfallHeight) SignalQueue.TryDequeue(out _);
             }
 
             double[,] heatmap = new double[SignalQueue.Count, WaterfallResolution];
@@ -299,8 +296,14 @@ namespace ScannerUI
                 WaterfallPlot.Plot.Clear();
                 WaterfallPlot.Plot.Add.Heatmap(heatmap);
                 WaterfallPlot.Plot.Axes.AutoScaleX();
-                WaterfallPlot.Plot.Axes.SetLimitsY(0, 100);
+                WaterfallPlot.Plot.Axes.SetLimitsY(0, WaterfallHeight);
                 WaterfallPlot.Refresh();
+
+                CorellationPlot.Plot.Clear();
+                CorellationPlot.Plot.Add.Line(new(0, 0, len - 1, 1));
+                CorellationPlot.Plot.Add.Signal(integratedSpectrum);
+                CorellationPlot.Plot.Axes.AutoScale();
+                CorellationPlot.Refresh();
             });
         }
     }

@@ -30,14 +30,13 @@ namespace ScannerUI.Audio
             }
         };
 
-        public unsafe static double CurveCorrelation(float* powerSrc, int len, double samplerate)
+        public unsafe static double CurveCorrelation(float* powerSrc, double[] freqs, int len, double samplerate)
         {
-            var lengthCurseFreqs = FftSharp.FFT.FrequencyScale(len, samplerate);
             var lengthCurseArray = new double[len];
-            for (int i = 0; i < len - 1; i++) lengthCurseArray[i] = Math.Sqrt(Math.Pow(lengthCurseFreqs[i + 1] - lengthCurseFreqs[i], 2d) + Math.Pow(powerSrc[i + 1] - powerSrc[i], 2d));
+            for (int i = 0; i < len - 1; i++) lengthCurseArray[i] = Math.Sqrt(Math.Pow(freqs[i + 1] - freqs[i], 2d) + Math.Pow(powerSrc[i + 1] - powerSrc[i], 2d));
 
             var lengthCurve = lengthCurseArray.Sum();
-            var whiteNoiseLength = Math.Sqrt(Math.Pow(lengthCurseFreqs.Last() - lengthCurseFreqs.First(), 2d) + 1);
+            var whiteNoiseLength = Math.Sqrt(Math.Pow(freqs[len - 1] - freqs[0], 2d) + 1);
 
             var koef = (lengthCurve - whiteNoiseLength) / whiteNoiseLength;
             return koef;
