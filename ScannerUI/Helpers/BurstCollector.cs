@@ -37,12 +37,12 @@ namespace ScannerUI.Helpers
         /// <param name="iq">Массив IQ-сэмплов (ваш Complex).</param>
         /// <param name="sampleRate">Частота дискретизации в Гц.</param>
         /// <param name="centerFrequency">Центральная частота блока в Гц.</param>
-        public void ProcessIncoming(Complex[] iq, double sampleRate, double centerFrequency)
+        public void ProcessIncoming(float[] power, float noiseLevel, double sampleRate, double centerFrequency)
         {
-            if (iq == null || iq.Length == 0)
-                throw new ArgumentException("IQ array is null or empty", nameof(iq));
+            if (power == null || power.Length == 0)
+                throw new ArgumentException("Power array is null or empty", nameof(power));
 
-            var block = new IqBlock(iq, sampleRate, centerFrequency);
+            var block = new IqBlock(power, noiseLevel, sampleRate, centerFrequency);
             _queue.Add(block, cts.Token);
         }
 
@@ -64,19 +64,12 @@ namespace ScannerUI.Helpers
                     foreach (var block in _queue.GetConsumingEnumerable(cts.Token))
                     {
                         var results = new List<DetectionResult>();
-                        var context = new DetectorContext
-                        {
-                            CenterFrequencyHz = block.CenterFrequencyHz,
-                            SampleRateHz = block.SampleRateHz,
-                            Timestamp = block.Timestamp,
-                            BufferId = null
-                        };
 
                         foreach (var detector in detectorManager.Detectors)
                         {
                             try
                             {
-                                var detectorResults = detector.Detect(block.Samples, context, cts.Token);
+                                var detectorResults = detector.Detect(block, cts.Token);
                                 if (detectorResults != null)
                                     results.AddRange(detectorResults);
                             }

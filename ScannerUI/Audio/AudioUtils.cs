@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace ScannerUI.Audio
 {
@@ -9,7 +10,7 @@ namespace ScannerUI.Audio
     {
         public const double SAMPLE_RATE = 2e6;
         public const int POINTS = 10;
-        public const int HASH_RATE = 100;
+        public const int HASH_RATE = 10000;
 
         public struct Point(double x, double y)
         {
@@ -30,16 +31,38 @@ namespace ScannerUI.Audio
             }
         };
 
-        public unsafe static double CurveCorrelation(float* powerSrc, double[] freqs, int len, double samplerate)
+        public unsafe static (string hash, int peaks) CalculateSignalHash(float* power, int len, float noiseLevel)
         {
-            var lengthCurseArray = new double[len];
-            for (int i = 0; i < len - 1; i++) lengthCurseArray[i] = Math.Sqrt(Math.Pow(freqs[i + 1] - freqs[i], 2d) + Math.Pow(powerSrc[i + 1] - powerSrc[i], 2d));
+            int pieces = (int)Math.Floor(((double)len) / HASH_RATE) + 1;
+            StringBuilder stringBuilder = new();
+            int peaks = 0;
+            for (int i = 0; i < pieces; i++)
+            {
+                int maxIndex = 0;
+                for (int j = 1; j < HASH_RATE; j++)
+                {
+                    if (i == 6 && j == 5535) continue;
+                    if ((i * HASH_RATE + j) < len && power[i * HASH_RATE + j] > noiseLevel && power[i * HASH_RATE + j] > power[i * HASH_RATE + maxIndex])
+                    {
+                        maxIndex = j;
+                    }
+                }
 
-            var lengthCurve = lengthCurseArray.Sum();
-            var whiteNoiseLength = Math.Sqrt(Math.Pow(freqs[len - 1] - freqs[0], 2d) + 1);
+                if (maxIndex > 0) peaks++;
 
-            var koef = (lengthCurve - whiteNoiseLength) / whiteNoiseLength;
-            return koef;
+                stringBuilder.Append(maxIndex.ToString(HASH_RATE.ToString()[1..]));
+            }
+
+            return (stringBuilder.ToString(), peaks);
+        }
+
+        public unsafe static double MeanAbsoluteError(float* integratedSpectrum, double[] freqs, int len)
+        {
+            var mae = 0d;
+            for (int i = 0; i < len; i++) mae += Math.Abs(integratedSpectrum[i] - freqs[i] / (len - 1));
+            mae /= len;
+
+            return mae;
         }
 
         public static float Correlation(this IEnumerable<float> nums1, IEnumerable<float> nums2)

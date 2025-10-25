@@ -5,15 +5,13 @@
     /// </summary>
     public sealed class DetectionResult
     {
-        /// <summary>Имя/тип детектора, который сгенерировал этот результат.</summary>
         public string DetectorName { get; init; } = string.Empty;
+        public string? Label { get; init; } = null;
+        public int? Channel { get; set; } = null;
 
-        /// <summary>Опциональная семантическая метка (пример: "BLE_adv", "WiFi_probe", "OOK_433").</summary>
-        public string? Label { get; init; }
-        /// <summary>Человеко‑читаемая сводка (короткая).</summary>
         public override string ToString()
         {
-            return $"{Label ?? "signal"} [{DetectorName}]";
+            return $"{Label ?? "signal"} [{DetectorName}]" + (Channel != null ? $"[{Channel.Value}]" : string.Empty);
         }
 
         public override bool Equals(object? obj)
@@ -24,6 +22,11 @@
             }
 
             return base.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
     }
 }

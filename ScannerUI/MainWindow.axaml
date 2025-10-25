@@ -26,6 +26,7 @@
 				<RowDefinition Height="50*"/>
 				<RowDefinition Height="50*"/>
 				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
 			</Grid.RowDefinitions>
 
 			<ScottPlot:AvaPlot Name="WaterfallPlot" Margin="2" Grid.Row="0"/>
@@ -39,6 +40,7 @@
 				<ScottPlot:AvaPlot Name="CorellationPlot" Margin="2" Grid.Column="1"/>
 			</Grid>
 			<Label x:Name="StatusLabel" Content="Сканирование не ведется" FontSize="16" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontWeight="Bold" Grid.Row="2" />
+			<Label x:Name="DeviationLabel" Content="Сканирование не ведется" FontSize="16" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontWeight="Bold" Grid.Row="3" />
 		</Grid>
 
 		<Grid Margin="4" Grid.Row="0" Grid.Column="1">

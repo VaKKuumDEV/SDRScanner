@@ -43,6 +43,7 @@ namespace ScannerUI
         public unsafe MainWindow()
         {
             DetectorManager.RegisterDetector(new WifiDetector());
+            DetectorManager.RegisterDetector(new SmartDeviceDetector());
             InitializeComponent();
 
             Unloaded += (sender, args) =>
@@ -203,6 +204,7 @@ namespace ScannerUI
             ControlButton.IsEnabled = true;
 
             StatusLabel.Content = "Сканирование не ведется";
+            DeviationLabel.Content = "Сканирование не ведется";
         }
 
         private unsafe void Start()
@@ -237,6 +239,7 @@ namespace ScannerUI
             if (IO == null) return;
 
             double fSampleRate = FftSharp.FFT.FrequencyResolution(len, sender.Samplerate);
+            var freqsZero = FftSharp.FFT.FrequencyScale(len, sender.Samplerate);
             var freqs = new double[len];
             var startFreq = sender.Frequency - (fSampleRate * len / 2);
             for (int i = 0; i < len; i++)
@@ -244,24 +247,25 @@ namespace ScannerUI
                 freqs[i] = startFreq + (i * fSampleRate);
             }
 
-            Complex[] tempArray = new Complex[len];
-            for (int i = 0; i < len; i++) tempArray[i] = data[i];
-            Collector.ProcessIncoming(tempArray, IO.Samplerate, IO.Frequency);
 
             Fourier.ForwardTransform(data, len);
             float[] power = new float[len];
             float[] integratedSpectrum = new float[len];
-            double curveCorrelation;
+            double mae;
+            string signalHash;
+            float noiseLevel;
             fixed (float* pp = power)
             {
                 Fourier.SpectrumPower(data, pp, len);
+                noiseLevel = RobustNoiseEstimator.EstimateNoiseLevel(pp, len, 1024, 1) + 12f;
+                (signalHash, _) = AudioUtils.CalculateSignalHash(pp, len, noiseLevel);
 
                 fixed (float* integratedSpectrumSrc = integratedSpectrum)
                 {
                     AudioUtils.CumulativeSum(pp, integratedSpectrumSrc, len);
                     AudioUtils.IntegratedSpectrum(integratedSpectrumSrc, len);
 
-                    curveCorrelation = AudioUtils.CurveCorrelation(integratedSpectrumSrc, freqs, len, sender.Samplerate);
+                    mae = AudioUtils.MeanAbsoluteError(integratedSpectrumSrc, freqsZero, len);
                 }
 
                 float[] heatmapSlice = new float[WaterfallResolution];
@@ -273,6 +277,7 @@ namespace ScannerUI
                 SignalQueue.Enqueue(heatmapSlice);
                 if (SignalQueue.Count > WaterfallHeight) SignalQueue.TryDequeue(out _);
             }
+            Collector.ProcessIncoming(power, noiseLevel, IO.Samplerate, IO.Frequency);
 
             double[,] heatmap = new double[SignalQueue.Count, WaterfallResolution];
 
@@ -287,14 +292,18 @@ namespace ScannerUI
 
             Dispatcher.UIThread.Post(() =>
             {
+                DeviationLabel.Content = "Отклонение от белого шума: " + mae;
+
                 SpectrPlot.Plot.Clear();
-                SpectrPlot.Plot.Add.SignalXY(freqs, power);
+                SpectrPlot.Plot.Add.HorizontalLine(noiseLevel, color: ScottPlot.Colors.Red);
+                SpectrPlot.Plot.Add.SignalXY(freqs, power, color: ScottPlot.Colors.Blue);
                 SpectrPlot.Plot.Axes.AutoScaleX();
                 SpectrPlot.Plot.Axes.SetLimitsY(-20, 80);
                 SpectrPlot.Refresh();
 
                 WaterfallPlot.Plot.Clear();
-                WaterfallPlot.Plot.Add.Heatmap(heatmap);
+                var hm = WaterfallPlot.Plot.Add.Heatmap(heatmap);
+                hm.Colormap = new ScottPlot.Colormaps.Turbo();
                 WaterfallPlot.Plot.Axes.AutoScaleX();
                 WaterfallPlot.Plot.Axes.SetLimitsY(0, WaterfallHeight);
                 WaterfallPlot.Refresh();

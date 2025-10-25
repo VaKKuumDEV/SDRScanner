@@ -1,5 +1,4 @@
 ﻿using ScannerUI.Helpers;
-using SDRNet.Radio;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,17 +26,18 @@ namespace ScannerUI.Detector
             workerThread.Start();
         }
 
-        public DetectionResult[] Detect(Complex[] iq, DetectorContext context, CancellationToken cancellation = default)
+        public DetectionResult[] Detect(IqBlock block, CancellationToken cancellation = default)
         {
-            if (WiFiChannelHelper.IsWiFiFrequency(context.CenterFrequencyHz / 1e6))
+            if (WiFiChannelHelper.IsWiFiFrequency(block.CenterFrequencyHz / 1e6))
             {
-                var channel = WiFiChannelHelper.FreqToChannel(context.CenterFrequencyHz / 1e6);
+                var channel = WiFiChannelHelper.FreqToChannel(block.CenterFrequencyHz / 1e6);
                 if (devices.TryGetValue(channel, out List<string>? value))
                 {
                     return [.. value.Select(deviceAtChannel => new DetectionResult()
                     {
                         DetectorName = Name,
                         Label = deviceAtChannel,
+                        Channel = channel,
                     })];
                 }
             }
