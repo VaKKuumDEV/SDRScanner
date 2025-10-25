@@ -252,13 +252,11 @@ namespace ScannerUI
             float[] power = new float[len];
             float[] integratedSpectrum = new float[len];
             double mae;
-            string signalHash;
             float noiseLevel;
             fixed (float* pp = power)
             {
                 Fourier.SpectrumPower(data, pp, len);
                 noiseLevel = RobustNoiseEstimator.EstimateNoiseLevel(pp, len, 1024, 1) + 12f;
-                (signalHash, _) = AudioUtils.CalculateSignalHash(pp, len, noiseLevel);
 
                 fixed (float* integratedSpectrumSrc = integratedSpectrum)
                 {

@@ -8,6 +8,7 @@
         public string DetectorName { get; init; } = string.Empty;
         public string? Label { get; init; } = null;
         public int? Channel { get; set; } = null;
+        public int? Peaks { get; set; } = null;
 
         public override string ToString()
         {

@@ -56,6 +56,33 @@ namespace ScannerUI.Audio
             return (stringBuilder.ToString(), peaks);
         }
 
+        public static double CompareHashes(string hashA, string hashB)
+        {
+            if (hashA.Length != hashB.Length) throw new Exception("Длины хэшей должны быть одинаковыми");
+            int len = hashA.Length;
+            double totalDiff = 0;
+            int count = 0;
+
+            int pieceLength = HASH_RATE.ToString()[1..].Length;
+            int pieces = len / pieceLength;
+
+            for (int piece = 0; piece < pieces; piece++)
+            {
+                int positionA = Convert.ToInt32(hashA.Substring(piece * pieceLength, pieceLength));
+                int positionB = Convert.ToInt32(hashB.Substring(piece * pieceLength, pieceLength));
+
+                if (positionA == 0 && positionB == 0) continue;
+                totalDiff += Math.Abs(positionA - positionB);
+                count++;
+            }
+
+            if (count == 0) return 0;
+
+            double avgDiff = totalDiff / count;
+            return avgDiff / HASH_RATE;
+        }
+
+
         public unsafe static double MeanAbsoluteError(float* integratedSpectrum, double[] freqs, int len)
         {
             var mae = 0d;
