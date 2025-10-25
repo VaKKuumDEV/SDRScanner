@@ -253,11 +253,12 @@ namespace ScannerUI
                 freqs[i] = startFreq + (i * fSampleRate);
             }
 
-            Fourier.ForwardTransform(data, len);
             float[] power = new float[len];
             float[] integratedSpectrum = new float[len];
             double mae;
             float noiseLevel;
+
+            Fourier.ForwardTransform(data, len);
             fixed (float* pp = power)
             {
                 Fourier.SpectrumPower(data, pp, len);
@@ -295,7 +296,7 @@ namespace ScannerUI
 
             Dispatcher.UIThread.Post(() =>
             {
-                DeviationLabel.Content = "Отклонение от белого шума: " + mae;
+                DeviationLabel.Content = "Отклонение от белого шума: " + mae.ToString("0.00000");
 
                 SpectrPlot.Plot.Clear();
                 SpectrPlot.Plot.Add.HorizontalLine(noiseLevel, color: ScottPlot.Colors.Red);

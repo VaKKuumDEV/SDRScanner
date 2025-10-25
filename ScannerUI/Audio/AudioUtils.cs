@@ -85,8 +85,9 @@ namespace ScannerUI.Audio
 
         public unsafe static double MeanAbsoluteError(float* integratedSpectrum, double[] freqs, int len)
         {
+            var lineKoef = 1f / len;
             var mae = 0d;
-            for (int i = 0; i < len; i++) mae += Math.Abs(integratedSpectrum[i] - freqs[i] / (len - 1));
+            for (int i = 0; i < len; i++) mae += Math.Abs(integratedSpectrum[i] - (lineKoef * i));
             mae /= len;
 
             return mae;
