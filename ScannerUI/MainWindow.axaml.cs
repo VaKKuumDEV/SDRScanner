@@ -42,6 +42,7 @@ namespace ScannerUI
 
         public unsafe MainWindow()
         {
+            DetectorManager.RegisterDetector(new BluetoothDetector());
             DetectorManager.RegisterDetector(new WifiDetector());
             DetectorManager.RegisterDetector(new SmartDeviceDetector());
             InitializeComponent();
@@ -152,9 +153,7 @@ namespace ScannerUI
 
             if (bluetooth)
             {
-                freqs.Add(2402);
-                freqs.Add(2426);
-                freqs.Add(2480);
+                freqs.AddRange(BluetoothChannelHelper.GetChannelFreqs());
             }
 
             return [.. freqs.Order()];
@@ -253,7 +252,6 @@ namespace ScannerUI
             {
                 freqs[i] = startFreq + (i * fSampleRate);
             }
-
 
             Fourier.ForwardTransform(data, len);
             float[] power = new float[len];
