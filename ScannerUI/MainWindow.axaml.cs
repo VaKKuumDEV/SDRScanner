@@ -124,7 +124,7 @@ namespace ScannerUI
             }
         }
 
-        private static int[] GetScanFreqs(bool wifi2g, bool wifi5g, bool smartDevices)
+        private static int[] GetScanFreqs(bool wifi2g, bool wifi5g, bool smartDevices, bool bluetooth)
         {
             List<int> freqs = [];
             if (wifi2g)
@@ -148,6 +148,13 @@ namespace ScannerUI
             if (smartDevices)
             {
                 freqs.Add(433);
+            }
+
+            if (bluetooth)
+            {
+                freqs.Add(2402);
+                freqs.Add(2426);
+                freqs.Add(2480);
             }
 
             return [.. freqs.Order()];
@@ -211,7 +218,7 @@ namespace ScannerUI
         {
             if (IO != null)
             {
-                var scanFreqs = GetScanFreqs(Wifi2GCheckbox.IsChecked ?? false, Wifi5GCheckbox.IsChecked ?? false, SmartDevicesCheckbox.IsChecked ?? false);
+                var scanFreqs = GetScanFreqs(Wifi2GCheckbox.IsChecked ?? false, Wifi5GCheckbox.IsChecked ?? false, SmartDevicesCheckbox.IsChecked ?? false, BluetoothCheckbox.IsChecked ?? false);
 
                 if (scanFreqs.Length > 0)
                 {

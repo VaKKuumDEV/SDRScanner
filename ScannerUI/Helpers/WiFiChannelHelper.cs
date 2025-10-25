@@ -9,6 +9,27 @@ namespace ScannerUI.Helpers
     /// </summary>
     public static class WiFiChannelHelper
     {
+        private static readonly Dictionary<int, int> Wifi24GHz = new()
+        {
+            { 2412, 1 }, { 2417, 2 }, { 2422, 3 }, { 2427, 4 }, { 2432, 5 },
+            { 2437, 6 }, { 2442, 7 }, { 2447, 8 }, { 2452, 9 }, { 2457, 10 },
+            { 2462, 11 }, { 2467, 12 }, { 2472, 13 }, { 2484, 14 }
+        };
+
+        private static readonly Dictionary<int, int> Wifi5GHz = new()
+        {
+            // UNII-1
+            { 5180, 36 }, { 5200, 40 }, { 5220, 44 }, { 5240, 48 },
+            // UNII-2
+            { 5260, 52 }, { 5280, 56 }, { 5300, 60 }, { 5320, 64 },
+            // UNII-2e (DFS)
+            { 5500, 100 }, { 5520, 104 }, { 5540, 108 }, { 5560, 112 },
+            { 5580, 116 }, { 5600, 120 }, { 5620, 124 }, { 5640, 128 },
+            { 5660, 132 }, { 5680, 136 }, { 5700, 140 },
+            // UNII-3 / ISM
+            { 5745, 149 }, { 5765, 153 }, { 5785, 157 }, { 5805, 161 }, { 5825, 165 }
+        };
+
         /// <summary>
         /// Возвращает центральную частоту канала (в МГц)
         /// </summary>
@@ -36,21 +57,15 @@ namespace ScannerUI.Helpers
         /// </summary>
         public static int FreqToChannel(double freqMHz)
         {
-            // 2.4 GHz
-            if (freqMHz >= 2412 && freqMHz <= 2472)
-                return (int)Math.Round((freqMHz - 2407) / 5);
-            if (Math.Abs(freqMHz - 2484) < 2)
-                return 14;
+            int freq = (int)Math.Round(freqMHz);
 
-            // 5 GHz
-            if (freqMHz >= 5180 && freqMHz <= 5865)
-                return (int)Math.Round((freqMHz - 5000) / 5);
+            if (Wifi24GHz.TryGetValue(freq, out int ch24))
+                return ch24;
 
-            // 4.9 GHz (редкий)
-            if (freqMHz >= 4915 && freqMHz <= 4995)
-                return (int)Math.Round((freqMHz - 4000) / 5);
+            if (Wifi5GHz.TryGetValue(freq, out int ch5))
+                return ch5;
 
-            throw new ArgumentOutOfRangeException(nameof(freqMHz), $"Частота {freqMHz:F1} МГц не принадлежит Wi-Fi диапазонам");
+            return 0;
         }
 
         /// <summary>
@@ -80,8 +95,7 @@ namespace ScannerUI.Helpers
         /// </summary>
         public static bool IsWiFiFrequency(double freqMHz)
         {
-            return (freqMHz >= 2400 && freqMHz <= 2500) ||
-                   (freqMHz >= 4900 && freqMHz <= 5900);
+            return FreqToChannel(freqMHz) > 0;
         }
 
         /// <summary>
