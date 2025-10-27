@@ -262,7 +262,11 @@ namespace ScannerUI
             if (ShowOriginalLines.IsChecked == true) spectrPlot.Add.Signal(power, color: Colors.Blue);
             if (ShowReducedLines.IsChecked == true) spectrPlot.Add.SignalXY([.. ramerReduced.Select(x => x.X)], [.. ramerReduced.Select(x => x.Y)], color: Colors.Orange);
             if (ShowTopPoints.IsChecked == true) spectrPlot.Add.Markers(topPoints.Select(x => x.X).ToArray(), topPoints.Select(x => x.Y).ToArray(), MarkerShape.FilledCircle, 4f, Colors.Red);
-            if (ShowSimpleAveraged.IsChecked == true) spectrPlot.Add.SignalXY(topPoints.Select(x => x.X).ToArray(), topPointsSimpleAveraged, color: Colors.Green);
+            if (ShowSimpleAveraged.IsChecked == true)
+            {
+                var signalPlot = spectrPlot.Add.SignalXY(topPoints.Select(x => x.X).ToArray(), topPointsSimpleAveraged, color: Colors.Green);
+                signalPlot.LineWidth = 3f;
+            }
 
             spectrPlot.Axes.AutoScaleX();
             spectrPlot.Axes.AutoScaleY();
@@ -294,11 +298,10 @@ namespace ScannerUI
             if (sample.Length > 0)
             {
                 var lineKoef = 1d / sample.Length;
-                var lengthCurseFreqs = FftSharp.FFT.FrequencyScale(sample.Length, Audios[plotType].SampleRate);
                 var mae = sample.Select((s, index) => Math.Abs(s - lineKoef * index)).Sum() / sample.Length;
                 // Алгоритм MAE - среднее абсолютное отклонение
 
-                text += mae.ToString();
+                text += mae.ToString("0.00000");
             }
             else text += "0";
 
@@ -311,10 +314,10 @@ namespace ScannerUI
             var samplesSlice = Audios[PlotType.Left].IntegratedSpectrum;
             var alterSamplesSlice = Audios[PlotType.Right].IntegratedSpectrum;
 
-            if (samplesSlice.Length > 0 && alterSamplesSlice.Length > 0)
+            if (samplesSlice.Length > 0 && alterSamplesSlice.Length > 0 && samplesSlice.Length == alterSamplesSlice.Length)
             {
-                var correlation = AudioUtils.Correlation(samplesSlice, alterSamplesSlice);
-                CorrelationText.Text = correlation.ToString();
+                var mae = samplesSlice.Select((s, index) => Math.Abs(s - alterSamplesSlice[index])).Sum() / samplesSlice.Length;
+                CorrelationText.Text = mae.ToString("0.00000");
             }
             else CorrelationText.Text = "0";
         }
