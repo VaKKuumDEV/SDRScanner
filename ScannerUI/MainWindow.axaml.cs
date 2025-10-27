@@ -264,15 +264,6 @@ namespace ScannerUI
             fixed (float* pp = power)
             {
                 Fourier.SpectrumPower(data, pp, len);
-                noiseLevel = RobustNoiseEstimator.EstimateNoiseLevel(pp, len, 1024, 1) + 12f;
-
-                fixed (float* integratedSpectrumSrc = integratedSpectrum)
-                {
-                    AudioUtils.CumulativeSum(pp, integratedSpectrumSrc, len);
-                    AudioUtils.IntegratedSpectrum(integratedSpectrumSrc, len);
-
-                    mae = AudioUtils.MeanAbsoluteError(integratedSpectrumSrc, freqsZero, len);
-                }
 
                 float[] heatmapSlice = new float[WaterfallResolution];
                 fixed (float* heatmapSliceSrc = heatmapSlice)
@@ -282,6 +273,16 @@ namespace ScannerUI
 
                 SignalQueue.Enqueue(heatmapSlice);
                 if (SignalQueue.Count > WaterfallHeight) SignalQueue.TryDequeue(out _);
+
+                noiseLevel = RobustNoiseEstimator.EstimateNoiseLevel(pp, len, 1024, 1) + 12f;
+
+                fixed (float* integratedSpectrumSrc = integratedSpectrum)
+                {
+                    AudioUtils.CumulativeSum(pp, integratedSpectrumSrc, len);
+                    AudioUtils.IntegratedSpectrum(integratedSpectrumSrc, len);
+
+                    mae = AudioUtils.MeanAbsoluteError(integratedSpectrumSrc, freqsZero, len);
+                }
             }
             Collector.ProcessIncoming(power, noiseLevel, IO.Samplerate, IO.Frequency);
 
