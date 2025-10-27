@@ -293,11 +293,12 @@ namespace ScannerUI
 
             if (sample.Length > 0)
             {
+                var lineKoef = 1d / sample.Length;
                 var lengthCurseFreqs = FftSharp.FFT.FrequencyScale(sample.Length, Audios[plotType].SampleRate);
-                var koef = sample.Select((s, index) => Math.Abs(s - (lengthCurseFreqs[index] / (sample.Length - 1)))).Sum() / sample.Length;
+                var mae = sample.Select((s, index) => Math.Abs(s - lineKoef * index)).Sum() / sample.Length;
                 // Алгоритм MAE - среднее абсолютное отклонение
 
-                text += koef.ToString();
+                text += mae.ToString();
             }
             else text += "0";
 
