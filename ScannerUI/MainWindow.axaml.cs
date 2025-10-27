@@ -21,10 +21,12 @@ namespace ScannerUI
         public const int ScanInterval = 2;
         public const int WaterfallResolution = 2_048;
         public const int WaterfallHeight = 300;
+        public const int SkipFrames = 3;
 
         private DetectorManager DetectorManager { get; } = new();
         private BurstCollector Collector { get; }
 
+        private int _skippedFrames = 0;
         private WorkingStatuses Status { get; set; } = WorkingStatuses.NOT_INIT;
         private List<DeviceDisplay> Devices { get; set; } = [];
         private IFrontendController? IO { get; set; } = null;
@@ -283,40 +285,47 @@ namespace ScannerUI
             }
             Collector.ProcessIncoming(power, noiseLevel, IO.Samplerate, IO.Frequency);
 
-            double[,] heatmap = new double[SignalQueue.Count, WaterfallResolution];
-
-            for (int i = 0; i < SignalQueue.Count; i++)
+            if (_skippedFrames <= 0)
             {
-                if (SignalQueue.TryDequeue(out float[]? slice))
+                double[,] heatmap = new double[SignalQueue.Count, WaterfallResolution];
+                for (int i = 0; i < SignalQueue.Count; i++)
                 {
-                    for (int j = 0; j < WaterfallResolution; j++) heatmap[i, j] = slice[j];
-                    SignalQueue.Enqueue(slice);
+                    if (SignalQueue.TryDequeue(out float[]? slice))
+                    {
+                        for (int j = 0; j < WaterfallResolution; j++) heatmap[i, j] = slice[j];
+                        SignalQueue.Enqueue(slice);
+                    }
                 }
+
+                _skippedFrames = SkipFrames;
+                Dispatcher.UIThread.Post(() =>
+                {
+                    WaterfallPlot.Plot.Clear();
+                    var hm = WaterfallPlot.Plot.Add.Heatmap(heatmap);
+                    hm.Colormap = new ScottPlot.Colormaps.Turbo();
+                    WaterfallPlot.Plot.Axes.AutoScaleX();
+                    WaterfallPlot.Plot.Axes.SetLimitsY(0, WaterfallHeight);
+                    WaterfallPlot.Refresh();
+
+                    SpectrPlot.Plot.Clear();
+                    SpectrPlot.Plot.Add.HorizontalLine(noiseLevel, color: ScottPlot.Colors.Red);
+                    SpectrPlot.Plot.Add.SignalXY(freqs, power, color: ScottPlot.Colors.Blue);
+                    SpectrPlot.Plot.Axes.AutoScaleX();
+                    SpectrPlot.Plot.Axes.SetLimitsY(-20, 80);
+                    SpectrPlot.Refresh();
+
+                    CorellationPlot.Plot.Clear();
+                    CorellationPlot.Plot.Add.Line(new(0, 0, len - 1, 1));
+                    CorellationPlot.Plot.Add.Signal(integratedSpectrum);
+                    CorellationPlot.Plot.Axes.AutoScale();
+                    CorellationPlot.Refresh();
+                });
             }
+            else Interlocked.Decrement(ref _skippedFrames);
 
             Dispatcher.UIThread.Post(() =>
             {
                 DeviationLabel.Content = "Отклонение от белого шума: " + mae.ToString("0.00000");
-
-                SpectrPlot.Plot.Clear();
-                SpectrPlot.Plot.Add.HorizontalLine(noiseLevel, color: ScottPlot.Colors.Red);
-                SpectrPlot.Plot.Add.SignalXY(freqs, power, color: ScottPlot.Colors.Blue);
-                SpectrPlot.Plot.Axes.AutoScaleX();
-                SpectrPlot.Plot.Axes.SetLimitsY(-20, 80);
-                SpectrPlot.Refresh();
-
-                WaterfallPlot.Plot.Clear();
-                var hm = WaterfallPlot.Plot.Add.Heatmap(heatmap);
-                hm.Colormap = new ScottPlot.Colormaps.Turbo();
-                WaterfallPlot.Plot.Axes.AutoScaleX();
-                WaterfallPlot.Plot.Axes.SetLimitsY(0, WaterfallHeight);
-                WaterfallPlot.Refresh();
-
-                CorellationPlot.Plot.Clear();
-                CorellationPlot.Plot.Add.Line(new(0, 0, len - 1, 1));
-                CorellationPlot.Plot.Add.Signal(integratedSpectrum);
-                CorellationPlot.Plot.Axes.AutoScale();
-                CorellationPlot.Refresh();
             });
         }
     }
