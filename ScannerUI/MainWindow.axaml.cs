@@ -223,17 +223,17 @@ namespace ScannerUI
 
                 if (scanFreqs.Length > 0)
                 {
+                    StatusLabel.Content = "Запускаю сканирование...";
+                    ScanFreqs = scanFreqs;
+                    CurrentFreqIndex = 0;
+                    Cts = new();
+
                     WorkerThread = new Thread(ProcessLoop)
                     {
                         IsBackground = true,
                         Name = "MainWindowWorker"
                     };
                     WorkerThread.Start();
-
-                    StatusLabel.Content = "Запускаю сканирование...";
-                    ScanFreqs = scanFreqs;
-                    CurrentFreqIndex = 0;
-                    Cts = new();
 
                     ControlButton.Content = "Остановить";
                     SpectrPlot.Plot.Clear();
