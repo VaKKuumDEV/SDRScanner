@@ -9,7 +9,7 @@
         x:Class="ScannerUI.MainWindow"
 		xmlns:ScottPlot="clr-namespace:ScottPlot.Avalonia;assembly=ScottPlot.Avalonia"
 		Icon="/Assets/icon.ico"
-        Title="ScannerUI">
+        Title="WaveMatch: Система сравнения радиосигналов">
 	<Grid>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="70*" />
